@@ -157,7 +157,10 @@ async function loginWithCredentials({ username, password, session = '20' }) {
     const context = await browser.newContext({
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
       viewport: { width: 1280, height: 800 },
-      locale: 'en-IN,en;q=0.9'
+      locale: 'en-US',
+      extraHTTPHeaders: {
+        'Accept-Language': 'en-IN,en-US;q=0.9,en;q=0.8'
+      }
     });
     const page = await context.newPage();
     sessionStore.setLoginStep({ step: 1, totalSteps: 4, label: 'Opening Portal', detail: 'Connecting to official CUIET portal in Chrome...', percent: 20 });
