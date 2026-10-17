@@ -43,46 +43,63 @@ function parsePortalError(rawText) {
 }
 
 /**
- * Finds Turnstile frame, clicks checkbox once, and waits for token
+ * Finds Turnstile frame, clicks checkbox with natural mouse movement, and fast-polls for token
  */
 async function solveTurnstile(page) {
   console.log('[LoginAutomation] Locating Cloudflare Turnstile...');
-  await page.waitForTimeout(2000);
-
-  let clicked = false;
-  for (let attempt = 0; attempt < 6; attempt++) {
-    const token = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
-    if (token && token.length > 50) {
-      console.log(`[LoginAutomation] Turnstile already verified! Token length: ${token.length}`);
-      return true;
-    }
-
-    const frames = page.frames();
-    for (const f of frames) {
-      if (f.url().includes('cloudflare') || f.url().includes('turnstile')) {
-        const checkbox = await f.$('input[type="checkbox"], #cf-stage, .ctp-checkbox-label, body').catch(() => null);
-        if (checkbox) {
-          console.log(`[LoginAutomation] Found Turnstile checkbox on attempt ${attempt + 1}! Clicking once...`);
-          await checkbox.click({ force: true }).catch(() => {});
-          clicked = true;
-          break;
-        }
-      }
-    }
-
-    if (clicked) break;
-    await page.waitForTimeout(1000);
+  // Quick initial check if token is already present
+  let token = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
+  if (token && token.length > 50) {
+    console.log(`[LoginAutomation] Turnstile already verified! Token length: ${token.length}`);
+    return true;
   }
 
-  console.log('[LoginAutomation] Waiting for Cloudflare Turnstile token to appear...');
-  await page.waitForFunction(() => {
-    const el = document.querySelector('input[name="cf-turnstile-response"]');
-    return el && el.value && el.value.length > 50;
-  }, { timeout: 20000 }).catch(() => {});
+  // Allow Turnstile widget to finish initial render
+  await page.waitForTimeout(2000);
 
-  const finalToken = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
-  console.log('[LoginAutomation] Final Turnstile token length:', finalToken ? finalToken.length : 0);
-  return Boolean(finalToken && finalToken.length > 50);
+  // Check again
+  token = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
+  if (token && token.length > 50) {
+    console.log(`[LoginAutomation] Turnstile verified automatically! Token length: ${token.length}`);
+    return true;
+  }
+
+  // Locate Turnstile frame and perform precise natural click
+  try {
+    const cfFrame = page.frames().find(f => f.url().includes('cloudflare') || f.url().includes('turnstile'));
+    if (cfFrame) {
+      const frameEl = await cfFrame.frameElement();
+      const box = await frameEl.boundingBox();
+      if (box) {
+        const clickX = Math.round(box.x + 21);
+        const clickY = Math.round(box.y + 33);
+        console.log(`[LoginAutomation] Executing natural click on Turnstile checkbox at (${clickX}, ${clickY})...`);
+        await page.mouse.move(box.x - 20, box.y - 20);
+        await page.waitForTimeout(100);
+        await page.mouse.move(clickX, clickY, { steps: 10 });
+        await page.waitForTimeout(150);
+        await page.mouse.down();
+        await page.waitForTimeout(80);
+        await page.mouse.up();
+      }
+    }
+  } catch (clickErr) {
+    console.warn('[LoginAutomation] Turnstile click attempt warning:', clickErr.message);
+  }
+
+  // Fast poll for token: every 400ms for up to 6 seconds max
+  console.log('[LoginAutomation] Waiting up to 6s for Turnstile token...');
+  for (let s = 0; s < 15; s++) {
+    await page.waitForTimeout(400);
+    token = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
+    if (token && token.length > 50) {
+      console.log(`[LoginAutomation] Turnstile token acquired in ${((s + 1) * 0.4).toFixed(1)}s! Length: ${token.length}`);
+      return true;
+    }
+  }
+
+  console.log('[LoginAutomation] Turnstile token not generated within 6s.');
+  return false;
 }
 
 /**
@@ -109,6 +126,7 @@ async function loginWithCredentials({ username, password, session = '20' }) {
   try {
     browser = await chromium.launch({
       headless: headlessMode,
+      ignoreDefaultArgs: ['--enable-automation'],
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -130,7 +148,8 @@ async function loginWithCredentials({ username, password, session = '20' }) {
         console.log('[LoginAutomation] Playwright Chromium installed successfully! Retrying browser launch...');
         browser = await chromium.launch({
           headless: true,
-          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+          ignoreDefaultArgs: ['--enable-automation'],
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--disable-blink-features=AutomationControlled']
         });
       } catch (installErr) {
         console.error('[LoginAutomation] On-the-fly browser install failed:', installErr.message);
@@ -142,6 +161,7 @@ async function loginWithCredentials({ username, password, session = '20' }) {
         browser = await chromium.launch({
           channel: 'chrome',
           headless: headlessMode,
+          ignoreDefaultArgs: ['--enable-automation'],
           args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled']
         });
       } catch (e2) {
@@ -183,6 +203,13 @@ async function loginWithCredentials({ username, password, session = '20' }) {
     sessionStore.setLoginStep({ step: 3, totalSteps: 4, label: 'Bypassing Security', detail: 'Verifying Cloudflare Turnstile (~2-3s)...', percent: 65 });
     const solved = await solveTurnstile(page);
     console.log('[LoginAutomation] Turnstile verification status:', solved ? 'VERIFIED' : 'TIMED OUT');
+
+    if (!solved) {
+      console.warn('[LoginAutomation] Cloudflare Turnstile token missing. Closing browser immediately without submitting empty form.');
+      await browser.close().catch(() => {});
+      sessionStore.setLoginStep(null);
+      throw new Error('Cloudflare Turnstile verification required. Automated verification was restricted by Cloudflare on cloud servers. Please use the Instant Session Connect option below to sign in instantly.');
+    }
 
     sessionStore.setLoginStep({ step: 4, totalSteps: 4, label: 'Submitting Form', detail: 'Submitting credentials to Chitkara servers...', percent: 85 });
     console.log('[LoginAutomation] Submitting login form...');
