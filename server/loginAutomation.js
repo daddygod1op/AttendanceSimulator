@@ -1,4 +1,10 @@
-const { chromium } = require('playwright');
+let chromium = null;
+try {
+  const pw = require('playwright');
+  chromium = pw.chromium;
+} catch (e) {
+  // Playwright is optional in cloud environments (direct scraping and cookie login work without it)
+}
 const sessionStore = require('./sessionStore');
 const scraper = require('./scraper');
 
@@ -89,6 +95,9 @@ async function solveTurnstile(page) {
 async function loginWithCredentials({ username, password, session = '20' }) {
   cleanupActiveSession();
 
+  if (!chromium) {
+    throw new Error('Automated browser launch is not available in cloud hosting environment. Please connect using your session cookie (ci_session) or official export file.');
+  }
   console.log(`[LoginAutomation] Starting login attempt for user: ${username}...`);
 
   let browser;
@@ -305,6 +314,10 @@ async function resendOtp() {
  */
 async function launchInteractivePortal({ username = '', password = '', session = '20' } = {}) {
   cleanupActiveSession();
+
+  if (!chromium) {
+    throw new Error('Interactive browser helper is not available in cloud hosting environment. Please connect using your session cookie (ci_session) or official export file.');
+  }
 
   let browser;
   try {
