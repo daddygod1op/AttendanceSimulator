@@ -1,9 +1,11 @@
 services:
   - type: web
     name: chitkara-attendance
-    env: docker
+    env: node
     plan: free
-    dockerfilePath: ./Dockerfile
+    buildCommand: "cd client && npm install && npm run build && cd ../server && npm install && npx playwright install chromium"
+    startCommand: "node server/server.js"
     envVars:
       - key: NODE_ENV
         value: production
+

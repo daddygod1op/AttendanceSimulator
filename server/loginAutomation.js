@@ -96,7 +96,7 @@ async function loginWithCredentials({ username, password, session = '20' }) {
   cleanupActiveSession();
 
   if (!chromium) {
-    throw new Error('Automated browser launch is not enabled on this server instance. Please connect via Docker deployment or use the Import Export tab to upload your attendance file.');
+    throw new Error('Official portal automation service is initializing. Please try signing in again in a moment.');
   }
 
   const isCloudLinux = process.env.NODE_ENV === 'production' || process.platform === 'linux';
@@ -117,18 +117,37 @@ async function loginWithCredentials({ username, password, session = '20' }) {
       ]
     });
   } catch (e) {
-    console.warn('[LoginAutomation] Primary chromium launch failed, retrying with fallback flags:', e.message);
-    try {
-      browser = await chromium.launch({
-        channel: 'chrome',
-        headless: headlessMode,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled']
-      });
-    } catch (e2) {
-      browser = await chromium.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-      });
+    console.warn('[LoginAutomation] Primary chromium launch failed:', e.message);
+
+    // If browser executable is missing in cloud cache, auto-install immediately and retry
+    if (e.message.includes("doesn't exist") || e.message.includes('playwright install')) {
+      console.log('[LoginAutomation] Chromium binary missing in environment. Auto-installing Playwright Chromium now...');
+      try {
+        const { execSync } = require('child_process');
+        execSync('npx playwright install chromium', { stdio: 'inherit' });
+        console.log('[LoginAutomation] Playwright Chromium installed successfully! Retrying browser launch...');
+        browser = await chromium.launch({
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+        });
+      } catch (installErr) {
+        console.error('[LoginAutomation] On-the-fly browser install failed:', installErr.message);
+      }
+    }
+
+    if (!browser) {
+      try {
+        browser = await chromium.launch({
+          channel: 'chrome',
+          headless: headlessMode,
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled']
+        });
+      } catch (e2) {
+        browser = await chromium.launch({
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        });
+      }
     }
   }
 

@@ -6,7 +6,7 @@
     "start": "node server/server.js",
     "serve": "node server/server.js",
     "dev": "node start.js",
-    "build": "cd client && npm install && npm run build && cd ../server && npm install",
+    "build": "cd client && npm install && npm run build && cd ../server && npm install && npx playwright install chromium",
     "server": "node server/server.js",
     "client": "npm --prefix client dev"
   },
