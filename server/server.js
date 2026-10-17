@@ -476,7 +476,8 @@ app.listen(PORT, () => {
   // In cloud Linux environments, verify that Playwright Chromium is cached and ready
   if (process.env.NODE_ENV === 'production' && process.platform === 'linux') {
     const { exec } = require('child_process');
-    exec('npx playwright install chromium', (err) => {
+    const cliPath = path.join(__dirname, 'node_modules/playwright/cli.js');
+    exec(`node "${cliPath}" install chromium`, (err) => {
       if (err) console.warn('[Server Startup] Playwright background verification:', err.message);
       else console.log('[Server Startup] Playwright Chromium verified and ready in cache.');
     });

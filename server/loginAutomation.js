@@ -7,6 +7,7 @@ try {
 }
 const sessionStore = require('./sessionStore');
 const scraper = require('./scraper');
+const path = require('path');
 
 let activeSession = null;
 let sessionTimeoutTimer = null;
@@ -124,7 +125,8 @@ async function loginWithCredentials({ username, password, session = '20' }) {
       console.log('[LoginAutomation] Chromium binary missing in environment. Auto-installing Playwright Chromium now...');
       try {
         const { execSync } = require('child_process');
-        execSync('npx playwright install chromium', { stdio: 'inherit' });
+        const cliPath = path.join(__dirname, 'node_modules/playwright/cli.js');
+        execSync(`node "${cliPath}" install chromium`, { stdio: 'inherit' });
         console.log('[LoginAutomation] Playwright Chromium installed successfully! Retrying browser launch...');
         browser = await chromium.launch({
           headless: true,
