@@ -2,189 +2,188 @@ const fs = require('fs');
 const path = require('path');
 const { encrypt, decrypt } = require('./cryptoService');
 
-const SESSION_FILE = path.join(__dirname, '.session_cache.json');
-
+/**
+ * Multi-Tenant In-Memory Session Store
+ * 
+ * Strict Single-Student Privacy:
+ * - Each client/device has its own isolated session mapped by sessionId.
+ * - Visitors opening the website start in 'unauthenticated' status (Login Page).
+ * - Zero cross-user data leakage.
+ */
 class SessionStore {
   constructor() {
-    this.session = {
-      cookies: [],
-      cookieString: '',
-      student: null,
-      attendance: null,
-      lastSyncTime: null,
-      authStatus: 'unauthenticated', // 'unauthenticated' | 'logging_in' | 'authenticated' | 'expired'
-      loginStep: null,
-      lastError: null,
-      activeBrowserSession: null
-    };
-
-    this.loadFromDisk();
+    this.sessions = new Map();
   }
 
-  loadFromDisk() {
-    try {
-      if (fs.existsSync(SESSION_FILE)) {
-        const raw = fs.readFileSync(SESSION_FILE, 'utf8');
-        let data = null;
-        try {
-          // Attempt encrypted payload parse first
-          data = decrypt(raw, true);
-        } catch (e) {
-          data = null;
-        }
-
-        // Fallback to plain JSON if previously stored unencrypted
-        if (!data) {
-          try {
-            data = JSON.parse(raw);
-          } catch (e) {}
-        }
-
-        if (data && data.cookies && data.cookies.length > 0) {
-          this.session.cookies = data.cookies;
-          this.session.cookieString = data.cookieString || '';
-          this.session.student = data.student || null;
-          // Strip any batchmates field if legacy cache existed
-          if (data.attendance) {
-            delete data.attendance.batchmates;
-          }
-          this.session.attendance = data.attendance || null;
-          this.session.lastSyncTime = data.lastSyncTime || null;
-          this.session.authStatus = data.authStatus || 'unauthenticated';
-        }
-      }
-    } catch (e) {
-      console.warn('[SessionStore] Failed to load session cache from disk:', e.message);
+  _getOrCreate(sessionId = 'default') {
+    const id = typeof sessionId === 'string' && sessionId.trim() ? sessionId.trim() : 'default';
+    if (!this.sessions.has(id)) {
+      this.sessions.set(id, {
+        cookies: [],
+        cookieString: '',
+        student: null,
+        attendance: null,
+        lastSyncTime: null,
+        authStatus: 'unauthenticated',
+        loginStep: null,
+        lastError: null,
+        activeBrowserSession: null
+      });
     }
+    return this.sessions.get(id);
   }
 
-  saveToDisk() {
-    try {
-      // Ensure no batchmates data is ever stored
-      const attendanceClean = this.session.attendance ? { ...this.session.attendance } : null;
-      if (attendanceClean) {
-        delete attendanceClean.batchmates;
-      }
+  setSession(arg1, arg2, arg3) {
+    let sessionId = 'default';
+    let cookies = arg1;
+    let student = arg2 || null;
 
-      const dataToSave = {
-        cookies: this.session.cookies,
-        cookieString: this.session.cookieString,
-        student: this.session.student,
-        attendance: attendanceClean,
-        lastSyncTime: this.session.lastSyncTime,
-        authStatus: this.session.authStatus
-      };
-
-      // Encrypt sensitive session data at rest using AES-256-GCM
-      const encrypted = encrypt(dataToSave);
-      fs.writeFileSync(SESSION_FILE, encrypted, 'utf8');
-    } catch (e) {
-      console.warn('[SessionStore] Failed to save session cache to disk:', e.message);
+    if (typeof arg1 === 'string' && Array.isArray(arg2)) {
+      sessionId = arg1;
+      cookies = arg2;
+      student = arg3 || null;
     }
+
+    const s = this._getOrCreate(sessionId);
+    s.cookies = cookies || [];
+    s.cookieString = (cookies || []).map(c => `${c.name}=${c.value}`).join('; ');
+    if (student) s.student = student;
+    s.authStatus = 'authenticated';
+    s.lastError = null;
   }
 
-  setSession(cookies, student = null) {
-    this.session.cookies = cookies;
-    this.session.cookieString = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-    if (student) this.session.student = student;
-    this.session.authStatus = 'authenticated';
-    this.session.lastError = null;
-    this.saveToDisk();
-  }
+  setAttendance(arg1, arg2) {
+    let sessionId = 'default';
+    let attendanceData = arg1;
 
-  setAttendance(attendanceData) {
+    if (typeof arg1 === 'string' && arg2 !== undefined) {
+      sessionId = arg1;
+      attendanceData = arg2;
+    }
+
+    const s = this._getOrCreate(sessionId);
     if (attendanceData) {
       delete attendanceData.batchmates;
     }
-    this.session.attendance = attendanceData;
+    s.attendance = attendanceData;
     if (attendanceData && attendanceData.student) {
-      this.session.student = attendanceData.student;
+      s.student = attendanceData.student;
     }
-    this.session.lastSyncTime = new Date().toISOString();
-    this.session.authStatus = 'authenticated';
-    this.session.lastError = null;
-    this.saveToDisk();
+    s.lastSyncTime = new Date().toISOString();
+    s.authStatus = 'authenticated';
+    s.lastError = null;
   }
 
-  setExpired(errorMsg = 'Session has expired. Please sign in again.') {
-    this.session.authStatus = 'expired';
-    this.session.cookies = [];
-    this.session.cookieString = '';
-    this.session.student = null;
-    this.session.attendance = null;
-    this.session.lastError = errorMsg;
-    this.saveToDisk();
+  setExpired(arg1, arg2) {
+    let sessionId = 'default';
+    let errorMsg = 'Session has expired. Please sign in again.';
+
+    if (typeof arg1 === 'string' && arg2 !== undefined) {
+      sessionId = arg1;
+      errorMsg = arg2;
+    } else if (typeof arg1 === 'string') {
+      errorMsg = arg1;
+    }
+
+    const s = this._getOrCreate(sessionId);
+    s.authStatus = 'expired';
+    s.cookies = [];
+    s.cookieString = '';
+    s.student = null;
+    s.attendance = null;
+    s.lastError = errorMsg;
   }
 
-  setLoginStep(step) {
-    this.session.loginStep = step;
+  setLoginStep(arg1, arg2) {
+    let sessionId = 'default';
+    let step = arg1;
+    if (typeof arg1 === 'string' && arg2 !== undefined) {
+      sessionId = arg1;
+      step = arg2;
+    }
+    const s = this._getOrCreate(sessionId);
+    s.loginStep = step;
   }
 
-  setError(errorMsg) {
-    this.session.lastError = errorMsg;
+  setError(arg1, arg2) {
+    let sessionId = 'default';
+    let errorMsg = arg1;
+    if (typeof arg1 === 'string' && arg2 !== undefined) {
+      sessionId = arg1;
+      errorMsg = arg2;
+    }
+    const s = this._getOrCreate(sessionId);
+    s.lastError = errorMsg;
   }
 
-  setStatus(status) {
-    this.session.authStatus = status;
+  setStatus(arg1, arg2) {
+    let sessionId = 'default';
+    let status = arg1;
+    if (typeof arg1 === 'string' && arg2 !== undefined) {
+      sessionId = arg1;
+      status = arg2;
+    }
+    const s = this._getOrCreate(sessionId);
+    s.authStatus = status;
     if (status !== 'authenticated') {
-      this.session.cookies = [];
-      this.session.cookieString = '';
-      this.session.student = null;
-      this.session.attendance = null;
-      this.saveToDisk();
+      s.cookies = [];
+      s.cookieString = '';
+      s.student = null;
+      s.attendance = null;
     }
   }
 
-  clear() {
-    this.session = {
-      cookies: [],
-      cookieString: '',
-      student: null,
-      attendance: null,
-      lastSyncTime: null,
-      authStatus: 'unauthenticated',
-      loginStep: null,
-      lastError: null,
-      activeBrowserSession: null
-    };
-    try {
-      if (fs.existsSync(SESSION_FILE)) {
-        fs.unlinkSync(SESSION_FILE);
-      }
-    } catch (e) {}
-  }
-
-  purgeAllData() {
-    this.clear();
-    console.log('[SessionStore] All cached credentials, cookies, and personal attendance records have been securely purged.');
-    return { success: true, message: 'All personal session data and cached records have been permanently erased.' };
-  }
-
-  getCookies() {
-    return this.session.cookies;
-  }
-
-  getCookieString() {
-    return this.session.cookieString;
-  }
-
-  getState() {
-    if (this.session.authStatus !== 'authenticated' && fs.existsSync(SESSION_FILE)) {
-      this.loadFromDisk();
+  clear(sessionId = 'default') {
+    const id = typeof sessionId === 'string' && sessionId.trim() ? sessionId.trim() : 'default';
+    if (this.sessions.has(id)) {
+      this.sessions.delete(id);
     }
-    const isAuthed = this.session.authStatus === 'authenticated';
-    const attendanceClean = (isAuthed && this.session.attendance) ? { ...this.session.attendance } : null;
+  }
+
+  purgeAllData(sessionId = 'default') {
+    this.clear(sessionId);
+    return { success: true, message: 'Your personal session and cached records have been permanently erased.' };
+  }
+
+  getCookies(sessionId = 'default') {
+    const s = this._getOrCreate(sessionId);
+    return s.cookies;
+  }
+
+  getCookieString(sessionId = 'default') {
+    const s = this._getOrCreate(sessionId);
+    return s.cookieString;
+  }
+
+  getState(sessionId = 'default') {
+    const id = typeof sessionId === 'string' && sessionId.trim() ? sessionId.trim() : 'default';
+    if (!this.sessions.has(id)) {
+      return {
+        authStatus: 'unauthenticated',
+        loginStep: null,
+        student: null,
+        attendance: null,
+        lastSyncTime: null,
+        lastError: null,
+        hasCookies: false
+      };
+    }
+
+    const s = this.sessions.get(id);
+    const isAuthed = s.authStatus === 'authenticated';
+    const attendanceClean = (isAuthed && s.attendance) ? { ...s.attendance } : null;
     if (attendanceClean) {
       delete attendanceClean.batchmates;
     }
+
     return {
-      authStatus: this.session.authStatus,
-      loginStep: this.session.loginStep,
-      student: isAuthed ? this.session.student : null,
+      authStatus: s.authStatus,
+      loginStep: s.loginStep,
+      student: isAuthed ? s.student : null,
       attendance: attendanceClean,
-      lastSyncTime: isAuthed ? this.session.lastSyncTime : null,
-      lastError: this.session.lastError,
-      hasCookies: isAuthed && this.session.cookies.length > 0
+      lastSyncTime: isAuthed ? s.lastSyncTime : null,
+      lastError: s.lastError,
+      hasCookies: isAuthed && s.cookies && s.cookies.length > 0
     };
   }
 }

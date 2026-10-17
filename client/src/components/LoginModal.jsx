@@ -21,6 +21,7 @@ import {
   Upload,
   Info
 } from 'lucide-react';
+import { getDeviceSessionId } from '../utils/sessionHelper';
 
 export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   // Tabs: 'automated' (credentials + OTP) | 'cookie' | 'import'
@@ -79,7 +80,10 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     if (loading) {
       interval = setInterval(async () => {
         try {
-          const res = await fetch('/api/status');
+          const sessionId = getDeviceSessionId();
+          const res = await fetch('/api/status', {
+            headers: { 'x-session-id': sessionId }
+          });
           const data = await res.json();
           if (data.loginStep) {
             setLoginStepStatus(data.loginStep);
@@ -104,13 +108,18 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     setLoginStepStatus({ step: 1, totalSteps: 4, label: 'Connecting to Portal', detail: 'Contacting CUIET server...' });
 
     try {
+      const sessionId = getDeviceSessionId();
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session-id': sessionId
+        },
         body: JSON.stringify({
           username: username.trim(),
           password,
-          session
+          session,
+          sessionId
         })
       });
 
@@ -154,10 +163,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     setLoading(true);
 
     try {
+      const sessionId = getDeviceSessionId();
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ otp: otp.trim() })
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session-id': sessionId
+        },
+        body: JSON.stringify({ otp: otp.trim(), sessionId })
       });
 
       const data = await res.json();
@@ -180,7 +193,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     if (resendCooldown > 0) return;
     setError(null);
     try {
-      const res = await fetch('/api/auth/resend-otp', { method: 'POST' });
+      const sessionId = getDeviceSessionId();
+      const res = await fetch('/api/auth/resend-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session-id': sessionId
+        }
+      });
       const data = await res.json();
       if (data.success) {
         setResendCooldown(60);
@@ -203,10 +223,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     });
 
     try {
+      const sessionId = getDeviceSessionId();
       const res = await fetch('/api/auth/launch-interactive-portal', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, session })
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session-id': sessionId
+        },
+        body: JSON.stringify({ username, password, session, sessionId })
       });
 
       const data = await res.json();
@@ -248,12 +272,17 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           jsonPayload = { rawContent: text };
         }
 
+        const sessionId = getDeviceSessionId();
         const res = await fetch('/api/attendance/import', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-session-id': sessionId
+          },
           body: JSON.stringify({
             fileName: file.name,
-            jsonContent: jsonPayload
+            jsonContent: jsonPayload,
+            sessionId
           })
         });
 

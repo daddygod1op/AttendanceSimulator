@@ -40,11 +40,21 @@ if (fs.existsSync(clientPublicPath)) {
 
 let isSyncing = false;
 
+function getSessionId(req) {
+  return (
+    req.headers['x-session-id'] ||
+    req.query.sessionId ||
+    (req.body && req.body.sessionId) ||
+    'default'
+  );
+}
+
 // ============================================================================
 // 1. Session & Auth Status + Debug Endpoints
 // ============================================================================
 app.get('/api/status', (req, res) => {
-  const state = sessionStore.getState();
+  const sessionId = getSessionId(req);
+  const state = sessionStore.getState(sessionId);
   res.json({
     ...state,
     isSyncing,
@@ -54,7 +64,8 @@ app.get('/api/status', (req, res) => {
 });
 
 app.get('/api/debug', (req, res) => {
-  const state = sessionStore.getState();
+  const sessionId = getSessionId(req);
+  const state = sessionStore.getState(sessionId);
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -80,7 +91,8 @@ app.get('/api/student/photo', (req, res) => {
   if (fs.existsSync(localPhoto)) {
     return res.sendFile(localPhoto);
   }
-  const state = sessionStore.getState();
+  const sessionId = getSessionId(req);
+  const state = sessionStore.getState(sessionId);
   const photoUrl = state?.student?.photoUrl || 'https://s3.amazonaws.com/cbrig-assets/cuiet/resources/Student/S173232szi.jpg';
   res.redirect(photoUrl);
 });
@@ -182,10 +194,11 @@ app.post('/api/auth/cancel-login', (req, res) => {
 
 // Logout endpoint to clear session and cache
 app.post('/api/auth/logout', (req, res) => {
+  const sessionId = getSessionId(req);
   loginAutomation.cleanupActiveSession();
   isSyncing = false;
-  sessionStore.clear();
-  console.log('[Server] User logged out. All cached session data cleared.');
+  sessionStore.clear(sessionId);
+  console.log(`[Server] User logged out (session: ${sessionId}). Session data cleared.`);
   res.json({ success: true, message: 'Logged out successfully. All session data cleared.' });
 });
 
@@ -193,6 +206,7 @@ app.post('/api/auth/logout', (req, res) => {
 // 4. Manual Browser Window Helper (If OTP / CAPTCHA blocks automation)
 // ============================================================================
 app.post('/api/auth/launch-interactive-portal', async (req, res) => {
+  const sessionId = getSessionId(req);
   const { username, password, session } = req.body || {};
   if (isSyncing) {
     return res.status(409).json({ success: false, error: 'An authentication operation is already running.' });
@@ -202,6 +216,9 @@ app.post('/api/auth/launch-interactive-portal', async (req, res) => {
   try {
     console.log('[Server] Launching interactive portal window on desktop for user:', username || 'unspecified');
     const result = await loginAutomation.launchInteractivePortal({ username, password, session });
+    if (result && result.data) {
+      sessionStore.setAttendance(sessionId, result.data);
+    }
     isSyncing = false;
     res.json({
       success: true,
@@ -222,6 +239,7 @@ app.post('/api/auth/launch-interactive-portal', async (req, res) => {
 // 5. Connect via Saved Session Cookie (ci_session - Solves repeat OTP!)
 // ============================================================================
 app.post('/api/auth/cookie-login', async (req, res) => {
+  const sessionId = getSessionId(req);
   const { cookieString } = req.body;
   if (!cookieString) {
     return res.status(400).json({ error: 'Cookie string is required (e.g. ci_session=...)' });
@@ -235,6 +253,7 @@ app.post('/api/auth/cookie-login', async (req, res) => {
   try {
     console.log('[Server] Connecting using provided session cookie string...');
     const attendanceData = await scraper.connectWithCookieString(cookieString);
+    sessionStore.setAttendance(sessionId, attendanceData);
     isSyncing = false;
     res.json({
       success: true,
@@ -256,9 +275,13 @@ app.post('/api/auth/cookie-login', async (req, res) => {
 // ============================================================================
 app.post('/api/attendance/import', async (req, res) => {
   try {
+    const sessionId = getSessionId(req);
     const payload = req.body;
-    const userRoll = req.body.rollNo || sessionStore.getState().student?.rollNo;
+    const userRoll = req.body.rollNo || sessionStore.getState(sessionId).student?.rollNo;
     const result = await importService.processOfficialExport(payload, userRoll);
+    if (result && result.data) {
+      sessionStore.setAttendance(sessionId, result.data);
+    }
     res.json(result);
   } catch (err) {
     console.error('[Server] Import failed:', err.message);
@@ -270,7 +293,8 @@ app.post('/api/attendance/import', async (req, res) => {
 // 7. Get Stored Attendance & Academic Records (Single Student Only)
 // ============================================================================
 app.get('/api/attendance', (req, res) => {
-  const state = sessionStore.getState();
+  const sessionId = getSessionId(req);
+  const state = sessionStore.getState(sessionId);
   if (state.authStatus !== 'authenticated' || !state.attendance) {
     return res.status(401).json({
       error: 'Session has expired or you are unauthenticated. Please connect to https://cuiet.codebrigade.in/ first.',
@@ -382,7 +406,8 @@ app.get('/api/circulars/:id/download', (req, res) => {
 });
 
 app.get('/api/performance', (req, res) => {
-  const state = sessionStore.getState();
+  const sessionId = getSessionId(req);
+  const state = sessionStore.getState(sessionId);
   const performance = state.attendance?.performance || { tests: [], semesterGrades: [], cgpa: 8.74, sgpaHistory: [] };
   res.json({
     success: true,
@@ -392,17 +417,12 @@ app.get('/api/performance', (req, res) => {
 });
 
 // ============================================================================
-// 10. Logout & Complete Data Purge
+// 10. Complete Data Purge
 // ============================================================================
-app.post('/api/auth/logout', (req, res) => {
-  loginAutomation.cleanupActiveSession();
-  sessionStore.clear();
-  res.json({ success: true, message: 'Logged out successfully. Active session cleared.' });
-});
-
 app.post('/api/auth/purge-data', (req, res) => {
+  const sessionId = getSessionId(req);
   loginAutomation.cleanupActiveSession();
-  const result = sessionStore.purgeAllData();
+  const result = sessionStore.purgeAllData(sessionId);
   res.json(result);
 });
 

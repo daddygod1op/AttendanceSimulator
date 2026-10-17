@@ -87,19 +87,19 @@ export default function Navbar({
             />
           </div>
           <div className="brand-info">
-            <h1>
+            <h1 className="nav-brand-title">
               Chitkara Attendance
-              <span className="brand-source-pill" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8' }}>
+              <span className="brand-source-pill nav-source-pill-desktop" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8' }}>
                 cuiet.codebrigade.in
               </span>
             </h1>
-            <p>
+            <p className="nav-brand-sub">
               {student?.name ? (
                 <span>
-                  Official Student Portal • <strong>{student.session || 'JulDec2026'}</strong>
+                  Official Portal • <strong>{student.session || 'JulDec2026'}</strong>
                 </span>
               ) : (
-                <span>Student Attendance & Calendar Engine</span>
+                <span>Student Attendance Engine</span>
               )}
             </p>
           </div>
@@ -109,9 +109,9 @@ export default function Navbar({
         <div className="navbar-actions">
           {/* Privacy & Purge Button */}
           <button
-            className="btn btn-outline"
+            className="btn btn-outline nav-privacy-btn"
             style={{
-              padding: '6px 12px',
+              padding: '6px 10px',
               fontSize: '0.82rem',
               display: 'flex',
               alignItems: 'center',
@@ -122,12 +122,12 @@ export default function Navbar({
             onClick={onOpenPrivacy}
             title="Privacy Policy & Purge Data"
           >
-            <ShieldCheck size={15} />
-            <span>Privacy & Storage</span>
+            <ShieldCheck size={16} />
+            <span className="nav-btn-text">Privacy</span>
           </button>
 
           {authStatus === 'authenticated' && student && (
-            <div className="student-nav-profile-badge">
+            <div className="student-nav-profile-badge" title={`${student.name} (${student.rollNo})`}>
               <div
                 style={{
                   width: 36,
@@ -164,7 +164,7 @@ export default function Navbar({
                   }}
                 />
               </div>
-              <div className="student-nav-details">
+              <div className="student-nav-details nav-student-meta-desktop">
                 <span className="nav-student-name">{student.name}</span>
                 <span className="nav-student-roll" style={{ fontFamily: 'monospace' }}>
                   {student.rollNo}
@@ -174,44 +174,44 @@ export default function Navbar({
           )}
 
           {authStatus === 'authenticated' && (
-            <div className="sync-status-indicator">
+            <div className="sync-status-indicator nav-sync-indicator-desktop">
               <span className={`status-dot ${isSyncing ? 'pulsing' : ''}`}></span>
               <Clock size={13} />
-              <span>Synced: {formatTime(lastSyncTime)}</span>
+              <span>{formatTime(lastSyncTime)}</span>
             </div>
           )}
 
           {authStatus === 'authenticated' && (
             <button
-              className={`btn btn-refresh ${isSyncing ? 'syncing' : ''}`}
+              className={`btn btn-refresh nav-refresh-btn ${isSyncing ? 'syncing' : ''}`}
               onClick={onRefresh}
               disabled={isSyncing}
               title="Retrieve fresh records from portal"
               id="refresh-attendance-btn"
             >
               <RefreshCw size={15} />
-              <span>{isSyncing ? 'Syncing...' : 'Refresh'}</span>
+              <span className="nav-btn-text">{isSyncing ? 'Syncing...' : 'Refresh'}</span>
             </button>
           )}
 
           {authStatus === 'authenticated' ? (
             <button
-              className="btn btn-outline-danger"
+              className="btn btn-outline-danger nav-logout-btn"
               onClick={onLogout}
               title="Sign out from session"
               id="logout-btn"
             >
               <LogOut size={15} />
-              <span>Sign Out</span>
+              <span className="nav-btn-text">Sign Out</span>
             </button>
           ) : (
             <button
-              className="btn btn-primary"
+              className="btn btn-primary nav-login-btn"
               onClick={onOpenLogin}
               id="connect-portal-btn"
             >
               <LogIn size={16} />
-              <span>Connect Portal</span>
+              <span>Sign In</span>
             </button>
           )}
         </div>

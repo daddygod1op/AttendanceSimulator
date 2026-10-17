@@ -30,6 +30,8 @@ import {
   ArrowRight
 } from 'lucide-react';
 
+import { getDeviceSessionId, clearDeviceSession } from './utils/sessionHelper';
+
 export default function App() {
   const [authStatus, setAuthStatus] = useState('unauthenticated');
   const [isSyncing, setIsSyncing] = useState(false);
@@ -50,7 +52,10 @@ export default function App() {
 
   const checkStatus = async () => {
     try {
-      const res = await fetch('/api/status');
+      const sessionId = getDeviceSessionId();
+      const res = await fetch('/api/status', {
+        headers: { 'x-session-id': sessionId }
+      });
       const data = await res.json();
 
       if (data.authStatus === 'authenticated' && (data.attendance || data.hasCookies)) {
@@ -104,7 +109,10 @@ export default function App() {
 
   const fetchAttendance = async () => {
     try {
-      const res = await fetch('/api/attendance');
+      const sessionId = getDeviceSessionId();
+      const res = await fetch('/api/attendance', {
+        headers: { 'x-session-id': sessionId }
+      });
       if (res.ok) {
         const json = await res.json();
         if (json.data) {
@@ -142,7 +150,11 @@ export default function App() {
     setAlert({ type: 'syncing', text: 'Retrieving fresh attendance, notices & marks from cuiet.codebrigade.in...' });
 
     try {
-      const res = await fetch('/api/attendance/refresh', { method: 'POST' });
+      const sessionId = getDeviceSessionId();
+      const res = await fetch('/api/attendance/refresh', {
+        method: 'POST',
+        headers: { 'x-session-id': sessionId }
+      });
       const data = await res.json();
 
       if (!res.ok) {
@@ -179,9 +191,13 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      const sessionId = getDeviceSessionId();
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'x-session-id': sessionId }
+      });
     } catch (e) {}
-    localStorage.removeItem('chitkara_session_data');
+    clearDeviceSession();
     setAuthStatus('unauthenticated');
     setStudent(null);
     setAttendance(null);

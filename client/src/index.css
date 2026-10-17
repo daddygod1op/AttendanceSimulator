@@ -3130,5 +3130,206 @@ select:-webkit-autofill:focus {
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5) !important;
 }
 
+/* ==========================================================================
+   Comprehensive Mobile & iOS Responsive System
+   ========================================================================== */
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 768px) {
+  /* Navbar Mobile Layout */
+  .main-navbar {
+    padding: 0.65rem 0.85rem !important;
+    gap: 8px !important;
+  }
+  .brand-container {
+    gap: 0.5rem !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  .brand-logo-badge {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+  }
+  .nav-brand-title {
+    font-size: 1.05rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin: 0 !important;
+  }
+  .nav-source-pill-desktop {
+    display: none !important;
+  }
+  .nav-brand-sub {
+    display: none !important;
+  }
+  .navbar-actions {
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+  .nav-btn-text {
+    display: none !important;
+  }
+  .nav-student-meta-desktop {
+    display: none !important;
+  }
+  .nav-sync-indicator-desktop {
+    display: none !important;
+  }
+  .nav-privacy-btn,
+  .nav-refresh-btn,
+  .nav-logout-btn {
+    padding: 6px 8px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    justify-content: center !important;
+  }
+  .nav-login-btn {
+    padding: 6px 12px !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* Main container & Tabs */
+  .main-content {
+    padding: 1rem 0.85rem 3rem !important;
+  }
+  .navbar-tabs-scroll {
+    padding: 4px 8px !important;
+    gap: 4px !important;
+  }
+  .nav-tab-link {
+    padding: 7px 11px !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Overall Attendance Hero Card on Mobile */
+  .overall-attendance-hero {
+    padding: 1.25rem 1rem !important;
+    border-radius: 16px !important;
+  }
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    text-align: center !important;
+    gap: 1.25rem !important;
+  }
+  .gauge-svg {
+    width: 140px !important;
+    height: 140px !important;
+  }
+  .overall-stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  .stat-box {
+    padding: 0.75rem 0.5rem !important;
+  }
+  .stat-num {
+    font-size: 1.35rem !important;
+  }
+
+  /* View Header */
+  .view-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .view-header h2 {
+    font-size: 1.35rem !important;
+  }
+
+  /* Attachment card in circular popup */
+  .circular-attachment-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 10px 12px !important;
+  }
+  .circular-attachment-actions {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+  .circular-attachment-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Landing Hero Screen on Mobile */
+  .landing-hero-container {
+    padding: 2rem 0.85rem 3rem !important;
+  }
+  .landing-hero-title {
+    font-size: 1.85rem !important;
+    line-height: 1.2 !important;
+  }
+  .landing-hero-subtitle {
+    font-size: 0.95rem !important;
+    margin-bottom: 1.75rem !important;
+  }
+  .landing-action-group {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+    margin-bottom: 2.5rem !important;
+  }
+  .landing-action-group .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .landing-feature-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Modals on Mobile & iOS */
+  .modal-backdrop {
+    padding: 10px !important;
+    align-items: flex-end !important;
+  }
+  .modal-container,
+  .notice-modal-dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    max-height: 92vh !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+  .modal-header {
+    padding: 1rem 1.15rem !important;
+  }
+  .modal-body,
+  .notice-modal-body {
+    padding: 1rem !important;
+  }
+
+  /* Attendance Register Table Horizontal Scrolling */
+  .register-table-wrapper {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 10px !important;
+  }
+
+  /* Semesters filter buttons */
+  .grades-filter-bar {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 6px !important;
+    scrollbar-width: none !important;
+  }
+  .grades-filter-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+}
+
 
 

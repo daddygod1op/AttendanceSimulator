@@ -555,6 +555,7 @@ export default function CircularsFeed({ circulars = [], student }) {
                       {attachments.map((att, attIdx) => (
                         <div
                           key={att.id || attIdx}
+                          className="circular-attachment-card"
                           style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -567,7 +568,7 @@ export default function CircularsFeed({ circulars = [], student }) {
                             flexWrap: 'wrap'
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 200px' }}>
                             <div
                               style={{
                                 width: 40,
@@ -584,11 +585,11 @@ export default function CircularsFeed({ circulars = [], student }) {
                             >
                               <FileText size={20} />
                             </div>
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ color: '#fff', fontSize: '0.92rem', fontWeight: 600, wordBreak: 'break-all' }}>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ color: '#fff', fontSize: '0.92rem', fontWeight: 600, wordBreak: 'break-word', lineHeight: 1.35 }}>
                                 {att.name}
                               </div>
-                              <div style={{ fontSize: '0.74rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                              <div style={{ fontSize: '0.74rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                                 <span style={{ color: '#ef4444', fontWeight: 600 }}>PDF Document</span>
                                 <span>•</span>
                                 <span>{att.size || 'Official Portal Attachment'}</span>
@@ -600,7 +601,7 @@ export default function CircularsFeed({ circulars = [], student }) {
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+                          <div className="circular-attachment-actions" style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
                             <a
                               href={`https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${activeModalNotice.id}`}
                               target="_blank"
