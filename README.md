@@ -122,3 +122,5 @@ This concurrently boots:
 - Scope Quarantine Test: `GET http://localhost:5000/api/batchmates/2510990646` (Returns `403 Forbidden`)
 - SIS Refresh: `POST http://localhost:5000/api/sis/refresh`
 - Audit Logs: `GET http://localhost:5000/api/compliance/audit-logs`
+#   c h i t k a r a A t t e n d a n c e  
+ 
