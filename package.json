@@ -1,0 +1,16 @@
+{
+  "name": "chitkara-sis-directory",
+  "version": "2.0.0",
+  "description": "Chitkara University Official SIS Student Directory & Academic Portal - Batch 2025 AI & ML (U25AIML-G13)",
+  "scripts": {
+    "start": "npm --prefix server start",
+    "serve": "npm --prefix server start",
+    "dev": "node start.js",
+    "build": "npm --prefix client install && npm --prefix client run build && npm --prefix server install",
+    "postinstall": "npm --prefix client install && npm --prefix server install",
+    "server": "npm --prefix server start",
+    "client": "npm --prefix client dev"
+  },
+  "keywords": ["chitkara", "sis", "directory", "attendance", "dpdpa", "ferpa", "u25aiml-g13"],
+  "license": "ISC"
+}

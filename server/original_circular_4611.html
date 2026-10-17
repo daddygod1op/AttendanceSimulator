@@ -1,0 +1,2560 @@
+	
+
+	
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="chrome=IE8">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Chitkara University</title>
+
+
+
+
+
+
+
+<link rel="shortcut icon" type="image/x-icon" href="https://cuiet.codebrigade.in/faviconCB.ico">
+<link href="https://cuiet.codebrigade.in/css/style.css" rel="stylesheet" type="text/css" />
+<link href="https://cuiet.codebrigade.in/css/fullcalendar.css" rel="stylesheet" type="text/css" />
+<link href="https://cuiet.codebrigade.in/css/tipsy.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="https://cuiet.codebrigade.in/scripts/jquery.min.js"></script>
+<script type="text/javascript" src="https://cuiet.codebrigade.in/scripts/jquery.simplemodal.js"></script>
+<script type="text/javascript" src="https://cuiet.codebrigade.in/scripts/jquery.form.js?1"></script>
+<script type="text/javascript" src="https://cuiet.codebrigade.in/scripts/socket.io.min.js"></script>
+<script type="text/javascript" src="https://cuiet.codebrigade.in/scripts/guiders-1.2.3.js"></script>
+<script type="text/javascript" src="https://cuiet.codebrigade.in/scripts/jquery.watermark.min.js"></script>
+<script type='text/javascript' src="https://cuiet.codebrigade.in/scripts/tipsy.js"></script>
+<script type='text/javascript' src="https://cuiet.codebrigade.in/scripts/moment.js"></script>
+<script type='text/javascript' src="https://cuiet.codebrigade.in/scripts/pikaday.js"></script>
+<script type="text/javascript" src="https://cuiet.codebrigade.in/scripts/jquery.qtip.js"></script>
+<!-- Amanpreet - Feb 2021 - Google sign out -->
+<!-- ends - Google sign out -->
+<script>
+/**!
+*
+* Copyright 2013 LinkedIn Corp. All rights reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+!function(a,b){var c,d,e,f,g,h,i,j,k,l,m=window.Sizzle||null,n=a[b],o="undefined",p=!1,q=typeof window.jQuery!==o,r=typeof window.sessionStorage!==o,s=window.document;l={smoothScroll:!0,scrollDuration:1e3,scrollTopMargin:200,showCloseButton:!0,showPrevButton:!1,showNextButton:!0,bubbleWidth:280,bubblePadding:15,arrowWidth:20,skipIfNoElement:!0,cookieName:"hopscotch.tour.state"},n||(Array.isArray||(Array.isArray=function(a){return"[object Array]"===Object.prototype.toString.call(a)}),k=function(){p&&n.startTour()},h={addClass:function(a,b){var c,d,e,f;if(a.className){for(d=b.split(/\s+/),c=" "+a.className+" ",e=0,f=d.length;f>e;++e)c.indexOf(" "+d[e]+" ")<0&&(c+=d[e]+" ");a.className=c.replace(/^\s+|\s+$/g,"")}else a.className=b},removeClass:function(a,b){var c,d,e,f;for(d=b.split(/\s+/),c=" "+a.className+" ",e=0,f=d.length;f>e;++e)c=c.replace(" "+d[e]+" "," ");a.className=c.replace(/^\s+|\s+$/g,"")},getPixelValue:function(a){var b=typeof a;return"number"===b?a:"string"===b?parseInt(a,10):0},valOrDefault:function(a,b){return typeof a!==o?a:b},invokeCallbackArrayHelper:function(a){var b;return Array.isArray(a)&&(b=j[a[0]],"function"==typeof b)?b.apply(this,a.slice(1)):void 0},invokeCallbackArray:function(a){var b,c;if(Array.isArray(a)){if("string"==typeof a[0])return h.invokeCallbackArrayHelper(a);for(b=0,c=a.length;c>b;++b)h.invokeCallback(a[b])}},invokeCallback:function(a){return"function"==typeof a?a():"string"==typeof a&&j[a]?j[a]():h.invokeCallbackArray(a)},invokeEventCallbacks:function(a,b){var c,d,e=i[a];if(b)return this.invokeCallback(b);for(c=0,d=e.length;d>c;++c)this.invokeCallback(e[c].cb)},getScrollTop:function(){var a;return a=typeof window.pageYOffset!==o?window.pageYOffset:s.documentElement.scrollTop},getScrollLeft:function(){var a;return a=typeof window.pageXOffset!==o?window.pageXOffset:s.documentElement.scrollLeft},getWindowHeight:function(){return window.innerHeight||s.documentElement.clientHeight},getWindowWidth:function(){return window.innerWidth||s.documentElement.clientWidth},addEvtListener:function(a,b,c){return a.addEventListener?a.addEventListener(b,c,!1):a.attachEvent("on"+b,c)},removeEvtListener:function(a,b,c){return a.removeEventListener?a.removeEventListener(b,c,!1):a.detachEvent("on"+b,c)},documentIsReady:function(){return"complete"===s.readyState||"interactive"===s.readyState},evtPreventDefault:function(a){a.preventDefault?a.preventDefault():event&&(event.returnValue=!1)},extend:function(a,b){var c;for(c in b)b.hasOwnProperty(c)&&(a[c]=b[c])},getStepTargetHelper:function(a){var b;return/^[#\.]/.test(a)?s.querySelector?s.querySelector(a):q?(b=jQuery(a),b.length?b[0]:null):m?(b=new m(a),b.length?b[0]:null):/^#[a-zA-Z][\w-_:.]*$/.test(a)?s.getElementById(a.substring(1)):null:s.getElementById(a)},getStepTarget:function(a){var b;if(!a||!a.target)return null;if("string"==typeof a.target)return a.target=h.getStepTargetHelper(a.target),a.target;if(Array.isArray(a.target)){var c,d;for(c=0,d=a.target.length;d>c;c++)if("string"==typeof a.target[c]&&(b=h.getStepTargetHelper(a.target[c])))return a.target=b,b;return null}return a.target},getI18NString:function(a){return g[a]||f[a]},setState:function(a,b,c){var d,e="";r?sessionStorage.setItem(a,b):(c&&(d=new Date,d.setTime(d.getTime()+1e3*60*60*24*c),e="; expires="+d.toGMTString()),s.cookie=a+"="+b+e+"; path=/")},getState:function(a){var b,c,d,e=a+"=",f=s.cookie.split(";");if(r)d=sessionStorage.getItem(a);else for(b=0;b<f.length;b++){for(c=f[b];" "===c.charAt(0);)c=c.substring(1,c.length);if(0===c.indexOf(e)){d=c.substring(e.length,c.length);break}}return d},clearState:function(a){r?sessionStorage.removeItem(a):this.setState(a,"",-1)}},h.addEvtListener(window,"load",k),i={next:[],prev:[],start:[],end:[],show:[],error:[],close:[]},j={},f={stepNums:null,nextBtn:"Next",prevBtn:"Back",doneBtn:"Done",skipBtn:"Skip",closeTooltip:"Close"},g={},d=function(a){this.init(a)},d.prototype={isShowing:!1,currStep:void 0,_createButton:function(a,b){var c=s.createElement("button"),d="hopscotch-nav-button";return c.id=a,b&&(c.innerHTML=b),d+=a.indexOf("prev")>=0?" prev":" next",h.addClass(c,d),c},setPosition:function(a){var b,c,d,e,f,g,i,j=6,k=h.getStepTarget(a),l=this.element,m=this.arrowEl;b=h.getPixelValue(a.width)||this.opt.bubbleWidth,d=h.valOrDefault(a.padding,this.opt.bubblePadding),h.removeClass(l,"fade-in-down fade-in-up fade-in-left fade-in-right"),!a.placement&&a.orientation&&(a.placement=a.orientation),e=k.getBoundingClientRect(),"top"===a.placement?(c=l.offsetHeight,f=e.top-c-this.opt.arrowWidth,g=e.left):"bottom"===a.placement?(f=e.bottom+this.opt.arrowWidth,g=e.left):"left"===a.placement?(f=e.top,g=e.left-b-2*d-2*j-this.opt.arrowWidth):"right"===a.placement&&(f=e.top,g=e.right+this.opt.arrowWidth),i="center"!==a.arrowOffset?h.getPixelValue(a.arrowOffset):a.arrowOffset,i?"top"===a.placement||"bottom"===a.placement?(m.style.top="",m.style.left="center"===i?b/2+d-m.offsetWidth/2+"px":i+"px"):("left"===a.placement||"right"===a.placement)&&(m.style.left="","center"===i?(c=c||l.offsetHeight,m.style.top=c/2+d-m.offsetHeight/2+"px"):m.style.top=i+"px"):(m.style.top="",m.style.left=""),"center"===a.xOffset?g=e.left+k.offsetWidth/2-b/2-d:g+=h.getPixelValue(a.xOffset),"center"===a.yOffset?(c=c||l.offsetHeight,f=e.top+k.offsetHeight/2-c/2-d):f+=h.getPixelValue(a.yOffset),a.fixedElement||(f+=h.getScrollTop(),g+=h.getScrollLeft()),l.style.position=a.fixedElement?"fixed":"absolute",l.style.top=f+"px",l.style.left=g+"px"},_initNavButtons:function(){var a=s.createElement("div");return this.prevBtnEl=this._createButton("hopscotch-prev",h.getI18NString("prevBtn")),this.nextBtnEl=this._createButton("hopscotch-next",h.getI18NString("nextBtn")),this.doneBtnEl=this._createButton("hopscotch-done",h.getI18NString("doneBtn")),this.ctaBtnEl=this._createButton("hopscotch-cta"),h.addClass(this.doneBtnEl,"hide"),a.appendChild(this.prevBtnEl),a.appendChild(this.ctaBtnEl),a.appendChild(this.nextBtnEl),a.appendChild(this.doneBtnEl),h.addEvtListener(this.prevBtnEl,"click",function(){n.prevStep(!0)}),h.addEvtListener(this.nextBtnEl,"click",function(){n.nextStep(!0)}),h.addEvtListener(this.doneBtnEl,"click",function(){n.endTour()}),a.className="hopscotch-actions",this.buttonsEl=a,this.containerEl.appendChild(a),this},_getCloseFn:function(){var a=this;return this.closeFn||(this.closeFn=function(b){a.opt.onClose&&h.invokeCallback(a.opt.onClose),a.opt.id&&!a.opt.isTourBubble?n.getCalloutManager().removeCallout(a.opt.id):a.destroy(),h.evtPreventDefault(b)}),this.closeFn},initCloseButton:function(){var a=s.createElement("a");return a.className="hopscotch-bubble-close",a.href="#",a.title=h.getI18NString("closeTooltip"),a.innerHTML=h.getI18NString("closeTooltip"),this.opt.isTourBubble?h.addEvtListener(a,"click",function(a){var b=n.getCurrStepNum(),c=n.getCurrTour(),d=b===c.steps.length-1;h.invokeEventCallbacks("close"),n.endTour(!0,d),a.preventDefault?a.preventDefault():event&&(event.returnValue=!1)}):h.addEvtListener(a,"click",this._getCloseFn()),h.valOrDefault(this.opt.showCloseButton,!0)||h.addClass(a,"hide"),this.closeBtnEl=a,this.containerEl.appendChild(a),this},_initArrow:function(){var a,b;return this.arrowEl=s.createElement("div"),this.arrowEl.className="hopscotch-bubble-arrow-container",b=s.createElement("div"),b.className="hopscotch-bubble-arrow-border",a=s.createElement("div"),a.className="hopscotch-bubble-arrow",this.arrowEl.appendChild(b),this.arrowEl.appendChild(a),this.element.appendChild(this.arrowEl),this},_setupCTAButton:function(a){var b=this;this._showButton(this.ctaBtnEl,!!a.showCTAButton),a.showCTAButton&&a.ctaLabel&&(this.ctaBtnEl.innerHTML=a.ctaLabel,this._ctaFn=function(){b.opt.isTourBubble||n.getCalloutManager().removeCallout(a.id),a.onCTA&&"function"==typeof a.onCTA&&a.onCTA()},h.addEvtListener(this.ctaBtnEl,"click",this._ctaFn))},_removeCTACallback:function(){this.ctaBtnEl&&this._ctaFn&&(h.removeEvtListener(this.ctaBtnEl,"click",this._ctaFn),this._ctaFn=null)},render:function(a,b,c,d){var e,f,g,i,j=this.element;return a?this.currStep=a:this.currStep&&(a=this.currStep),!a.placement&&a.orientation&&(a.placement=a.orientation),e=h.valOrDefault(a.showNextButton,this.opt.showNextButton),f=h.valOrDefault(a.showPrevButton,this.opt.showPrevButton),this.setTitle(a.title||""),this.setContent(a.content||""),this.opt.isTourBubble&&this.setNum(b),this.placement=a.placement,this.showPrevButton(this.prevBtnEl&&f&&b>0),this.showNextButton(this.nextBtnEl&&e&&!c),this.nextBtnEl.innerHTML=a.showSkip?h.getI18NString("skipBtn"):h.getI18NString("nextBtn"),c?h.removeClass(this.doneBtnEl,"hide"):h.addClass(this.doneBtnEl,"hide"),this._setupCTAButton(a),this._setArrow(a.placement),g=h.getPixelValue(a.width)||this.opt.bubbleWidth,i=h.valOrDefault(a.padding,this.opt.bubblePadding),this.containerEl.style.width=g+"px",this.containerEl.style.padding=i+"px",j.style.zIndex=a.zindex||"","top"===a.placement?(j.style.top="-9999px",j.style.left="-9999px",h.removeClass(j,"hide"),this.setPosition(a),h.addClass(j,"hide")):this.setPosition(a),d&&d(!a.fixedElement),this},setTitle:function(a){return a?(this.titleEl.innerHTML=a,h.removeClass(this.titleEl,"hide")):h.addClass(this.titleEl,"hide"),this},setContent:function(a){return a?(this.contentEl.innerHTML=a,h.removeClass(this.contentEl,"hide")):h.addClass(this.contentEl,"hide"),this},setNum:function(a){var b=h.getI18NString("stepNums");b&&a<b.length?a=b[a]:a+=1,this.numberEl.innerHTML=a},_setArrow:function(a){h.removeClass(this.arrowEl,"down up right left"),"top"===a?h.addClass(this.arrowEl,"down"):"bottom"===a?h.addClass(this.arrowEl,"up"):"left"===a?h.addClass(this.arrowEl,"right"):"right"===a&&h.addClass(this.arrowEl,"left")},_getArrowDirection:function(){return"top"===this.placement?"down":"bottom"===this.placement?"up":"left"===this.placement?"right":"right"===this.placement?"left":void 0},show:function(){var a=this,b="fade-in-"+this._getArrowDirection(),c=1e3;return h.removeClass(this.element,"hide"),h.addClass(this.element,b),setTimeout(function(){h.removeClass(a.element,"invisible")},50),setTimeout(function(){h.removeClass(a.element,b)},c),this.isShowing=!0,this},hide:function(a){var b=this.element;return a=h.valOrDefault(a,!0),b.style.top="",b.style.left="",a?(h.addClass(b,"hide"),h.removeClass(b,"invisible")):(h.removeClass(b,"hide"),h.addClass(b,"invisible")),h.removeClass(b,"animate fade-in-up fade-in-down fade-in-right fade-in-left"),this.isShowing=!1,this},_showButton:function(a,b,c){var d="hide";c&&(d="hide-all"),typeof b===o&&(b=!0),b?h.removeClass(a,d):h.addClass(a,d)},showPrevButton:function(a){this._showButton(this.prevBtnEl,a)},showNextButton:function(a){this._showButton(this.nextBtnEl,a)},showCloseButton:function(a){this._showButton(this.closeBtnEl,a)},destroy:function(){var a=this.element;a&&a.parentNode.removeChild(a),this.closeBtnEl&&h.removeEvtListener(this.closeBtnEl,"click",this._getCloseFn()),this.ctaBtnEl&&this.onCTA&&this._removeCTACallback()},updateButtons:function(){this.showPrevButton(this.opt.showPrevButton),this.showNextButton(this.opt.showNextButton),this.showCloseButton(this.opt.showCloseButton),this.prevBtnEl.innerHTML=h.getI18NString("prevBtn"),this.nextBtnEl.innerHTML=h.getI18NString("nextBtn"),this.doneBtnEl.innerHTML=h.getI18NString("doneBtn")},init:function(a){var b,c,d,e=s.createElement("div"),f=s.createElement("div"),g=s.createElement("div"),i=this,j=!1;this.element=e,this.containerEl=f,this.titleEl=s.createElement("h3"),this.contentEl=s.createElement("div"),h.addClass(this.titleEl,"hopscotch-title"),h.addClass(this.contentEl,"hopscotch-content"),d={showPrevButton:l.showPrevButton,showNextButton:l.showNextButton,bubbleWidth:l.bubbleWidth,bubblePadding:l.bubblePadding,arrowWidth:l.arrowWidth,showNumber:!0,isTourBubble:!0},a=typeof a===o?{}:a,h.extend(d,a),this.opt=d,e.className="hopscotch-bubble animated",f.className="hopscotch-bubble-container",d.isTourBubble||(e.className+=" hopscotch-callout"),d.isTourBubble?(this.numberEl=s.createElement("span"),this.numberEl.className="hopscotch-bubble-number",f.appendChild(this.numberEl)):h.addClass(e,"no-number"),g.appendChild(this.titleEl),g.appendChild(this.contentEl),g.className="hopscotch-bubble-content",f.appendChild(g),e.appendChild(f),this._initNavButtons(),this.initCloseButton(),this._initArrow(),b=function(){!j&&i.isShowing&&(j=!0,setTimeout(function(){i.setPosition(i.currStep),j=!1},100))},h.addEvtListener(window,"resize",b),this.hide(),h.documentIsReady()?s.body.appendChild(e):(s.addEventListener?(c=function(){s.removeEventListener("DOMContentLoaded",c),window.removeEventListener("load",c),s.body.appendChild(e)},s.addEventListener("DOMContentLoaded",c,!1)):(c=function(){"complete"===s.readyState&&(s.detachEvent("onreadystatechange",c),window.detachEvent("onload",c),s.body.appendChild(e))},s.attachEvent("onreadystatechange",c)),h.addEvtListener(window,"load",c))}},e=function(){var a={};this.createCallout=function(b){var c;if(!b.id)throw"Must specify a callout id.";if(a[b.id])throw"Callout by that id already exists. Please choose a unique id.";return b.showNextButton=b.showPrevButton=!1,b.isTourBubble=!1,c=new d(b),a[b.id]=c,b.target&&c.render(b,null,null,function(){c.show()}),c},this.getCallout=function(b){return a[b]},this.removeAllCallouts=function(){var b;for(b in a)a.hasOwnProperty(b)&&this.removeCallout(b)},this.removeCallout=function(b){var c=a[b];a[b]=null,c&&c.destroy()}},c=function(a){var b,c,f,k,m,n,r,t,u=this,v=function(a){return b||(b=new d(f)),a&&(h.extend(b.opt,{bubblePadding:w("bubblePadding"),bubbleWidth:w("bubbleWidth"),showNextButton:w("showNextButton"),showPrevButton:w("showPrevButton"),showCloseButton:w("showCloseButton"),arrowWidth:w("arrowWidth")}),b.updateButtons()),b},w=function(a){return"undefined"==typeof f?l[a]:h.valOrDefault(f[a],l[a])},x=function(){var a;return a=0>m||m>=k.steps.length?null:k.steps[m]},y=function(){u.nextStep()},z=function(a){var b,c,d,e,f,g,i=v(),j=i.element,k=h.getPixelValue(j.style.top),l=k+h.getPixelValue(j.offsetHeight),m=h.getStepTarget(x()),n=m.getBoundingClientRect(),p=n.top+h.getScrollTop(),r=n.bottom+h.getScrollTop(),t=p>k?k:p,u=l>r?l:r,y=h.getScrollTop(),z=y+h.getWindowHeight(),A=t-w("scrollTopMargin");t>=y&&(t<=y+w("scrollTopMargin")||z>=u)?a&&a():w("smoothScroll")?typeof YAHOO!==o&&typeof YAHOO.env!==o&&typeof YAHOO.env.ua!==o&&typeof YAHOO.util!==o&&typeof YAHOO.util.Scroll!==o?(b=YAHOO.env.ua.webkit?s.body:s.documentElement,d=YAHOO.util.Easing?YAHOO.util.Easing.easeOut:void 0,c=new YAHOO.util.Scroll(b,{scroll:{to:[0,A]}},w("scrollDuration")/1e3,d),c.onComplete.subscribe(a),c.animate()):q?jQuery("body, html").animate({scrollTop:A},w("scrollDuration"),a):(0>A&&(A=0),e=y>t?-1:1,f=Math.abs(y-A)/(w("scrollDuration")/10),g=function(){var b=h.getScrollTop(),c=b+e*f;return e>0&&c>=A||0>e&&A>=c?(c=A,a&&a(),window.scrollTo(0,c),void 0):(window.scrollTo(0,c),h.getScrollTop()===b?(a&&a(),void 0):(setTimeout(g,10),void 0))},g()):(window.scrollTo(0,A),a&&a())},A=function(a,b){var c,d,e;m+a>=0&&m+a<k.steps.length?(m+=a,d=x(),e=function(){c=h.getStepTarget(d),c?b(m):(h.invokeEventCallbacks("error"),A(a,b))},d.delay?setTimeout(e,d.delay):e()):b(-1)},B=function(a,b){var c,d,e,f,g=v(),i=this;if(g.hide()._removeCTACallback(),a=h.valOrDefault(a,!0),c=x(),d=c,e=b>0?d.multipage:m>0&&k.steps[m-1].multipage,f=function(c){var f;return-1===c?this.endTour(!0):(a&&(f=b>0?h.invokeEventCallbacks("next",d.onNext):h.invokeEventCallbacks("prev",d.onPrev)),e?(h.setState(w("cookieName"),k.id+":"+m,1),void 0):(f=h.valOrDefault(f,!0),f?this.showStep(c):this.endTour(!1),void 0))},!e&&w("skipIfNoElement"))A(b,function(a){f.call(i,a)});else if(m+b>=0&&m+b<k.steps.length){if(m+=b,c=x(),!h.getStepTarget(c)&&!e)return h.invokeEventCallbacks("error"),this.endTour(!0,!1);f.call(this,m)}return this},C=function(a){var b,c,d,e={};for(b in a)a.hasOwnProperty(b)&&"id"!==b&&"steps"!==b&&(e[b]=a[b]);return t.call(this,e,!0),c=h.getState(w("cookieName")),c&&(d=c.split(":"),n=d[0],r=d[1],r=parseInt(r,10)),this},D=function(a,b){var c,d;if(m=a||0,c=x(),d=h.getStepTarget(c))return b(m),void 0;if(!d){if(h.invokeEventCallbacks("error"),w("skipIfNoElement"))return A(1,b),void 0;m=-1,b(m)}},E=function(a){var b,c,d=k.steps[a],e=k.steps,f=e.length,g=k.id+":"+a,i=v(),j=h.getStepTarget(d);c=function(){i.show(),h.invokeEventCallbacks("show",d.onShow)},m=a,i.hide(!1),b=a===f-1,i.render(d,a,b,function(a){a?z(c):c(),d.nextOnTargetClick&&h.addEvtListener(j,"click",y)}),h.setState(w("cookieName"),g,1)},F=function(a){a&&this.configure(a)};this.getCalloutManager=function(){return typeof c===o&&(c=new e),c},this.startTour=function(a,b){var c,d=this;if(k||(k=a,C.call(this,a)),typeof b!==o){if(b>=k.steps.length)throw"Specified step number out of bounds.";m=b}return h.documentIsReady()?(m||k.id!==n||typeof r===o?m||(m=0):m=r,D(m,function(a){var b=-1!==a&&h.getStepTarget(k.steps[a]);return b?(h.invokeEventCallbacks("start"),c=v(),c.hide(!1),d.isActive=!0,h.getStepTarget(x())?d.showStep(a):(h.invokeEventCallbacks("error"),w("skipIfNoElement")&&d.nextStep(!1)),void 0):(d.endTour(!1,!1),void 0)}),this):(p=!0,this)},this.showStep=function(a){var b=k.steps[a];return b.delay?setTimeout(function(){E(a)},b.delay):E(a),this},this.prevStep=function(a){return B.call(this,a,-1),this},this.nextStep=function(a){var b=x(),c=h.getStepTarget(b);return b.nextOnTargetClick&&h.removeEvtListener(c,"click",y),B.call(this,a,1),this},this.endTour=function(a,b){var c=v();return a=h.valOrDefault(a,!0),b=h.valOrDefault(b,!0),m=0,r=void 0,c.hide(),a&&h.clearState(w("cookieName")),this.isActive&&(this.isActive=!1,k&&b&&h.invokeEventCallbacks("end")),this.removeCallbacks(null,!0),this.resetDefaultOptions(),k=null,this},this.getCurrTour=function(){return k},this.getCurrTarget=function(){return h.getStepTarget(x())},this.getCurrStepNum=function(){return m},this.listen=function(a,b,c){return a&&i[a].push({cb:b,fromTour:c}),this},this.unlisten=function(a,b){var c,d,e=i[a];for(c=0,d=e.length;d>c;++c)e[c]===b&&e.splice(c,1);return this},this.removeCallbacks=function(a,b){var c,d,e,f;for(f in i)if(!a||a===f)if(b)for(c=i[f],d=0,e=c.length;e>d;++d)c[d].fromTour&&(c.splice(d--,1),--e);else i[f]=[];return this},this.registerHelper=function(a,b){"string"==typeof a&&"function"==typeof b&&(j[a]=b)},this.unregisterHelper=function(a){j[a]=null},this.invokeHelper=function(a){var b,c,d=[];for(b=1,c=arguments.length;c>b;++b)d.push(arguments[b]);j[a]&&j[a].call(null,d)},this.setCookieName=function(a){return f.cookieName=a,this},this.resetDefaultOptions=function(){return f={},this},this.resetDefaultI18N=function(){return g={},this},this.getState=function(){return h.getState(w("cookieName"))},t=function(a,b){var c,d,e,i,j=["next","prev","start","end","show","error","close"];for(f||this.resetDefaultOptions(),h.extend(f,a),a&&h.extend(g,a.i18n),e=0,i=j.length;i>e;++e)d="on"+j[e].charAt(0).toUpperCase()+j[e].substring(1),a[d]&&this.listen(j[e],a[d],b);return c=v(!0),this},this.configure=function(a){return t.call(this,a,!1)},F.call(this,a)},n=new c,a[b]=n)}(window,"hopscotch");
+$(document).ready(function(){
+    //this just checkes if the error code 401 is returned then 
+    //it logs out the user
+    $(document).ajaxError(function(e, jqxhr, settings, exception){
+        if(jqxhr.status==401){
+            alert('You are now logged out. Please login again.');
+            window.location="https://cuiet.codebrigade.in/loginManager/load";
+        }
+    });
+
+    $.ajax({
+        url: "https://cuiet.codebrigade.in/loginManager/checkInactive",
+        type: "POST",
+        success: function(msg){
+          if(msg==0)
+          {
+            window.location="https://cuiet.codebrigade.in/loginManager/logout";
+          }
+        }
+});
+    
+});
+	 iFlag=0;
+
+	$(document).click(function(event) {
+	
+	var a=$(event.target);
+	
+	// e.target is the element which has been clicked.
+	
+ 	var lnk=a.attr("href");
+	if(lnk!=null)
+	{
+	if(lnk.toString()=="#")
+	{
+	a.attr("href","#!");
+	} 
+	}
+	});
+
+/**
+    *@Description:This function is used to ccheck whther a number is numeric or not
+    *@Author: [Ankur Bansal]
+    *@Created: [22-01-2012]
+    *@Copyright: 2011-2012 Chalkpad Technologies Pvt. Ltd.
+    */
+function is_int(value){
+  if((parseFloat(value) == parseInt(value)) && !isNaN(value)){
+      return true;
+  } else {
+      return false;
+  }
+}
+
+
+
+function clearForm(formId)
+{
+  document.forms[formId].reset();
+}
+
+ /**
+    *@Description:This function is used to create a dropdown options from database to select values�
+    *@Params:tableName(name of the table),column1(value of option),column2(display value of the option),selectedId(default value)
+    *@Return html of the dropdown options
+    *@Author: [Muskaan]
+    *@Created: [ 27-01-2010]
+    *@Copyright: 2010-2011 Chalkpad Technologies Pvt. Ltd.
+    */
+function dropDownOptions(tableName,column1,column2,selectedId,whereClause)
+{ 
+ var   optionArray;
+/* if(showLoader==1)
+	{
+		showLoader();
+	}*/
+    $.ajax({
+        url: "https://cuiet.codebrigade.in/miscLibrary/dropDownOptions",
+        type: "POST",
+        async:false,
+        data: ({tableName:tableName,column1:column1,column2:column2,selectedId:selectedId,whereClause:whereClause}),
+        success: function(msg){
+   
+		 if(document.getElementById('loaderDiv') && document.getElementById('loaderDiv').style.display!="none")
+		 {
+                hideLoader();
+		 }
+             optionArray= msg;
+        }
+});
+return optionArray;
+}
+
+
+ /**
+    *@Description:This function is used to create a dropdown options from database to select values along the the extra parameter on '0' value
+    *@Params:tableName(name of the table),column1(value of option),column2(display value of the option),selectedId(default value),defaultValue (Default string want to display)
+    *@Return html of the dropdown options
+    *@Author: [Ankur Aggarwal]
+    *@Created: [ 27-09-2011]
+    *@Copyright: 2011-2012 Chalkpad Technologies Pvt. Ltd.
+    */
+function dropDownOptionsAdvanced(tableName,column1,column2,selectedId,whereClause,defaultValue)
+{
+ var   optionArray;
+/* if(showLoader==1)
+	{
+		showLoader();
+	}*/
+    $.ajax({
+        url: "https://cuiet.codebrigade.in/miscLibrary/dropDownOptions",
+        type: "POST",
+        async:false,
+        data: ({tableName:tableName,column1:column1,column2:column2,selectedId:selectedId,whereClause:whereClause,defaultValue:defaultValue}),
+        success: function(msg){
+   
+		 if(document.getElementById('loaderDiv') && document.getElementById('loaderDiv').style.display!="none")
+		 {
+                hideLoader();
+		 }
+             optionArray= msg;
+        }
+});
+return optionArray;
+}
+
+function groupDropDownOptions(classId)
+{
+    var optionArray;
+    $.ajax({
+        url: "https://cuiet.codebrigade.in/miscLibrary/groupDropDownOptions",
+        type: "POST",
+        async:false,
+        data: ({classId:classId}),
+        success: function(msg){
+            if(document.getElementById('loaderDiv') && document.getElementById('loaderDiv').style.display!="none")
+            {
+                hideLoader();
+            }
+             optionArray= msg;
+        }
+});
+return optionArray;
+}
+
+/**
+    *@Description:This function is used to select all the values in multiple dropdown menu
+    *@Params:selectBox - Id of the selectBox , Select All : Values Will Be True Or False
+    *@Author: [Ankur Aggarwal]
+    *@Created: [ 03-11-2011]
+    *@Copyright: 2011-2012 Chalkpad Technologies Pvt. Ltd.
+    */
+function selectAll(selectBox,selectAll) {
+    // have we been passed an ID
+    if (typeof selectBox == "string") {
+        selectBox = document.getElementById(selectBox);
+    }
+
+    // is the select box a multiple select box?
+    if (selectBox.type == "select-multiple") {
+        for (var i = 0; i < selectBox.options.length; i++) {
+            selectBox.options[i].selected = selectAll;
+        }
+    }
+}
+
+
+
+/**
+    *@Description:This function is used to hide the Div
+    *@Params:divId
+    *@Author: [Muskaan]
+    *@Created: [ 27-01-2010]
+    *@Copyright: 2010-2011 Chalkpad Technologies Pvt. Ltd.
+    */
+function hideDiv(divId)
+{
+
+    document.getElementById(divId).style.display='none';
+}
+/**
+    *@Description:This function is used to show the Div
+    *@Params:divId
+    *@Author: [Muskaan]
+    *@Created: [ 27-01-2010]
+    *@Copyright: 2010-2011 Chalkpad Technologies Pvt. Ltd.
+    */
+function showDiv(divId)
+{
+ // alert (divId) ;
+    document.getElementById(divId).style.display='';
+}
+/**
+    *@Description:This function is used to show the EditModal and Add Modal
+    *@Params:divId
+    *@Author: [Muskaan]
+    *@Created: [ 27-01-2010]
+    *@Copyright: 2010-2011 Chalkpad Technologies Pvt. Ltd.
+    */
+function showEditModal(divId,topMargin)
+{
+    $('#'+divId).modal({position:[topMargin]});
+}
+function showAddModal(divId,topMargin)
+{
+    $('#'+divId).modal({position:[topMargin]});
+}
+function showModal(divId,topMargin)
+{
+    $('#'+divId).modal({position:[topMargin]});
+}
+
+
+function showModalAdvance(divId,topMargin)
+{
+//$('#'+divId).modal({position:[topMargin]});
+
+ $("#"+divId).modal({onClose: function (dialog) {
+				$.modal.close(); 
+				if(uploadCheck==1)
+				{
+				window.location.reload();
+				}
+}});
+
+}
+function hideModal(divId)
+{
+    $.modal.close();
+  // document.getElementById(divId).style.display='none';
+}
+function showExcelModal()
+{
+    $('#excelUpload').modal({position:[100]});
+    
+    //var picker3 = new Pikaday({ field: document.getElementById('excelDate'), format: 'DD-MM-YYYY', yearRange: [1940,2020], showTime: false });
+}
+function showLoader()
+{
+
+    document.getElementById('loaderDiv').style.display='';
+}
+function showLoaderInsideDiv(divId)
+{
+	$('#'+divId).show();
+	$('#'+divId).html("<div id='internalLoaderDiv' style='width:100%; text-align:center'><img src='https://cuiet.codebrigade.in/images/loader.gif' align='center'></div>")
+}
+function hideLoader()
+{
+    document.getElementById('loaderDiv').style.display='none';
+}
+function showSuccessAlert(txt)
+{
+	
+   var temp;
+     temp = "<tr><td colspan=2><table width='100%' border='0' cellspacing='0' cellpadding='0'><tr><td align='left' height='33' class='gridPanelTitle' style='padding-left:10px'>&nbsp;<b>Success</b></td></tr></table></td></tr><tr><td id='error' width='70' valign='top' style='padding:10px 0px 0px 10px'><img src='https://cuiet.codebrigade.in/images/tickIcon.png' ></td><td valign='left' align='center'><div class='textVerdana11' style='padding:20px 0px 10px 10px; width:90%;'><strong>"+txt+"</strong></div></td></tr><tr><td style='text-align:right; height:25px; padding-bottom:15px; padding-right:30px;' colspan='2'><input type='button' class='submitBtn button_small'  style='height:25px;' name='submit' onclick='$.modal.close();' value='OK'  /> </td></tr>";
+     showModal('alertModal',100);
+      $('#alertModal #alertContent').html(temp);
+      $('#alertModal #alertContent').css('display','');
+}
+
+function showLoaderAdvanced()
+{
+	
+   var temp;
+     temp = "<tr><td id='loaderAdvanced' valign='middle' align=center><img src='https://cuiet.codebrigade.in/images/loader.gif' ></td></tr>";
+     showModal('alertModal',100);
+      $('#alertModal #alertContent').html(temp);
+      $('#alertModal #alertContent').css('display','');
+}
+
+
+function showErrorAlert(txt)
+{
+    
+  var temp;
+     temp = "<tr><td colspan=2><table width='100%' border='0' cellspacing='0' cellpadding='0'><tr><td align='left' height='33' class='gridPanelTitle'>&nbsp;<b>Error</b></td></tr></table></td></tr><tr><td id='error' width='70' valign='top' style='padding:10px 0px 0px 10px'><img src='https://cuiet.codebrigade.in/images/error_64.png'></td><td align='left'><div class='textVerdana11' style='padding:20px 0px 10px 10px; width:90%;'><strong>"+txt+"</strong></div></td></tr><tr><td style='text-align:right; height:25px; padding-bottom:15px; padding-right:30px;' colspan='2'><input type='button' class='submitBtn'  style='height:25px;' name='submit' onclick='$.modal.close();' value='OK'  /> </td></tr>";
+     showModal('alertModal',100);
+     $('#alertModal #alertContent').html(temp);
+      $('#alertModal #alertContent').css('display','');
+     //document.getElementById('content').style.display='';
+}
+
+
+
+function changeSessionId()
+{
+    var sessionId = document.getElementById('sessionHeader').value;
+   
+
+       $.ajax({
+            url: "https://cuiet.codebrigade.in/miscLibrary/changeSessionId",
+            type: "POST",
+           
+            data: ({sessionId:sessionId}),
+            success: function(msg){
+            var strlocation=location.href;
+            var lastChar=strlocation.slice(-2);
+            if(lastChar=='#!')
+            {
+        	var loc=strlocation.substring(0, strlocation.length - 2);
+        	if(msg!=""){
+        		loc = msg;
+        	}
+            window.location.href=(loc);
+            }
+            else
+            {
+            if(msg!=""){
+        		loc = msg;
+        		window.location.href=(loc);
+        	}else{
+        		window.location.href=(location.href);
+        	}
+            }
+               
+
+                 }
+       });
+
+
+}
+
+function getEmployeeCode(instituteId){
+    var sessionId = document.getElementById('sessionHeader').value;
+    var userId = document.getElementById('userId').value;
+    $.ajax({
+            url: "https://cuiet.codebrigade.in/loginManager/getEmployeeCode",
+            type: "POST",
+           
+            data: ({instituteId:instituteId,userId:userId}),
+            success: function(msg){
+                 //alert(msg);
+                if (msg==0) {
+                    alert("You cannot switch to this institute.");
+                }else{
+                    fetchUrlAfterLogin(sessionId,instituteId,msg);
+                }
+                 }
+       });
+}
+
+function fetchUrlAfterLogin(sessionId,instituteId,employeeCode){
+    $.ajax({
+            url: "https://cuiet.codebrigade.in/loginManager/fetchUrlAfterLogin",
+            type: "POST",
+           
+            data: ({instituteId:instituteId}),
+            success: function(msg){
+                obj = $.parseJSON(msg);
+                obj+='/loginManager/checkLoginWithoutPassword/'+employeeCode;
+               var a = window.open(obj, "_blank");
+                 }
+       });
+}
+
+function changeSiblingId(siblingId)
+{
+    //var siblingId = document.getElementById('siblingId').value;
+   
+//alert(siblingId);
+       $.ajax({
+            url: "https://cuiet.codebrigade.in/loginManager/changeSiblingId",
+            type: "POST",
+           
+            data: ({siblingId:siblingId}),
+            success: function(msg){
+                //alert(msg);
+                if (msg==0) {
+                    alert("You cannot switch to this profile as the selected student is no more a part of the school.");
+                }else{
+                    window.location.href=(location.href);
+                }
+                 }
+       });
+
+
+}
+function changeInstituteId()
+{
+    var instituteId = document.getElementById('txtInstitute').value;
+    $.ajax({
+            url: "https://cuiet.codebrigade.in/miscLibrary/changeInstituteId",
+            type: "POST",
+            async:false,
+            data: ({instituteId:instituteId}),
+            success: function(msg){
+
+                if(msg ==1)
+                {
+                    window.location.reload();
+                }
+
+                }
+       });
+}
+
+function showEditor(id)
+{
+    var instance = CKEDITOR.instances[id];
+    if(instance)
+    {
+        CKEDITOR.remove(instance);
+    }
+    CKEDITOR.replace(id); 
+                                                     
+}
+/**  @Description:This function is used to create several ckEditors for activities
+*@Author: [Kaushik Handoo]
+*@Created: [ 11-11-2011]
+*@Copyright: 2011-2012 Chalkpad Technologies Pvt. Ltd.
+*/
+function showEditorActivities(id)
+{
+    var instance = CKEDITOR.instances[id];
+    if(instance)
+    {
+        CKEDITOR.removeAll(instance);
+    }
+    CKEDITOR.replaceAll(id); 
+                                                     
+}
+/**  @Description:This function is used to remove html tags 
+*@Params:input  : string form which we need to remove html tags
+     allowed : tags which we need in the string
+*@Author: [Manpreet Kaur]
+*@Created: [ 27-09-2011]
+*@Copyright: 2011-2012 Chalkpad Technologies Pvt. Ltd.
+*/
+  function stripTags (input, allowed) {
+
+    allowed = (((allowed || "") + "").toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join(''); // making sure the allowed arg is a string containing only tags in lowercase (<a><b><c>)
+    var tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi,
+        commentsAndPhpTags = /<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi;
+    return input.replace(commentsAndPhpTags, '').replace(tags, function ($0, $1) {        return allowed.indexOf('<' + $1.toLowerCase() + '>') > -1 ? $0 : '';
+    });
+  }
+    
+function showTip(id,direction)
+{
+	$(function() {
+   	$('#'+id).tipsy({gravity: direction,live: true});
+   	});
+}     
+
+
+
+//Code for google analytics
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-42678977-1', 'schoolpad.in');
+  ga('send', 'pageview');
+
+
+
+
+var ScrollSneak = function(prefix, wait) {
+    // clean up arguments (allows prefix to be optional - a bit of overkill)
+    if (typeof(wait) == 'undefined' && prefix === true) prefix = null, wait = true;
+    prefix = (typeof(prefix) == 'string' ? prefix : window.location.host).split('_').join('');
+    var pre_name;
+
+    // scroll function, if window.name matches, then scroll to that position and clean up window.name
+    this.scroll = function() {
+        if (window.name.search('^'+prefix+'_(\\d+)_(\\d+)_') == 0) {
+            var name = window.name.split('_');
+            window.scrollTo(name[1], name[2]);
+            window.name = name.slice(3).join('_');
+        }
+    }
+    // if not wait, scroll immediately
+    if (!wait) this.scroll();
+
+    this.sneak = function() {
+  // prevent multiple clicks from getting stored on window.name
+  if (typeof(pre_name) == 'undefined') pre_name = window.name;
+
+  // get the scroll positions
+        var top = 0, left = 0;
+        if (typeof(window.pageYOffset) == 'number') { // netscape
+            top = window.pageYOffset, left = window.pageXOffset;
+        } else if (document.body && (document.body.scrollLeft || document.body.scrollTop)) { // dom
+            top = document.body.scrollTop, left = document.body.scrollLeft;
+        } else if (document.documentElement && (document.documentElement.scrollLeft || document.documentElement.scrollTop)) { // ie6
+            top = document.documentElement.scrollTop, left = document.documentElement.scrollLeft;
+        }
+  // store the scroll
+        if (top || left) window.name = prefix + '_' + left + '_' + top + '_' + pre_name;
+        return true;
+    }
+}
+
+function mixpanelEvent(eventName)
+{
+	
+	
+	//mixpanel.track(eventName,{"InstituteName":""});
+}
+
+// Amanpreet - Feb 2021 - Google sign out
+//  ends - Google sign out
+
+</script>
+<!-- Amanpreet - Feb 2021 - Google sign out -->
+<!-- ends - Google sign out -->
+
+<script type="text/javascript">
+  function loadDropdownAjax(config) {
+    
+    $.ajax({
+        url: config.url,
+        type: config.type || "GET",
+        dataType: config.dataType || "json",
+        data: config.data || {},
+        success: function (response) {
+            var options = '';
+
+            $.each(response, function (index, item) {
+                var sel = (config.selectedIds && config.selectedIds.includes(item[config.valueField].toString()))
+                    ? ' selected' : '';
+                options += '<option value="' + item[config.valueField] + '"' + sel + '>' + item[config.textField] + '</option>';
+            });
+
+            $(config.target).html(options);
+
+            if (config.multiselect) {
+                $j(config.target).multiselect({
+                    enableFiltering: true,
+                    includeSelectAllOption: true,
+                    maxHeight: 400,
+                    numberDisplayed: 1,
+                    enableCaseInsensitiveFiltering: true
+                });
+            }
+
+            if (typeof config.success === "function") {
+                config.success(response);
+            }
+        },
+        error: function (xhr) {
+            console.error("Error loading data:", xhr.responseText);
+            if (typeof config.error === "function") {
+                config.error(xhr);
+            }
+        }
+    });
+}
+
+</script>    <script>
+        function getRandomColor() {
+            var colors = ['#8A8FEA', '#E87272', '#72C1E8', '#EA8AEA', '#8AE872'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        $.ajax({
+            url: "https://cuiet.codebrigade.in/dashboardFeed/getQuickSearchValue",
+            type: "POST",
+            data: ({}),
+            success: function(msg) {
+                var obj = JSON.parse(msg);
+                if (obj == 0 || obj == 1) {
+                    const firstOption = document.querySelector('.search-select-option');
+                    if (firstOption) {
+                        const firstOptionText = firstOption.textContent;
+                        var sBtnText = document.querySelector('.sBtn-text');
+                        sBtnText.innerHTML = firstOptionText;
+                    }
+                } else {
+                    var option = document.createElement('li');
+                    option.className = 'option search-select-option';
+                    option.setAttribute('onclick', 'selectOption(this)');
+                    option.innerText = 'Employees';
+                    selectOption(option);
+                }
+                selectMenu.classList.remove('active');
+                var selecticonsvg = document.querySelector('.select-menu-icon-svg');
+                selecticonsvg.classList.add('hide');
+                var selectdownsvg = document.querySelector('.select-menu-icondown-svg');
+                selectdownsvg.classList.remove('hide');
+            }
+        });
+
+        function menuLookup1() {
+            var DropDownValue = document.getElementsByClassName('sBtn-text')[0].innerText;
+                            var msg = "";
+
+            
+            document.getElementById('menuLookupContainer1').style.display = "none";
+
+            if (document.getElementById('ui-student-lookup').value.length > 1) {
+
+                if ($.trim(msg) != "") {
+                    var obj = $.parseJSON(JSON.stringify(msg));
+
+
+                    var display = "<ul class='search-list-box'>";
+
+                    var headerDisplayed = false;
+                    var headerDisplayedEmployee = false;
+                    if (obj) {
+                        var len = obj.length;
+                        var br = 0;
+                        var isActiveStr = "";
+                        var disabledLogin = "";
+                        var searchValue = document.getElementById('ui-student-lookup').value.toLowerCase();
+
+                        var name1Matches = [];
+                        var fatherNameMatches = [];
+                        var motherNameMatches = [];
+                        var otherMatches = [];
+                        var empName1Matches = [];
+                        var empCodeMatches = [];
+                        var roleMatches = [];
+                        var departmentMatches = [];
+                        var mobileMatches = [];
+                        var emailMatches = [];
+                        var empotherMatches = [];
+                        var latestSessionId = -Infinity;
+                        if (DropDownValue == 'Students') {
+                            for (var arrayIndex = 0; arrayIndex < len; arrayIndex++) {
+                                if (obj[arrayIndex].hasOwnProperty('studentId') && obj[arrayIndex].hasOwnProperty('sessionId')) {
+                                    var sessionId = parseInt(obj[arrayIndex].sessionId, 10);
+                                    if (sessionId > latestSessionId) {
+                                        latestSessionId = sessionId;
+                                    }
+                                }
+                            }
+
+                            for (var arrayIndex = 0; arrayIndex < len; arrayIndex++) {
+                                if (obj[arrayIndex].hasOwnProperty('studentId') && obj[arrayIndex].hasOwnProperty('className')) {
+                                    var name1 = obj[arrayIndex].Name1.toLowerCase();
+                                    var fatherName = obj[arrayIndex].fatherName.toLowerCase();
+                                    var motherName = obj[arrayIndex].motherName.toLowerCase();
+                                    var sessionId = parseInt(obj[arrayIndex].sessionId, 10);
+                                    var isActive = obj[arrayIndex].isActive == 1;
+                                    var withdrawn = obj[arrayIndex].withdrawn == 0;
+                                    var isPriority = (sessionId === latestSessionId) && (isActive && withdrawn);
+
+
+                                    if (name1.includes(searchValue)) {
+                                        if (isPriority) {
+                                            name1Matches.unshift(arrayIndex); // Add to the front for highest priority
+                                        } else {
+                                            name1Matches.push(arrayIndex); // Add to the back for normal priority
+                                        }
+                                    } else if (
+                                        fatherName.includes(searchValue) ||
+                                        motherName.includes(searchValue) ||
+                                        obj[arrayIndex].regNo.toLowerCase().startsWith(searchValue) ||
+                                        obj[arrayIndex].fieldValue.toLowerCase().startsWith(searchValue) ||
+                                        obj[arrayIndex].rollNo.toLowerCase().startsWith(searchValue) ||
+                                        obj[arrayIndex].className.toLowerCase().startsWith(searchValue) ||
+                                        (searchValue.length > 4 && obj[arrayIndex].fatherMobileNo.toLowerCase().indexOf(searchValue) > -1) ||
+                                        (searchValue.length > 4 && obj[arrayIndex].motherMobileNo.toLowerCase().indexOf(searchValue) > -1)
+                                    ) {
+                                        if (sessionId === latestSessionId) {
+                                            if (fatherName.includes(searchValue)) {
+                                                fatherNameMatches.unshift(arrayIndex);
+                                            } else if (motherName.includes(searchValue)) {
+                                                motherNameMatches.unshift(arrayIndex);
+                                            } else {
+                                                otherMatches.unshift(arrayIndex);
+                                            }
+                                        } else {
+                                            if (fatherName.includes(searchValue)) {
+                                                fatherNameMatches.push(arrayIndex);
+                                            } else if (motherName.includes(searchValue)) {
+                                                motherNameMatches.push(arrayIndex);
+                                            } else {
+                                                otherMatches.push(arrayIndex);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Concatenate the results in the desired order: Name1, fatherName, motherName, others
+                            var sortedResults = name1Matches.concat(fatherNameMatches, motherNameMatches, otherMatches);
+                        } else if (DropDownValue == 'Employees') {
+                            for (var arrayIndex = 0; arrayIndex < len; arrayIndex++) {
+                               
+                                if (obj[arrayIndex].hasOwnProperty('employeeCode') && obj[arrayIndex].hasOwnProperty('employeeId')) {
+                                    var name1 = obj[arrayIndex].Name1.toLowerCase();
+                                    var employeeCode = obj[arrayIndex].employeeCode;
+                                    var roleNameMatch = obj[arrayIndex].roleName;
+                                    var departmentMatch = obj[arrayIndex].departmentName;
+                                    var mobileMatch = obj[arrayIndex].mobileNumber;
+                                    var emailMatch = obj[arrayIndex].emailAddress;
+                                    var isPriority = obj[arrayIndex].isActive == 1;
+                                    if (name1.includes(searchValue) || roleNameMatch.toLowerCase().includes(searchValue) || departmentMatch.toLowerCase().includes(searchValue)) {
+                                        if (isPriority) {
+                                            empName1Matches.unshift(arrayIndex); // Add to the front for highest priority
+                                        } else {
+                                            empName1Matches.push(arrayIndex); // Add to the back for normal priority
+                                        }
+                                    } else if (
+                                        employeeCode.includes(searchValue) ||
+                                        roleNameMatch.toLowerCase().startsWith(searchValue) ||
+                                        departmentMatch.toLowerCase().startsWith(searchValue) ||
+                                        (searchValue.length > 4 && mobileMatch.indexOf(searchValue) > -1) ||
+                                        (searchValue.length > 4 && emailMatch.toLowerCase().indexOf(searchValue) > -1)
+                                    ) {
+                                        if (employeeCode.includes(searchValue)) {
+                                            empCodeMatches.push(arrayIndex);
+                                        } else if (roleNameMatch.includes(searchValue)) {
+                                            roleMatches.push(arrayIndex);
+                                        } else if (departmentMatch.includes(searchValue)) {
+                                            departmentMatches.push(arrayIndex);
+                                        } else if (mobileMatch.includes(searchValue)) {
+                                            mobileMatches.push(arrayIndex);
+                                        } else if (emailMatch.includes(searchValue)) {
+                                            emailMatches.push(arrayIndex);
+                                        } else {
+                                            empotherMatches.push(arrayIndex);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Concatenate the results in the desired order: Name1, fatherName, motherName, others
+                            var empSortedResults = empName1Matches.concat(empCodeMatches, roleMatches, departmentMatches, mobileMatches, emailMatches, empotherMatches);
+                        }
+                        var placeholder = "";
+                        if (DropDownValue == 'Students') {
+                            placeholder = sortedResults.length;
+                        } else {
+                            placeholder = empSortedResults.length;
+                        }
+                      for (var i = placeholder - 1; i >= 0; i--) {
+                            if (DropDownValue == 'Students') {
+                                var arrayIndex = sortedResults[i];
+                            } else {
+                                var arrayIndex = empSortedResults[i];
+                            }
+                            // var customFiled = obj[arrayIndex].customFields;
+                            // console.log(obj[arrayIndex].customFiled);
+                            //    var keys = Object.keys(customFiled);
+                            if (obj[arrayIndex].hasOwnProperty('studentId') && obj[arrayIndex].hasOwnProperty('className')) {
+                                var customStr = "";
+
+                                var disabledLogin = "";
+                                                                    if (obj[arrayIndex].Name1.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 && DropDownValue == 'Students' ||
+
+                                        document.getElementById('ui-student-lookup').value.length > 4 &&
+                                        (
+                                            obj[arrayIndex].fatherName.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                            obj[arrayIndex].motherName.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                            obj[arrayIndex].fatherMobileNo.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                            obj[arrayIndex].motherMobileNo.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1
+                                        )
+                                        // obj[arrayIndex].fatherName.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                        // obj[arrayIndex].motherName.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                        // obj[arrayIndex].regNo.toLowerCase().startsWith(document.getElementById('ui-student-lookup').value.toLowerCase(), 0) > 0 ||
+                                        // obj[arrayIndex].fieldValue.toLowerCase().startsWith(document.getElementById('ui-student-lookup').value.toLowerCase(), 0) > 0 ||
+                                        // obj[arrayIndex].rollNo.toLowerCase().startsWith(document.getElementById('ui-student-lookup').value.toLowerCase(), 0) > 0 ||
+                                        // obj[arrayIndex].className.toLowerCase().startsWith(document.getElementById('ui-student-lookup').value.toLowerCase(), 0) > 0 ||
+                                        // (document.getElementById('ui-student-lookup').value.length > 4 && obj[arrayIndex].fatherMobileNo.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase(), 0) > -1) ||
+                                        // (document.getElementById('ui-student-lookup').value.length > 4 && obj[arrayIndex].motherMobileNo.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase(), 0) > -1)
+                                    )
+
+                                     {
+                                        // var parentStr = "<span class='stuSubDetails'>Father's Name: " + obj[arrayIndex].fatherName + "<br>Mother's Name: " + obj[arrayIndex].motherName + "</span>";
+                                        //parentStr+="<span class='stuSubDetails'>";
+                                        // parentStr+='<div style="background:url('+obj[arrayIndex].photo+');position:relative;float:right;top:-20px" class="stu-img-small"></div>';
+                                        // parentStr+="</span>";
+                                        parentStr = "<div>";
+                                        if (obj[arrayIndex].fatherMobileNo != "") {
+                                            parentStr += "<div>Father's Mobile: <strong>" + obj[arrayIndex].fatherMobileNo + "</strong></div>";
+                                        } else {
+                                            parentStr += "Father's Mobile: ---";
+                                        }
+                                        if (obj[arrayIndex].motherMobileNo != "") {
+                                            parentStr += "<div>Mother's Mobile: <strong>" + obj[arrayIndex].motherMobileNo + "</strong></div>";
+                                        } else {
+                                            parentStr += "Mother's Mobile: --- ";
+                                        }
+                                        parentStr += "</div>";
+                                        if (obj[arrayIndex].customField != "---") {
+                                            //             for (var j = 0; j < keys.length; j++) {
+                                            //                 var fieldName = keys[j];
+                                            //                 var fieldValue = customFiled[fieldName];
+                                            //          customStr += "<span class='stuSubDetails'>" + fieldName + " : " + fieldValue + "</span><br>";                                   
+                                            //  }
+                                            customStr += "<div class='stuSubDetails student_menuLookup_new custom-field-quick-search'>" + obj[arrayIndex].fieldName + " : <strong>" + obj[arrayIndex].fieldValue + "</strong></div><br>";
+                                            //  customStr += "<span class='stuSubDetails'>"+obj[arrayIndex].customFiled+"</span><br>";                                   
+
+                                        } else {
+                                            customStr += "";
+                                        }
+
+                                        //parentStr+="<div class='stuSubDetails'>Father's Mobile: "+obj[arrayIndex].fatherMobileNo+"<br>Mother's Mobile: "+obj[arrayIndex].motherMobileNo+"</div>";
+                                        var userCheck = obj[arrayIndex].sessionId; //alert(userCheck);
+                                        $disableBit = 0;
+                                        $isActiveBit = 0;
+                                        if (obj[arrayIndex].userStatus) {
+                                            if (obj[arrayIndex].isActive == 1 &&
+                                                obj[arrayIndex].userStatus == 0) {
+                                                $disableBit++;
+                                                var disabledLogin = "<div class='stuSubDetails student_menuLookup_new'><span class='login-disabled-status'>Login Disabled</span></div>";
+                                            }
+                                        }
+                                        var flaggedStatus = "";
+                                        var searchRollNo = "";
+                                        $showRollNo = 0;
+                                        if (obj[arrayIndex].rollNo == "") {
+                                            searchRollNo = "";
+                                        } else {
+                                            $showRollNo++;
+                                            searchRollNo = "Roll No: <strong>" + obj[arrayIndex].rollNo + "</strong>";
+                                        }
+                                        if (obj[arrayIndex].flaggedStatusBit == 1) {
+                                            var flaggedStatus = "<span>&nbsp;<img src='https://cuiet.codebrigade.in/css/images/red-flag.svg'></span>";
+                                        }
+
+                                        // ---- Alumni status priority  ----
+                                        var isAlumni = (typeof obj[arrayIndex].is_alumni !== "undefined" && String(obj[arrayIndex].is_alumni) === "1");
+
+                                        if (userCheck == 0) {
+
+                                            if (isAlumni) {
+                                                $isActiveBit++;
+                                                var isActiveStr = "<div class='stuSubDetails student_menuLookup_new'><span class='student-alumni-status'>Alumni</span></div>";
+                                            } else if (obj[arrayIndex].isActive == 0 && obj[arrayIndex].withdrawn == 0) {
+                                                $isActiveBit++;
+                                                var isActiveStr = "<div class='stuSubDetails student_menuLookup_new'><span class='student-inactive-status'>Inactive</span></div>";
+                                            } else if (obj[arrayIndex].isActive == 0 && obj[arrayIndex].withdrawn == 1) {
+                                                $isActiveBit++;
+                                                var isActiveStr = "<div class='stuSubDetails student_menuLookup_new'><span class='student-withdrawn-status'>Withdrawn (" + obj[arrayIndex].withdrawnName + ")</span></div>";
+                                            } else {
+                                                var isActiveStr = "";
+
+
+                                            }
+                                            // display += "<li class='notif_menulookup navigation_class'><a id='up_down_" + arrayIndex + "' class='student_up_down' style='padding:10px;' onclick='' href='https://cuiet.codebrigade.in/studentInfo/display/" + obj[arrayIndex].studentId + "'><span id='student_menuLookup_" + arrayIndex + "' class='student_menuLookup' style='font:bold 12px Tahoma'>" + obj[arrayIndex].firstName + "</span>" + flaggedStatus + " " + disabledLogin + " <div class='stuSubDetails'>" + obj[arrayIndex].regNo + " :: " + obj[arrayIndex].className + searchRollNo + "</div><div>" + parentStr + "</div><div>" + customStr + "</div><div class='stuSubDetai'>" + isActiveStr + "</div> </a>";
+
+                                            /*
+                                            lnk1 = "https://cuiet.codebrigade.in/dashboardFeed/printView/"+obj[arrayIndex].studentId+"/0";
+                                            lnk2 = "https://cuiet.codebrigade.in/dashboardFeed/printView/"+obj[arrayIndex].studentId+"/1";
+                                            display+="<div class='student_menuLookup' style='font:bold 12px Tahoma'>";
+                                            display+="<a style='cursor:pointer;width:40%;float:left;' target='_blank' href='"+lnk1+"'>Admin Result</a>";
+                                            display+="<a style='cursor:pointer;width:40%;float:right;' target='_blank' href='"+lnk2+"'>Publish Result</a>";
+                                            display+="</div><div style='clear:both;'></div>";
+                                            */
+                                            // display += "</li>";
+                                            if (DropDownValue == 'Students') {
+                                                display += "<li class='notif_menulookup navigation_class student_menuLookup_new student-content-hover'>";
+                                                display += "<a id='up_down_" + arrayIndex + "' class='student_up_down student-search-container default-fixed' href='https://cuiet.codebrigade.in/studentInfo/display/" + obj[arrayIndex].studentId + "'>";
+                                                if (!obj[arrayIndex].studentPhoto || obj[arrayIndex].studentPhoto.includes("student-profile.svg")) {
+                                                    const backgroundColor = getRandomColor();
+                                                    const firstName = obj[arrayIndex].firstName;
+                                                    const lastName = obj[arrayIndex].firstName;
+                                                    const firstLetter = firstName.charAt(0).toUpperCase();
+                                                    const lastNameWords = lastName.split(' ');
+                                                    if (lastName.split(' ').length > 1) {
+                                                        const lastWord = lastNameWords[lastNameWords.length - 1];
+                                                        var lastLetter = lastWord.charAt(0).toUpperCase();
+                                                    } else {
+                                                        var lastLetter = "";
+                                                    }
+                                                    display += `<div class='user-default-pic user-first-last-name ' style='margin:0px 22px 0px 20px; background-color: ${backgroundColor}; color: white;'>${firstLetter}${lastLetter}</div>`;
+
+                                                } else {
+                                                    display += "<div class='profile-pic student_menuLookup_new student-profile-image'>";
+                                                    display += "<img src='" + obj[arrayIndex].studentPhoto + "' class='profile-tag-image'>";
+                                                    display += "</div>";
+                                                }
+                                                display += "<div class='content student_menuLookup_new d-flex flex-column student-all-details' >";
+                                                display += "<div class='stuSubDetails student_menuLookup_new student-detail-view-box'>";
+                                                display += "<div class='new-name-student-employee-box'>";
+                                                display += "<div id='student_menuLookup_" + arrayIndex + "' class='student_menuLookup student_menuLookup_new student-name-tag '><div class='student-name-tag'>" + obj[arrayIndex].firstName + flaggedStatus + "</div></div>";
+                                                if ($disableBit == 0) {
+                                                    if (isActiveStr != "") {
+                                                        display += "<div class='stuSubDetails student_menuLookup_new status-div-gap'>" + isActiveStr + disabledLogin + "</div>";
+                                                    }
+                                                } else {
+                                                    if ($isActiveBit != 0) {
+                                                        display += "<div class='stuSubDetails student_menuLookup_new status-div-gap'>" + isActiveStr + disabledLogin + "</div>";
+                                                    } else {
+                                                        display += "<div class='stuSubDetails student_menuLookup_new status-div-gap'>" + isActiveStr + disabledLogin + "</div>";
+                                                    }
+                                                }
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "<div class='new-student-employee-box'>";
+                                                display += "<div class='left-right-box-gap'>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div>" + "Roll. No" + ": <strong class='label-values'>" + obj[arrayIndex].regNo + "</strong></div>";
+                                                display += "</div>";
+                                                if ($showRollNo != 0) {
+                                                    display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                    display += "<div class='stuSubDetails student_menuLookup_new'>" + searchRollNo + "</div>";
+                                                    display += "</div>";
+                                                }
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div class='student-content-width'>Class: <strong class='label-values'>" + obj[arrayIndex].className + "</strong></div>";
+                                                display += "</div>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += customStr;
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "<div class='left-right-box-gap'>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div> Father's Name:<strong class='label-values'>" + obj[arrayIndex].fatherName + "</strong></div>";
+                                                display += "</div>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div class='student-content-width'>Father's Mobile: <strong class='label-values'>" + obj[arrayIndex].fatherMobileNo + "</strong></div>";
+                                                display += "</div>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div class='student-content-width'>Mother's Name: <strong class='label-values'>" + obj[arrayIndex].motherName + "</strong></div>";
+                                                display += "</div>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div class='student-content-width'>Mother's Mobile: <strong class='label-values'>" + obj[arrayIndex].motherMobileNo + "</strong></div>";
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "</div>"
+                                                display += "</a>";
+                                                display += "</li>";
+                                            }
+                                            //display+="<li class='notif_menulookup navigation_class'><a id='up_down_"+arrayIndex+"' class='student_up_down' style='padding:10px;' onclick='mixpanel.track(\"Quick Student Search\",{\"InstituteName\":\"\"});' href='https://cuiet.codebrigade.in/studentInfo/display/"+obj[arrayIndex].studentId+"'><div id='student_menuLookup_"+arrayIndex+"' class='student_menuLookup' style='font:bold 12px Tahoma'>"+obj[arrayIndex].firstName+"</div><div class='stuSubDetails'>"+obj[arrayIndex].regNo+" :: "+obj[arrayIndex].className+"</div><div>"+parentStr+"</div> </a></li>";
+                                        } else {
+
+                                            var isAlumni = (typeof obj[arrayIndex].is_alumni !== "undefined" && String(obj[arrayIndex].is_alumni) === "1");
+
+                                            if (isAlumni) {
+                                                $isActiveBit++;
+                                                var isActiveStr = "<div class='stuSubDetails student_menuLookup_new'><span class='student-alumni-status'>Alumni(" + obj[arrayIndex].sessionName + ")</span></div>";
+                                            } else if (obj[arrayIndex].isActive == 0 && obj[arrayIndex].withdrawnName == '---') {
+                                                $isActiveBit++;
+                                                var isActiveStr = "<div class='stuSubDetails student_menuLookup_new'><span class='student-inactive-status'>Inactive(" + obj[arrayIndex].sessionName + ")</span></div>";
+                                            } else if (obj[arrayIndex].isActive == 0 && obj[arrayIndex].withdrawn == 1) {
+                                                $isActiveBit++;
+                                                var isActiveStr = "<div class='stuSubDetails student_menuLookup_new'><span class='student-withdrawn-status'>Withdrawn (" + obj[arrayIndex].withdrawnName + " : " + obj[arrayIndex].sessionName + ")</span></div>";
+                                            } else if (obj[arrayIndex].isActive == 1) {
+                                                $isActiveBit++;
+                                                var isActiveStr = "<div class='stuSubDetails student_menuLookup_new'><span class='student-active-status'>Active(" + obj[arrayIndex].sessionName + ")</span></div>";
+                                            } else {
+                                                var isActiveStr = "";
+                                            }
+
+                                            /*if (obj[arrayIndex].isActive==1) {
+                                	var isActiveStr="<span style='background:#ff7a7a;color:#FFF;padding:2px 7px 3px 5px;border-radius:40px;margin-left:10px;font-size:11px;font-weight:600;'>Active("+obj[arrayIndex].sessionName+")</span>";	
+                                    }
+                                    if (obj[arrayIndex].isActive==0) {
+                                	var isActiveStr="<span style='background:#ff7a7a;color:#FFF;padding:2px 7px 3px 5px;border-radius:40px;margin-left:10px;font-size:11px;font-weight:600;'>Inactive("+obj[arrayIndex].sessionName+")</span>";	
+                                    }*/
+                                            // display += "<li class='notif_menulookup navigation_class'><a id='up_down_" + arrayIndex + "' class='student_up_down' style='padding:10px;' href='https://cuiet.codebrigade.in/studentInfo/display/" + obj[arrayIndex].studentId + "'><span id='student_menuLookup_" + arrayIndex + "' class='student_menuLookup' style='font:bold 12px Tahoma'>" + obj[arrayIndex].firstName + "</span>" + flaggedStatus + "  " + disabledLogin + " <div class='stuSubDetails'>" + obj[arrayIndex].regNo + " :: " + obj[arrayIndex].className + searchRollNo + "</div><div>" + parentStr + "</div><div>" + customStr + "</div><div class='stuSubDetai'>" + isActiveStr + "</div></a>";
+                                            /*
+                                            lnk1 = "https://cuiet.codebrigade.in/dashboardFeed/printView/"+obj[arrayIndex].studentId+"/0";
+                                            lnk2 = "https://cuiet.codebrigade.in/dashboardFeed/printView/"+obj[arrayIndex].studentId+"/1";
+                                            display+="<div class='student_menuLookup' style='font:bold 12px Tahoma'>";
+                                            display+="<a style='cursor:pointer;width:40%;float:left;' target='_blank' href='"+lnk1+"'>Admin Result</a>";
+                                            display+="<a style='cursor:pointer;width:40%;float:right;' target='_blank' href='"+lnk2+"'>Publish Result</a>";
+                                            display+="</div><div style='clear:both;'></div>";
+                                            */
+                                            // display += "</li>";
+                                            if (DropDownValue == 'Students') {
+                                                display += "<li class='notif_menulookup navigation_class student_menuLookup_new student-content-hover'>";
+                                                display += "<a id='up_down_" + arrayIndex + "' class='student_up_down student-search-container default-fixed' href='https://cuiet.codebrigade.in/studentInfo/display/" + obj[arrayIndex].studentId + "'>";
+                                                if (!obj[arrayIndex].studentPhoto || obj[arrayIndex].studentPhoto.includes("student-profile.svg")) {
+                                                    const backgroundColor = getRandomColor();
+                                                    const firstName = obj[arrayIndex].firstName;
+                                                    const lastName = obj[arrayIndex].firstName;
+                                                    const firstLetter = firstName.charAt(0).toUpperCase();
+                                                    const lastNameWords = lastName.split(' ');
+                                                    if (lastName.split(' ').length > 1) {
+                                                        const lastWord = lastNameWords[lastNameWords.length - 1];
+                                                        var lastLetter = lastWord.charAt(0).toUpperCase();
+                                                    } else {
+                                                        var lastLetter = "";
+                                                    }
+                                                    display += `<div class='user-default-pic user-first-last-name ' style='margin:0px 22px 0px 20px; background-color: ${backgroundColor}; color: white;'>${firstLetter}${lastLetter}</div>`;
+
+                                                } else {
+                                                    display += "<div class='profile-pic student_menuLookup_new student-profile-image'>";
+                                                    display += "<img src='" + obj[arrayIndex].studentPhoto + "' class='profile-tag-image'>";
+                                                    display += "</div>";
+                                                }
+                                                display += "<div class='content student_menuLookup_new d-flex flex-column student-all-details' >";
+                                                display += "<div class='stuSubDetails student_menuLookup_new student-detail-view-box'>";
+                                                display += "<div class='new-name-student-employee-box'>";
+                                                display += "<div id='student_menuLookup_" + arrayIndex + "' class='student_menuLookup student_menuLookup_new student-name-tag '><div class='student-name-tag'>" + obj[arrayIndex].firstName + flaggedStatus + "</div></div>";
+                                                if ($disableBit == 0) {
+                                                    if (isActiveStr != "") {
+                                                        display += "<div class='stuSubDetails student_menuLookup_new status-div-gap'>" + isActiveStr + disabledLogin + "</div>";
+                                                    }
+                                                } else {
+                                                    if ($isActiveBit != 0) {
+                                                        display += "<div class='stuSubDetails student_menuLookup_new status-div-gap'>" + isActiveStr + disabledLogin + "</div>";
+                                                    } else {
+                                                        display += "<div class='stuSubDetails student_menuLookup_new status-div-gap'>" + isActiveStr + disabledLogin + "</div>";
+                                                    }
+                                                }
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "<div class='new-student-employee-box'>";
+                                                display += "<div class='left-right-box-gap'>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div>" + "Roll. No" + ": <strong class='label-values'>" + obj[arrayIndex].regNo + "</strong></div>";
+                                                display += "</div>";
+                                                if ($showRollNo != 0) {
+                                                    display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                    display += "<div class='stuSubDetails student_menuLookup_new'>" + searchRollNo + "</div>";
+                                                    display += "</div>";
+                                                }
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div class='student-content-width'>Class: <strong class='label-values'>" + obj[arrayIndex].className + "</strong></div>";
+                                                display += "</div>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += customStr;
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "<div class='left-right-box-gap'>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div> Father's Name:<strong class='label-values'>" + obj[arrayIndex].fatherName + "</strong></div>";
+                                                display += "</div>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div class='student-content-width'>Father's Mobile: <strong class='label-values'>" + obj[arrayIndex].fatherMobileNo + "</strong></div>";
+                                                display += "</div>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div class='student-content-width'>Mother's Name: <strong class='label-values'>" + obj[arrayIndex].motherName + "</strong></div>";
+                                                display += "</div>";
+                                                display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                                display += "<div class='student-content-width'>Mother's Mobile: <strong class='label-values'>" + obj[arrayIndex].motherMobileNo + "</strong></div>";
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "</div>";
+                                                display += "</div>"
+                                                display += "</a>";
+                                                display += "</li>";
+                                            }
+                                        }
+
+                                        if (br == 14) {
+                                            break;
+                                        }
+                                        br++;
+                                    }
+                            } else {
+                                if (
+
+                                    obj[arrayIndex].Name1.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                    (
+                                        document.getElementById('ui-student-lookup').value.length > 2 &&
+                                        (
+                                            obj[arrayIndex].employeeName.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                            obj[arrayIndex].employeeCode.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                            obj[arrayIndex].roleName.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                            obj[arrayIndex].departmentName.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                            obj[arrayIndex].mobileNumber.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1 ||
+                                            obj[arrayIndex].emailAddress.toLowerCase().indexOf(document.getElementById('ui-student-lookup').value.toLowerCase()) > -1
+                                        )
+                                    )
+                                ) {
+                                    if (obj[arrayIndex].roleName == "") {
+                                        obj[arrayIndex].roleName = "---"
+                                    }
+                                    if (obj[arrayIndex].departmentName == "") {
+                                        obj[arrayIndex].departmentName = "---"
+                                    }
+                                    if (obj[arrayIndex].mobileNumber == "") {
+                                        obj[arrayIndex].mobileNumber = "---"
+                                    }
+                                    if (obj[arrayIndex].emailAddress == "") {
+                                        obj[arrayIndex].emailAddress = "---"
+                                    }
+                                    var isActiveStr = "";
+                                    if (obj[arrayIndex].isActive == 0) {
+                                        var isActiveStr = "<div class='stuSubDetails student_menuLookup_new'><span class='student-inactive-status'><strong>Inactive </strong></span></div>";
+                                    } else if (obj[arrayIndex].isActive == 1) {
+                                        var isActiveStr = "<div class='stuSubDetails student_menuLookup_new'><span class='student-active-status'> <strong>Active </strong></span></div>";
+                                    } else {
+                                        var isActiveStr = "<div style= display:none;></div>";
+                                    }
+                                    
+
+                                    if (DropDownValue == 'Employees') {
+                                        display += "<li class='notif_menulookup navigation_class student_menuLookup_new student-content-hover'>";
+                                        display += "<a id='up_down_" + arrayIndex + "' class='student_up_down student-search-container default-fixed' href='https://cuiet.codebrigade.in/staffInfo/display/0/0/0/" + obj[arrayIndex].employeeId + "'>";
+                                        if (!obj[arrayIndex].employeePhoto || obj[arrayIndex].employeePhoto.includes("student-profile.svg")) {
+                                            const backgroundColor = getRandomColor();
+                                            const firstName = obj[arrayIndex].employeeName;
+                                            const lastName = obj[arrayIndex].employeeName;
+                                            const firstLetter = firstName.charAt(0).toUpperCase();
+                                            const lastNameWords = lastName.split(' ');
+                                            if (lastName.split(' ').length > 1) {
+                                                const lastWord = lastNameWords[lastNameWords.length - 1];
+                                                var lastLetter = lastWord.charAt(0).toUpperCase();
+                                            } else {
+                                                var lastLetter = "";
+                                            }
+                                            display += `<div class='user-default-pic user-first-last-name ' style='margin:0px 22px 0px 20px; background-color: ${backgroundColor}; color: white;'>${firstLetter}${lastLetter}</div>`;
+
+                                        } else {
+                                            display += "<div class='profile-pic student_menuLookup_new student-profile-image'>";
+                                            display += "<img src='" + obj[arrayIndex].employeePhoto + "' class='profile-tag-image'>";
+                                            display += "</div>";
+                                        }
+                                        display += "<div class='content student_menuLookup_new d-flex flex-column student-all-details' >";
+                                        display += "<div class='stuSubDetails student_menuLookup_new student-detail-view-box'>";
+                                        display += "<div class='new-name-student-employee-box'>";
+                                        display += "<div id='student_menuLookup_" + arrayIndex + "' class='student_menuLookup student_menuLookup_new student-name-tag '><div class='student-name-tag'>" + obj[arrayIndex].employeeName + "</div></div>" + isActiveStr;
+                                        display += "</div>";
+                                        display += "</div>";
+                                        display += "<div class='new-student-employee-box'>";
+                                        display += "<div class='left-right-box-gap'>";
+                                        display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                        display += "<div class='student-content-width'>Employee Code: <strong class='label-values'>" + obj[arrayIndex].employeeCode + "</strong></div>";
+                                        display += "</div>";
+                                        display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                        display += "<div class='student-content-width'>Role: <strong class='label-values'>" + obj[arrayIndex].roleName + "</strong></div>";
+                                        display += "</div>";
+                                        display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                        display += "<div> Department: <strong class='label-values'>" + obj[arrayIndex].departmentName + "</strong></div>";
+                                        display += "</div>";
+                                        display += "</div>";
+                                        display += "<div class='left-right-box-gap'>";
+                                        display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                        display += "<div class='student-content-width'>Mobile No: <strong class='label-values'>" + obj[arrayIndex].mobileNumber + "</strong></div>";
+                                        display += "</div>";
+                                        display += "<div class='stuSubDetails student_menuLookup_new'>";
+                                        display += "<div class='student-content-width'>Email: <strong class='label-values'>" + obj[arrayIndex].emailAddress + "</strong></div>";
+                                        display += "</div>";
+                                        display += "</div>";
+                                        display += "</div>";
+                                        display += "</div>";
+                                        display += "</div>"
+                                        display += "</a>";
+                                        display += "</li>";
+
+                                    }
+
+                                    if (br == 14) {
+                                        break;
+                                    }
+                                    br++;
+                                }
+                            }
+                        }
+                    }
+                    display += "</ul>";
+
+                    document.getElementById('menuLookupContainer1').style.display = "";
+
+                    document.getElementById('menuLookupContainer1').style.display = "block";
+
+                    document.getElementById('menuLookupContainer1').innerHTML = display;
+
+                }
+
+                $(".student_up_down").keydown(function(e) {
+
+                    if (e.keyCode == 38) {
+                        $(this).parent().prev().find(".student_up_down").focus();
+
+                        var get_id = $(this).parent().prev().find(".student_up_down div").attr('id');
+                        var insert_text = $("#" + get_id).html();
+
+                        $("#ui-student-lookup").val(insert_text);
+
+                        return false;
+                    }
+
+                    if (e.keyCode == 40) {
+                        $(this).parent().next().find(".student_up_down").focus();
+
+                        var get_id = $(this).parent().next().find(".student_up_down div").attr('id');
+                        var insert_text = $("#" + get_id).html();
+                        $("#ui-student-lookup").val(insert_text);
+
+                        return false;
+                    }
+
+                    if (e.keyCode == 27) {
+                        $('#menuLookupContainer1').slideUp(150);
+                    }
+
+                    if (e.keyCode == 8) {
+                        $('#ui-student-lookup').focus();
+                    }
+
+                    if (e.keyCode == 13) {
+                        $('#menuLookupContainer1').slideUp(150);
+                    }
+
+
+                });
+
+                $(".student_up_down:last").keydown(function(e) {
+
+                    if (e.keyCode == 40) {
+                        $(".navigation_class:first a").focus();
+
+                        var get_id = $(".navigation_class:first a div").attr('id');
+                        var insert_text = $("#" + get_id).html();
+                        $("#ui-student-lookup").val(insert_text);
+                    }
+                });
+
+                $('.student_up_down:first').keydown(function(e) {
+                    if (e.keyCode == 38) {
+                        $('.student_up_down:first').parent().parent().parent().prev('#ui-student-lookup').focus();
+                    }
+                });
+
+            }
+        }
+
+
+        function menuLookup() {
+                            var msg = "";
+
+                        document.getElementById('menuLookupContainer').style.display = "none";
+
+            if (document.getElementById('menuLookup').value.length > 1) {
+
+                if ($.trim(msg) != "") {
+                    var obj = $.parseJSON(JSON.stringify(msg));
+
+
+                    var display = "<ul class='search-list-box'>";
+
+                    if (obj) {
+                        var len = obj.length;
+                        /* if(len>10) {
+                             len=10;
+                         }*/
+                        for (var arrayIndex = 0; arrayIndex < len; arrayIndex++) {
+
+                            if (obj[arrayIndex].moduleName.toLowerCase().indexOf(document.getElementById('menuLookup').value.toLowerCase()) > -1) {
+
+                                display += "<li class='list_menulookup menulook_nav'><a id='up_down_" + arrayIndex + "' class='menu_up_down' href='https://cuiet.codebrigade.in/" + obj[arrayIndex].moduleLink + "'>" + obj[arrayIndex].moduleName + "</a></li>";
+                            }
+                        }
+                    }
+
+                    display += "</ul>";
+
+                    document.getElementById('menuLookupContainer').style.display = "";
+
+                    document.getElementById('menuLookupContainer').style.display = "block";
+
+                    document.getElementById('menuLookupContainer').innerHTML = display;
+
+                }
+
+                $(".menu_up_down").keydown(function(e) {
+
+                    if (e.keyCode == 38) {
+                        $(this).parent().prev().find(".menu_up_down").focus();
+
+                        var get_id = $(this).parent().prev().find(".menu_up_down").attr('id');
+                        var insert_text = $("#" + get_id).html();
+                        $("#menuLookup").val(insert_text);
+
+                        return false;
+                    }
+
+                    if (e.keyCode == 40) {
+                        $(this).parent().next().find(".menu_up_down").focus();
+
+                        var get_id = $(this).parent().next().find(".menu_up_down").attr('id');
+                        var insert_text = $("#" + get_id).html();
+                        $("#menuLookup").val(insert_text);
+
+                        return false;
+                    }
+
+                    if (e.keyCode == 27) {
+                        $('#menuLookupContainer').slideUp(150);
+                    }
+
+                    if (e.keyCode == 8) {
+                        $('#menuLookup').focus();
+                    }
+
+                    if (e.keyCode == 13) {
+                        $('#menuLookupContainer').slideUp(150);
+                    }
+
+
+                });
+
+                $(".menu_up_down:last").keydown(function(e) {
+
+                    if (e.keyCode == 40) {
+                        $(".menulook_nav:first .menu_up_down").focus();
+
+                        var get_id = $(".menulook_nav:first a").attr('id');
+                        var insert_text = $("#" + get_id).html();
+                        $("#menuLookup").val(insert_text);
+                    }
+                });
+
+                $('.menu_up_down:first').keydown(function(e) {
+                    if (e.keyCode == 38) {
+                        $('.menu_up_down:first').parent().parent().parent().prev('#menuLookup').focus();
+                    }
+                });
+
+            }
+        }
+    </script>
+<script>
+
+var loginWidget = null;
+var forgotWidget = null;
+var loginRetryCount = 0;
+var forgotRetryCount = 0;
+
+$(document).ready(function() {
+	
+   var options1 = {
+
+       success:        showLoginResponse, // post-submit callback
+
+        // other available options:
+        //url:       url         // override for form's 'action' attribute
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type)
+       clearForm:     false        // clear all form fields after successful submit
+        //resetForm: true        // reset the form after successful submit
+
+        // $.ajax options can be used here too, for example:
+        //timeout:   3000
+    };
+    var options2 = {
+
+       success:        showForgotResponse, // post-submit callback
+
+        // other available options:
+        //url:       url         // override for form's 'action' attribute
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type)
+       clearForm:     true        // clear all form fields after successful submit
+        //resetForm: true        // reset the form after successful submit
+
+        // $.ajax options can be used here too, for example:
+        //timeout:   3000
+    };
+
+    var forgotPasswordOptions = {
+       
+        success:       showResponseForgotPassword , // post-submit callback
+       clearForm:     false,        // clear all form fields after successful submit
+       dataType:  'script'
+        //resetForm: true        // reset the form after successful submit
+    };
+
+   
+   $('#myFormForgotPassword').ajaxForm(forgotPasswordOptions);    
+    $('#loginForm').ajaxForm(options1);
+    $('#forgotPasswordForm').ajaxForm(options2);
+
+	// $("#txtSession").html(dropDownOptions("session","sessionId","sessionName",'0',"active = 1 or active = -1"));
+	// $("#txtInstitute").html(dropDownOptions("institute","instituteId","instituteAbbr"));
+  
+  // Try to render turnstile, but retry every 200ms if not yet defined (up to 10 attempts)
+  (function tryRenderTurnstile(attempts) {
+      if (typeof turnstile !== 'undefined' && typeof turnstile.render === 'function') {
+          // prevent double render
+          if (loginWidget !== null) {
+              console.log("Turnstile already rendered");
+              return;
+          }
+          loginWidget = turnstile.render('#loginCaptcha', {
+              sitekey: '0x4AAAAAADs46-9ha4ZBDwi9',
+              action: 'LoginForm',
+              'error-callback': function(errorCode) {
+                  loginRetryCount++;
+                  if (loginRetryCount == 2) {
+                      handleTurnstileError(errorCode)
+                      return false;
+                  }
+                  turnstile.reset('#loginCaptcha');
+                  return true;
+              }
+          });
+
+      } else if (attempts < 10) {
+
+          setTimeout(function() {
+              tryRenderTurnstile(attempts + 1);
+          }, 200);
+
+      } else {
+          console.error("Turnstile failed to load after multiple attempts");
+      }
+
+  })(0);
+});
+
+function setFocus()
+{
+    document.getElementById('txtUsername').focus()
+}
+
+function clearDefault(txtValue)
+{
+	if(txtValue=='Your Email Id...')
+	{
+		$('#txtForgotPassword').val('');
+		$('#txtForgotPassword').css('color','#2e5b87');
+	}
+	else if(txtValue=="")
+	{
+		$('#txtForgotPassword').val('Your Email Id...');
+		$('#txtForgotPassword').css('color','#80808A');
+	}
+}
+function showLoginResponse(responseMsg) {
+ var tempArray = new Array();
+   tempArray = $(responseMsg).text().split('|'); 
+   if(tempArray[0].search("success") != -1)
+   {
+		var url = "";
+		if(url==""){
+			window.location="https://cuiet.codebrigade.in/main";
+		}else{
+			window.location="";
+		}
+   }
+   else if(tempArray[0].search("resetPassword") != -1)
+   {
+		//var url = "";
+		
+			window.location="https://cuiet.codebrigade.in/resetPassword/displayGrid";
+		
+   }
+   //Added On: 03-02-2023
+   //Added By: Nittin
+   //Added this to open the Authentication window
+   else if(tempArray[0].search("otpBit") != -1)
+   {
+    
+		//var url = "";
+		
+			window.location="https://cuiet.codebrigade.in/multiAuthentication/displayGrid";
+		
+   }
+   else if(tempArray[0].search("googleBit") != -1)
+   {
+    
+		//var url = "";
+		
+			window.location="https://cuiet.codebrigade.in/googleAuthentication/displayGrid";
+		
+   }
+  else
+    {
+               var username=document.getElementById('txtUsername').value;
+        // $.ajax({
+        // url: "",
+        // type:'POST',
+        // data:({username:username}),
+        // success: function(msg) {
+        //   //alert(msg);
+        // if(msg >= 3)
+        // {
+        //  $('#showRecaptcha').show();
+        //  $('#customHeight').css('height', '580');
+        //   $('#logoPad').css('padding-right', '50px');
+        //   $('#customHeight1').css('height', '550');
+        //   $('#psedo').css('height', '0');
+        // }
+        // else{
+        //   $('#showRecaptcha').hide();
+        // }
+        // }
+        // });
+              var totalData=new Array();
+        var errorData=new Array();
+        var str='';
+        $("#loginForm input:text").css({"border":"1px solid #abbfd2"});
+		$("#loginForm input:password").css({"border":"1px solid #abbfd2"});
+        $("select").css({"border":"1px solid #2e5b87"});
+
+        totalData=tempArray[1].split(".",tempArray[2]);
+         str="<ul style='list-style:none;margin:0px;text-align:justify;padding-left:0px;'>";
+         for(i=0;i<totalData.length;i++)
+         {
+           errorData=totalData[i].split("-",3);
+           str+="<li style='padding-left:3px'>"+errorData[1].replaceAll('~','.')+"</li>";
+           //$("#"+errorData[0]).css({"border":"1px solid red"});
+         }
+         str+="</ul>";
+        /*str="<ul style='list-style:none;margin:0px;text-align:left;padding-left:0px;'>";
+         for(i=0;i<totalData.length;i++)
+         {
+           errorData=totalData[i].split("-",3);
+           str+="<li style='padding-left:3px'>"+errorData[1]+"</li>";
+           $("#"+errorData[0]).css({"border":"1px solid red"});
+         }
+         str+="</ul>";
+         document.getElementById("errorCell").innerHTML=str;*/
+         showErrorAlert(str);
+          
+        reRenderLoginCaptcha()
+
+          //grecaptcha.reset();
+            
+           
+                     
+         //document.getElementById('errorTable').style.display='';
+		 //document.getElementById("txtPassword").value="";
+		 document.getElementById("txtSession").value="20";
+		 document.getElementById("txtInstitute").value="1";
+
+    }
+
+}
+function showForgotResponse(responseMsg)
+{
+	var tempArray = new Array();
+   tempArray = responseMsg.split("|",3);
+   if(tempArray[0].search("0")== -1)
+   {
+       $('#divContent').html('');
+      $('#divContent').html("<div style='text-align:center; padding:10px;' class='textVerdana11'><b>New Password Mailed Successfully.Make sure you change your password after your first login<b></div>");
+      //setTimeout('$.modal.close()', 1500);
+    // setTimeout("window.location.reload()","1000");
+   }
+  else
+    {
+        var totalData=new Array();
+        var errorData=new Array();
+
+        $("#txtForgotPassword input:text").css({"border":"1px solid #2e5b87"});
+        $("#txtForgotPassword input:file").css({"border":"1px solid #2e5b87"});
+        $("select").css({"border":"1px solid #2e5b87"});
+
+        totalData=tempArray[1].split(".",tempArray[2]);
+        str="<ul style='list-style:none;margin:0px;text-align:left;padding-left:0px;'>";
+         for(i=0;i<totalData.length;i++)
+         {
+           errorData=totalData[i].split("-",3);
+           str+="<li style='padding-left:3px'>"+errorData[1]+"</li>";
+           $("#"+errorData[0]).css({"border":"1px solid red"});
+         }
+         str+="</ul>";
+         document.getElementById("errorDiv").innerHTML=str;
+       //  showDiv('errorDiv');
+         document.getElementById('errorDiv').style.display='';
+         document.getElementById('txtProfile').value="";
+         document.getElementById('txtForgotPassword').value="Your Email Id...";
+         document.getElementById('txtForgotPassword').style.color='#80808A'
+
+     }
+
+}
+
+function forgotPassword(){
+	 showAddModal("forgotPassword",150);
+   
+   clearForm('myFormForgotPassword');
+    document.getElementById("forgotPasswordLoading").style.display="none";  
+   $("#forgotPasswordContent").fadeIn(0); 
+
+   setTimeout(function () {
+      if (forgotWidget === null) {
+          forgotWidget = turnstile.render('#forgotCaptcha', {
+              sitekey: '0x4AAAAAADs46-9ha4ZBDwi9',
+              action: 'ForgotPassword',
+              'error-callback': function(errorCode) {
+                  forgotRetryCount++;
+                  if (forgotRetryCount == 2) {
+                      handleTurnstileError(errorCode)
+                      return false;
+                  }
+                  turnstile.reset('#forgotCaptcha');
+                  return true;
+              }
+            }
+          );
+      }
+    }, 200);
+
+}
+
+function showResponseForgotPassword(responseText)
+{     // alert(responseText);
+    var data= new Array();
+    data=responseText.split("|",3);
+    if(data[0].search("10")==-1)
+    {  
+        if(data[0].search("0")==-1)
+        {
+             $("form[id=myFormForgotPassword] input:text").css({"border":"1px solid #2e5b87"});
+             $("form[id=myFormForgotPassword] input:file").css({"border":"1px solid red"});
+             $("select").css({"border":"1px solid #2e5b87"});
+             clearForm('myFormForgotPassword');
+             document.getElementById("forgotPasswordNoticeCell").innerHTML="<strong><img src='https://cuiet.codebrigade.in//images/tick-white.png' style='position:relative; top:3px' />&nbsp;Data Updated Successfully!</strong>";
+            $("#forgotPasswordNoticeTable").show();
+           
+        }
+       else 
+       {
+         document.getElementById("forgotPasswordContainer").innerHTML=data[1];
+         $("#forgotPasswordSuccessNoticeTable").show();
+       //  setTimeout('$.modal.close()', 1000); 
+         setTimeout("window.location.reload()","3000");
+       }
+    }
+    else
+    {    
+        var totalData=new Array();
+        //alert(data[1]);
+        totalData=data[1].split(".",data[2]);
+        var errorData=new Array();
+    
+        $("form[id=myFormForgotPassword] input:text").css({"border":"1px solid #2e5b87"});
+        // $("form[id=myForm2] input:file").css({"border":"1px solid red"});
+        $("select").css({"border":"1px solid #2e5b87"});
+    
+        str="<ul style=' list-style:none;margin:0px;text-align:left;padding-left:0px;'>"; 
+        for(i=0;i<totalData.length;i++)
+        {
+          errorData=totalData[i].split("-",2);
+          str+="<li style='padding-left:3px'>"+errorData[1]+"</li>";
+          $("#"+errorData[0]).css({"border":"1px solid red"});
+        }
+        str+="</ul>";//alert(str);
+        document.getElementById("forgotPasswordNoticeCell").innerHTML=str;
+        document.getElementById('forgotPasswordNoticeTable').style.display='';
+      } 
+}
+
+
+	function retrieveCookie()
+	{ 
+		var username=document.getElementById('txtUsername').value;
+		$.ajax({
+		url: "https://cuiet.codebrigade.in/loginManager/retrieve",
+		type:'POST',
+		 data:({username:username}),
+		success: function(msg) {
+			 obj=$.parseJSON(msg);       
+		//alert(msg);
+		if(username==obj[0])
+		{
+			$('#txtUsername').val(obj[0]);
+			$('#txtPassword').val(obj[1]);
+			document.getElementById('check').checked=true;
+			//$('#check').val("true");
+		}
+		}
+		});
+		
+}
+	
+function handleTurnstileError(errorCode) {
+  const errorFamily = Math.floor(errorCode / 1000);
+
+  switch(errorFamily) {
+    case 100:
+      alert('Please refresh the page and try again.');
+      break;
+    case 110:
+      alert('Configuration error. Please contact support.');
+      break;
+    case 300:
+    case 600:
+      alert('Security check failed. Please try refreshing or using a different browser.');
+      break;
+    default:
+      alert('An unexpected error occurred. Please try again.');
+  }
+}
+
+function closeForgotPasswordModal()
+{
+  if (forgotWidget != null) {
+    turnstile.remove(forgotWidget);
+    forgotWidget = null;
+  }
+
+  $.modal.close()
+}
+
+function reRenderLoginCaptcha()
+{
+  if (loginWidget != null) {
+    turnstile.remove(loginWidget);
+    loginWidget = null;
+  }
+  loginWidget = turnstile.render('#loginCaptcha', {
+      sitekey: '0x4AAAAAADs46-9ha4ZBDwi9',
+      action: 'LoginForm',
+      'error-callback': function(errorCode) {
+          loginRetryCount++;
+          if (loginRetryCount == 2) {
+              handleTurnstileError(errorCode)
+              return false;
+          }
+          turnstile.reset('#loginCaptcha');
+          return true;
+      }
+  });
+}
+
+</script><script>
+$(document).ready(function() {
+   
+   var onlineUsersOptions = {
+       
+        success:       showResponseOnlineUsers , // post-submit callback
+       clearForm:     false        // clear all form fields after successful submit
+        //resetForm: true        // reset the form after successful submit
+    };
+
+   
+   $('#myFormOnlineUsers').ajaxForm(onlineUsersOptions);    
+	  
+
+});
+function showResponseOnlineUsers(responseText)
+{     // alert(responseText);
+    var data= new Array();
+    data=responseText.split("|",3);
+    if(data[0].search("10")==-1)
+    {  
+        if(data[0].search("0")==-1)
+        {
+             $("form[id=myFormOnlineUsers] input:text").css({"border":"1px solid #2e5b87"});
+             $("form[id=myFormOnlineUsers] input:file").css({"border":"1px solid red"});
+             $("select").css({"border":"1px solid #2e5b87"});
+             clearForm('myForm2');
+             document.getElementById("onlineUsersNoticeCell").innerHTML="<strong><img src='https://cuiet.codebrigade.in//images/tick-white.png' style='position:relative; top:3px' />&nbsp;Data Updated Successfully!</strong>";
+            $("#onlineUsersNoticeTable").show();
+           
+        }
+       else 
+       {
+         document.getElementById("onlineUsersContainer").innerHTML=data[1];
+         //setTimeout('$.modal.close()', 1000); 
+       //  setTimeout("window.location.reload()","1000");
+       }
+    }
+    else
+    {    
+        var totalData=new Array();
+        //alert(data[1]);
+        totalData=data[1].split(".",data[2]);
+        var errorData=new Array();
+    
+        $("form[id=myFormOnlineUsers] input:text").css({"border":"1px solid #2e5b87"});
+        // $("form[id=myForm2] input:file").css({"border":"1px solid red"});
+        $("select").css({"border":"1px solid #2e5b87"});
+    
+        str="<ul style=' list-style:none;margin:0px;text-align:left;padding-left:0px;'>"; 
+        for(i=0;i<totalData.length;i++)
+        {
+          errorData=totalData[i].split("-",2);
+          str+="<li style='padding-left:3px'>"+errorData[1]+"</li>";
+          $("#"+errorData[0]).css({"border":"1px solid red"});
+        }
+        str+="</ul>";//alert(str);
+        document.getElementById("onlineUsersNoticeCell").innerHTML=str;
+        document.getElementById('onlineUsersNoticeTable').style.display='';
+      } 
+}
+
+
+ function showOnlineUsers()
+{  
+    showModal('showOnlineUsers',100);
+   $("#chatCategory").html(dropDownOptionsAdvanced("chat_setup c","id","categoryName",'','',''));	  
+    document.getElementById("showLoadingOnlineUsers").style.display="none";  
+   $("#showContentOnlineUsers").fadeIn(0); 
+      
+    }
+    
+    function chatWindow()
+    {
+     var day = new Date();
+    var id = day.getTime();
+      window.open("https://cuiet.codebrigade.in/loginManager/chatWindow/"+id,id,"width=540,height=500"); 
+       
+    }
+    
+    // this function is used to show online users to offline users....
+    function showOnlineCategoryUsers()
+{  
+    showModal('showOnlineCategoryUsers',100);
+    $.ajax({
+            url: "https://cuiet.codebrigade.in/loginManager/showOnlineUsers/",
+            type:"POST",
+           
+            success:function(msg){
+                obj=$.parseJSON(msg);
+            
+             
+var str="";
+str+="<div style='font-family:arial;font-size:12px;border-bottom:1px solid #eeeeee;padding:6px;height:10px'><strong>";
+for(i=0; i<obj.length; i++)
+{
+str+= "<a onclick='chatWindow("+obj[i].chatUserId+")'>"+ obj[i].chatUserName + "</a><br />";
+}
+str+="</strong></div>";
+if(str=='')
+{
+str+= "<div style='font-family:arial;font-size:12px;align:center;border-bottom:1px solid #eeeeee;padding:6px; '><strong>"
++"No records found"+" </strong></div>";
+}
+ document.getElementById('showLoadingOnlineCategoryUsers').style.display='none';
+   $("#onlineCategoryUsersName").html(str);
+    
+document.getElementById("countOnlineCategoryUsers").innerHTML =" List of Online Users("+obj.length+")";
+                      
+                    document.getElementById("showContentOnlineCategoryUsers").style.display="";
+            }
+        });
+
+    }
+    function addUser(){
+			var uriSegment="";
+			$.ajax({
+				
+            url: "https://cuiet.codebrigade.in/loginManager/addUser/"+uriSegment,
+            
+        });
+		}
+   
+</script>
+
+<!-- <style type="text/css">
+
+.style1 {color: #333366}
+
+</style> -->
+
+<!-- <script src=
+        "https://www.google.com/recaptcha/api.js" async defer>
+    </script> -->
+
+
+
+ <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+
+ <style>
+    /* Container holding the CAPTCHA */
+    .captcha-wrapper {
+        width: 255px; 
+        overflow: hidden;
+	        margin-top: 5px;
+
+    }
+
+    /* Force scale the internal iframe elements */
+    .captcha-wrapper,iframe {
+        width: 300px !important;
+        transform: scale(0.833);
+        transform-origin: top left;
+    }
+</style>
+
+
+</head>
+
+<body onLoad="setFocus()"  bgcolor="#FFFFFF" style="background: url('../images/Chitkara_University_pic.jpg') no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover">
+<div style="height:6px; background-color:#ed3237"></div>
+<table width="990px" align="center" border="0">
+	<tr>
+		<td>
+<table align="center">
+	<tr>
+		<td height="75"></td>
+	</tr>
+	<tr>
+		<td>
+		<div style="width:685px; float:left">&nbsp;</div>
+
+			<div id="customHeight" style="width:285px;height:580px; padding-top:0px; background-color:#ffffff; border:2px solid #cccccc;float:left;">
+
+	
+	  <form name="loginForm" id="loginForm" method="post" enctype="multipart/form-data" action="https://cuiet.codebrigade.in/loginManager/checkLogin">
+	  <input type="hidden" name="formId" id="formId" value="login_6ad3956e29fec8.08796730" />
+	  <input type="hidden" name="csrf_token_login" id="csrf_token_login" value="e2b0e3476398304bcfc1b07361c06772dfda4c7d5acfbb7e6db9e4f956a30424" />
+	  <table border="0" cellspacing="0" cellpadding="0" width="285px;" align="right" style="float:left">
+	  	<tr>
+	  		<td height="20" colspan="2"></td>
+	  	</tr>
+	  	<tr>
+	  		<td colspan="2" align="center" >
+	  			<img src="https://cuiet.codebrigade.in//images/logo_373.png" >
+	  		</td>
+	  	</tr>
+          <tr>
+	  		<td height="20" colspan="2"></td>
+	  	</tr>
+	  	<tr>
+	  		<td style="padding-left:20px; font-family: Arial; font-size:15px;" colspan="2">
+	  			Username
+	  		</td>
+	  	</tr>
+	  	<tr>
+	  		<td colspan="2" style="padding-left:20px;padding-top:5px;">
+	  			<input type="text" name="txtUsername" id="txtUsername" style="border:1px solid #7f9db9; height:22px; width:220px"  value=""  />
+	  		</td>
+	  	</tr>
+	  	<tr>
+	  		<td height=12></td>
+	  	</tr>
+	  	<tr>
+	  		<td style="padding-left:20px; font-family: Arial; font-size:15px;">
+	  			Password
+	  		</td>
+	  	</tr>
+	  	<tr>
+	  		<td colspan="2" style="padding-left:20px;padding-top:5px;">
+	  			<input type="password" name="txtPassword" id="txtPassword" style="border:1px solid #7f9db9;width:220px;height:22px;" value="" />
+	  		</td>
+	  	</tr>
+	  	<tr>
+	  		<td height=12></td>
+	  	</tr>
+	  	<tr>
+	  		<td style="padding-left:20px; font-family: Arial; font-size:15px;">
+	  			Session
+	  		</td>
+	  	</tr>
+	  	<tr>
+	  		<td style="padding-left:20px;padding-top:5px;">
+	  			<select name="txtSession" id="txtSession" style="width:225px;height:23px; font-size:12px; border:1px solid #7f9db9; ">
+        <option value=''>---Select---</option><option value='7'>Jul-Dec 2022</option><option value='8'>JanJun2023</option><option value='9'>Jul-Dec2023</option><option value='10'>JanJun2024</option><option value='11'>Jul-Dec2024</option><option value='17'>JanJun2025</option><option value='18'>Jul-Dec2025</option><option value='19'>JanJun2026</option><option value='20' selected='true'>JulDec2026</option><option value='21'>JanJun2027</option><option value='23'>JanJun2028</option><option value='24'>JulDec2028</option><option value='25'>JanJun2029</option><option value='26'>JulDec2029</option><option value='27'>JulDec2027</option></select>
+	<input type="hidden" name="txtInstitute" id="txtInstitute" value="1">
+	  		</td>
+	  	</tr>
+	  	<tr>
+	  		<td height=5></td>
+	  	</tr>
+
+          <tr id="showRecaptcha" style="display:none;">
+            <td colspan="2" style="padding-left:18px;" id="recaptchaDiv">
+              
+
+                 <!-- div to show reCAPTCHA -->
+             <div class="g-recaptcha" 
+                data-sitekey= 6LeLxQ4fAAAAAJnuxP4LW9jRMH_wML6muVu3olkg>
+            </div>
+
+            </td>
+        </tr>
+          
+          
+
+
+
+	  	<tr>
+	  		<td colspan="2" style="padding-left:18px;">
+	  			<div class="textVerdana12" style="margin-top:2px;padding-left:2px;color:#000000"><input type="checkbox" name="check" id="check" style="margin-left:0px;"/>Remember Password</div>
+                                        <div id="loginCaptcha" class="captcha-wrapper" style="width:255px;"></div>
+                    				<input type="image" src="https://cuiet.codebrigade.in//images/login_bws_btn.png" >
+
+	  			<div class="textVerdana12" style="margin-top:2px;cursor:pointer;padding-left:2px;color:#000000" onclick="forgotPassword();">Forgot your password? Click here</div>
+
+	  		</td>
+	  	</tr>
+        <tr><td align="left" style="padding-left:20px;"><div class="textVerdana12"><br><a href="https://www.codebrigade.in/privacy-policy.php" target="_blank">Privacy Policy</a></div></td></tr>
+	  	
+ 
+        <tr><td height="10"></td>
+</tr>
+          <tr><td align="center" ><a href="https://apps.apple.com/in/app/chalkpad-pro/id6443601604"><img src="https://cuiet.codebrigade.in/images/apple_store_icon.png"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://play.google.com/store/apps/details?id=codebrigade.chalkpadpro.app&hl=en_IN&gl=US"><img src="https://cuiet.codebrigade.in/images/gplaystore_icon.png"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><tr>
+<tr><td align="center" style="padding-top:2px; padding-bottom:2px; color:#00000 !imporant; "><div class="textVerdana12" style="text-align:left; color:#000; padding-left:50px;" ><strong>Mobile App Code : 800002</strong></div></td></tr>
+
+	  		<tr><td height="10"></td></tr>
+
+
+
+        
+          <tr>
+	  		<td valign="middle" style="text-align:left; padding-left:18px; color:#545454; font-family: Verdana, Arial, Helvetica, sans-serif; font-size:14px;  "> Powered by &nbsp;<span style="vertical-align: middle;"> <img src="https://cuiet.codebrigade.in//images/code-brigade-logo-small.png" width="100"></span></td>
+             
+	  	</tr>
+	  </table>
+	 </form>
+
+
+
+	 </div>
+	</td>
+   </tr>
+  </table>
+
+		</td>
+	</tr>
+  </table>
+  <!-- Alert div -->
+  <div id="alertModal" style="display:none; width:420px;">
+<table width="100%" cellspacing=0 cellpadding=0 border=0>
+    <tr>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/top_left.png); opacity:0.9"></td>
+    <td style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/rt_top.png);
+    background-position:top right; opacity:0.9"></td>
+    </tr>
+    <tr>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+    <td style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png);">
+     <div style="background-color:#ffffff; position:relative">
+            <!-- here goes the content of the div -->
+          <table width="100%" cellspacing=0 cellpadding=0 border=0 id='alertContent'>
+
+            </table>
+
+     </div>
+    </td>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+    </tr>
+    <tr>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/lt_bottom.png);
+    background-position:bottom left; opacity:0.9"></td>
+    <td style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/rt_bottom.png);
+    background-position:bottom right; opacity:0.9"></td>
+    </tr></table>
+</div>
+  <!-- Alert div ends -->
+
+
+<!-- Chat window begins -->
+        <div id="showOnlineUsers" style="display:none; width:520px;">
+<table width="100%" cellspacing=0 cellpadding=0 border=0>
+    <tr>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/top_left.png); opacity:0.9"></td>
+    <td style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/rt_top.png);
+    background-position:top right; opacity:0.9"></td>
+    </tr>
+	<tr>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+    <td style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png);">
+    <div style="background-color:#ffffff; position:relative">
+            <div id="showLoadingOnlineUsers" style="text-align:center; padding:10px">
+            <img src="https://cuiet.codebrigade.in/images/loader.gif"  />
+            </div>
+			<!-- here goes the content of the div -->
+			<div id="showContentOnlineUsers" style="display:none">
+            <form name="myFormOnlineUsers" id="myFormOnlineUsers" method="post"  enctype="multipart/form-data"
+            action="https://cuiet.codebrigade.in/loginManager/chatOnlineUsers/" style="margin:0px;">
+            <table width="500" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+            <td colspan=3>
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                 <tr>
+                 <td align="center" width="25px" height="33" class="gridPanelTitle">
+                 <img src="https://cuiet.codebrigade.in/images/resources.png"
+                 width="16px" height="16px">
+                 </td>
+                 <td align="left" class="gridPanelTitle">&nbsp;<b>Send Request</b>
+                 </td>
+                 <td class="gridPanelTitle" valign="center"><div id="cross" onclick="$.modal.close()" title="close" style="text-align:right; cursor:pointer">[x]</div></td>
+                 </tr>
+                </table>
+            </td>
+            </tr>
+			 <tr>
+            <td id="onlineUsersContainer">
+            <table class='error' id='onlineUsersNoticeTable' style="text-align:left; display:none">
+			 <tr>
+			  <td width="98%" id="onlineUsersNoticeCell" style='text-align:left;'>
+			  </td>
+			  <td valign='top'><div id='cross' style="text-align:right; cursor:pointer" title='close' onClick="hideDiv('onlineUsersNoticeTable')">[x]</div></td>
+			 </tr>
+			 </table>
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                <td width="50%" style="padding:5px;" colspan=2>
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+                    <td colspan="3" class="textVerdana11" style="padding:5px 0px 5px 0px" valign="top">
+					<img src="https://cuiet.codebrigade.in/images/logo.gif"  />
+					</td>
+
+                </tr>
+					<tr>
+                                                        <td class="textVerdana11" style="padding:5px 0px 5px 0px" valign="top"><strong>Category</strong></td>
+														<td class="textVerdana11" style="padding:5px 0px 5px 0px" width="2%" valign="top"> <b>:</b></td>
+                                                        <td class="textVerdana11" style="padding:5px 0px 5px 0px">
+														<select class="textVerdana11"  name= "chatCategory" id="chatCategory" >
+            </select>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="textVerdana11" style="padding:5px 0px 5px 0px" valign="top"><strong>Name</strong></td>
+														<td class="textVerdana11" style="padding:5px 0px 5px 0px" width="2%" valign="top"> <b>:</b></td>
+                                                        <td class="textVerdana11" style="padding:5px 0px 5px 0px">
+														<input type="text" id="chatUserName" name="chatUserName" />
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="textVerdana11" style="padding:5px 0px 5px 0px" valign="top"><strong>Reason(s)</strong></td>
+														<td class="textVerdana11" style="padding:5px 0px 5px 0px" width="2%" valign="top"> <b>:</b></td>
+                                                        <td class="textVerdana11" style="padding:5px 0px 5px 0px">
+                                                        <textarea rows="5" style="width: 90%;" id="chatRemarks" name="chatRemarks"/></textarea>
+                                                    </tr>
+
+
+
+					  <tr>
+        <td colspan="4" align="right" style="padding-top:5px;padding-right:10px">
+        <input id="chatButton" class="submitBtn" type="submit" name="submitClose" value="Send Request" />
+        &nbsp;<input id="exit" onClick="$.modal.close();" class="submitBtnClose" type="button" name="Cancel" value="Close" />
+        </td>
+      </tr>
+
+				</td>
+            </tr>
+
+            </table>
+    </td>
+    </tr>
+    </table>
+    </td>
+    <tr>
+    <td height="10px"></td>
+    </tr>
+    </table>
+
+    </form>
+
+    <!-- Div content ends -->
+    </div>
+
+    </td>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+    </tr>
+    <tr>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/lt_bottom.png);
+    background-position:bottom left; opacity:0.9"></td>
+    <td style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+    <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/rt_bottom.png);
+    background-position:bottom right; opacity:0.9"></td>
+    </tr>
+    </table>
+</div>
+<!-- Chat window ends -->
+<!-- This is the Online Users window that opens up -->
+
+<div id="showOnlineCategoryUsers" style="display:none; width:320px;">
+    <table width="100%" cellspacing=0 border=0 cellpadding=0 border=0>
+        <tr>
+            <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/top_left.png); opacity:0.9"></td>
+            <td style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+            <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/rt_top.png);background-position:top right; opacity:0.9"></td>
+        </tr>
+        <tr>
+            <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+
+            <td style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png);">
+                <div style="background-color:#ffffff; position:relative">
+                    <div id="showLoadingOnlineCategoryUsers" style="text-align:center; padding:10px">
+                        <img src="https://cuiet.codebrigade.in/images/loader.gif"  />
+                    </div>
+
+                        <!-- here goes the content of the div -->
+                    <div id="showContentOnlineCategoryUsers" style="display:none">
+                        <table width="300"  cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td colspan=3>
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td align="center" width="25px" height="33" class="gridPanelTitle">
+                                                <img height="16px" width="16px" src="https://cuiet.codebrigade.in/images/student.png">
+
+                                            </td>
+
+                                            <td align="left" width="50%" class="gridPanelTitle" id="countOnlineCategoryUsers"></td>
+                                             <td valign='top' width="50%">
+                                               <div id='cross' class="gridPanelTitle" style="height:33px;padding-right:5px;text-align:right; cursor:pointer" title='close' onClick="$.modal.close()"><span style="position:relative;top:8px;">[x]</span></div>
+
+                                             </td>
+
+
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="showformContainerOnlineCategoryUsers">
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td width="100%" style="padding:5px;" colspan=2>
+
+
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                                    <!-- content of show div-->
+                                                    <div id="onlineCategoryUsersName" class="textVerdana11" style="width:100%;height:130px;overflow:auto;overflow-x:hidden;">
+</div>
+
+
+                                                    <!-- content end at show div model-->
+                                                </table>
+                                            </td>
+                                        </tr>
+
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td height="10px"></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                                    <!-- Div content ends -->
+                </div>
+            </td>
+            <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+        </tr>
+        <tr>
+            <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/lt_bottom.png);
+                background-position:bottom left; opacity:0.9">
+            </td>
+            <td style="background-image:url(https://cuiet.codebrigade.in/images/outer_bg.png); opacity:0.9"></td>
+            <td width=10 height=10 style="background-image:url(https://cuiet.codebrigade.in/images/rt_bottom.png);
+                background-position:bottom right; opacity:0.9">
+            </td>
+        </tr>
+    </table>
+</div>
+<!-- Show Student window ends -->
+    <!-- forgot password modal -->
+<style>
+    .forgot-modal{
+    width:380px;
+    margin:auto;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+.forgot-card{
+    background:#fff;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 12px 40px rgba(0,0,0,.30);
+}
+
+.forgot-header{
+    background:#f8f9fa;
+    border-bottom:1px solid #e5e5e5;
+    padding:15px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.forgot-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:18px;
+    font-weight:bold;
+    color:#2c3e50;
+}
+
+.forgot-title img{
+    width:20px;
+    height:20px;
+}
+
+.forgot-close{
+    cursor:pointer;
+    font-size:28px;
+    color:#777;
+    transition:.2s;
+}
+
+.forgot-close:hover{
+    color:#e74c3c;
+}
+
+.forgot-loading{
+    text-align:center;
+    padding:35px;
+}
+
+#myFormForgotPassword{
+    padding:12px 1px;
+}
+
+.form-group{
+    margin-bottom:20px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:8px;
+    font-size:14px;
+    font-weight:bold;
+    color:#555;
+}
+
+.form-group input[type=text]{
+    width:100%;
+    height:42px;
+    border:1px solid #d5d5d5;
+    border-radius:6px;
+    padding:0 12px;
+    font-size:14px;
+    box-sizing:border-box;
+}
+
+.form-group input[type=text]:focus{
+    outline:none;
+    border-color:#0d6efd;
+    box-shadow:0 0 5px rgba(13,110,253,.25);
+}
+
+.captcha-group{
+    display:flex;
+    justify-content:center;
+}
+
+.forgot-footer{
+    margin-top:25px;
+    text-align:center;
+}
+
+.btn-primary,
+.btn-secondary{
+    min-width:100px;
+    height:35px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:14px;
+}
+
+.btn-primary {
+    background: #3079c1;
+    color: #fff;
+    margin-right: 10px;
+    font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+    font-size: 11px;
+}
+
+.btn-primary:hover{
+    background:#0b5ed7;
+}
+
+.btn-secondary {
+    background: #d4dfe8;
+    color: #333;
+    font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+    font-size: 11px;
+}
+
+.btn-secondary:hover{
+    background:#97a2ab;
+}
+
+.forgot-alert{
+    background:#fff3cd;
+    color:#856404;
+    border:1px solid #ffeeba;
+    border-radius:5px;
+    padding:12px 40px 12px 12px;
+    margin-bottom:20px;
+    position:relative;
+    font-size:13px;
+}
+
+.forgot-alert-close{
+    position:absolute;
+    right:12px;
+    top:8px;
+    cursor:pointer;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.form-group{
+    margin-bottom:20px;
+    text-align:center;
+}
+
+.form-group label{
+    display:block;
+    width:300px;
+    margin:0 auto 8px;
+    text-align:left;
+    font-weight:600;
+    color:#444;
+}
+
+.form-group input[type="text"]{
+    width:300px;
+    height:42px;
+    border:1px solid #d5d5d5;
+    border-radius:6px;
+    padding:0 12px;
+    font-size:14px;
+    box-sizing:border-box;
+}
+
+.captcha-group{
+    display:flex;
+    justify-content:center;
+}
+
+#forgotCaptcha{
+    width:300px;
+}
+
+#forgotCaptcha .cf-turnstile{
+    width:300px;
+}
+</style>
+<div id="forgotPassword" class="forgot-modal" style="display:none;">
+
+    <div class="forgot-card">
+
+        <div class="forgot-header">
+            <div class="forgot-title">
+                <img src="https://cuiet.codebrigade.in/images/resources.png">
+                <span>Forgot Password</span>
+            </div>
+
+            <span class="forgot-close"
+                  onclick="closeForgotPasswordModal()">&times;</span>
+        </div>
+
+        <div id="forgotPasswordLoading" class="forgot-loading">
+            <img src="https://cuiet.codebrigade.in/images/loader.gif">
+        </div>
+
+        <div id="forgotPasswordContent" style="display:none;">
+
+            <form
+                id="myFormForgotPassword"
+                method="post"
+                enctype="multipart/form-data"
+                action="https://cuiet.codebrigade.in/loginManager/forgotPassword/">
+
+                <div id="forgotPasswordNoticeTable" class="forgot-alert" style="display:none;">
+                    <span id="forgotPasswordNoticeCell"></span>
+                    <span class="forgot-alert-close" onclick="closeForgotPasswordModal()">&times;</span>
+                </div>
+                
+                <div id="forgotPasswordSuccessNoticeTable" class="forgot-alert" style="display:none;">
+                    <span id="forgotPasswordContainer"></span>
+                    <span class="forgot-alert-close" onclick="closeForgotPasswordModal()">&times;</span>
+                </div>
+
+                <div class="form-group">
+
+                    <label>Username</label>
+
+                    <input
+                        type="text"
+                        id="txtForgotPassword"
+                        name="txtForgotPassword"
+                        placeholder="Enter Username">
+
+                </div>
+
+                
+                <div class="form-group captcha-group">
+
+                    <div id="forgotCaptcha">
+
+                        <div
+                            class="cf-turnstile"
+                            data-action="ForgotPassword"
+                            data-sitekey="0x4AAAAAADs46-9ha4ZBDwi9">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                
+                <div class="forgot-footer">
+
+                    <input
+                        id="chatButton"
+                        class="btn-primary"
+                        type="submit"
+                        name="submitClose"
+                        value="Submit">
+
+                    <input
+                        id="exit"
+                        class="btn-secondary"
+                        type="button"
+                        value="Close"
+                        onclick="closeForgotPasswordModal()">
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div><!-- forgot password modal end -->
+
+
+<div style="float:right;margin-right:0px;position:absolute;right:10px;top:0px;">
+	<!--<a href="http://www.codebrigade.in" target="_blank"><img src="https://cuiet.codebrigade.in/images/sp_top_right_icon.png"></a></div>-->
+    <a href="http://www.codebrigade.in" target="_blank"><img src="https://cuiet.codebrigade.in/cb_top_right_icon.png"></a></div>
+</body>
+</html>
