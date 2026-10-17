@@ -1,0 +1,11 @@
+node_modules
+client/node_modules
+server/node_modules
+client/dist
+.git
+.github
+*.log
+.session_cache.json
+*.cache.json
+student_consents.json
+server/student_consents.json

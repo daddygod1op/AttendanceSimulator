@@ -96,31 +96,49 @@ async function loginWithCredentials({ username, password, session = '20' }) {
   cleanupActiveSession();
 
   if (!chromium) {
-    throw new Error('Automated browser launch is not available in cloud hosting environment. Please connect using your session cookie (ci_session) or official export file.');
+    throw new Error('Automated browser launch is not enabled on this server instance. Please connect via Docker deployment or use the Import Export tab to upload your attendance file.');
   }
-  console.log(`[LoginAutomation] Starting login attempt for user: ${username}...`);
+
+  const isCloudLinux = process.env.NODE_ENV === 'production' || process.platform === 'linux';
+  const headlessMode = isCloudLinux ? true : false;
+
+  console.log(`[LoginAutomation] Starting login attempt for user: ${username} (headless: ${headlessMode})...`);
 
   let browser;
   try {
     browser = await chromium.launch({
-      channel: 'chrome',
-      headless: false,
+      headless: headlessMode,
       args: [
-        '--disable-blink-features=AutomationControlled',
         '--no-sandbox',
-        '--window-size=1024,800'
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-blink-features=AutomationControlled'
       ]
     });
   } catch (e) {
-    console.warn('[LoginAutomation] System Chrome launch failed, falling back to default chromium:', e.message);
-    browser = await chromium.launch({
-      headless: false,
-      args: ['--disable-blink-features=AutomationControlled', '--no-sandbox']
-    });
+    console.warn('[LoginAutomation] Primary chromium launch failed, retrying with fallback flags:', e.message);
+    try {
+      browser = await chromium.launch({
+        channel: 'chrome',
+        headless: headlessMode,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled']
+      });
+    } catch (e2) {
+      browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+      });
+    }
   }
 
   try {
-    const page = await browser.newPage();
+    const context = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+      viewport: { width: 1280, height: 800 },
+      locale: 'en-IN,en;q=0.9'
+    });
+    const page = await context.newPage();
     sessionStore.setLoginStep({ step: 1, totalSteps: 4, label: 'Opening Portal', detail: 'Connecting to official CUIET portal in Chrome...', percent: 20 });
     await page.goto('https://cuiet.codebrigade.in/loginManager/load', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.bringToFront();

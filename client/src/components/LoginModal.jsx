@@ -44,7 +44,8 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const [loginStepStatus, setLoginStepStatus] = useState('');
   const [error, setError] = useState(null);
 
-  // Import tab state
+  // Import & Cookie state
+  const [cookieString, setCookieString] = useState('');
   const [importFileName, setImportFileName] = useState('');
   const [importLoading, setImportLoading] = useState(false);
 
@@ -250,6 +251,45 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     }
   };
 
+  const handleCookieSubmit = async (e) => {
+    e.preventDefault();
+    if (!cookieString.trim()) {
+      setError('Please paste your session cookie (e.g. ci_session=...)');
+      return;
+    }
+    setError(null);
+    setLoading(true);
+
+    try {
+      const sessionId = getDeviceSessionId();
+      const res = await fetch('/api/auth/cookie-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session-id': sessionId
+        },
+        body: JSON.stringify({
+          cookieString: cookieString.trim(),
+          sessionId
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to connect using session cookie. Make sure it is valid.');
+      }
+
+      if (onLoginSuccess) {
+        onLoginSuccess(data.data);
+      }
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -399,8 +439,8 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
             onClick={() => { setActiveTab('automated'); setError(null); }}
             style={{
               flex: 1,
-              padding: '12px 10px',
-              fontSize: '0.84rem',
+              padding: '12px 6px',
+              fontSize: '0.82rem',
               backgroundColor: activeTab === 'automated' ? '#1e293b' : '#090d16',
               color: activeTab === 'automated' ? '#fff' : 'var(--text-muted)',
               borderBottom: activeTab === 'automated' ? '2px solid #ef4444' : '2px solid transparent',
@@ -408,11 +448,40 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
               borderTop: 'none',
               borderLeft: 'none',
               borderRight: 'none',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4
             }}
           >
-            <User size={15} style={{ marginRight: 6 }} />
-            Portal Sign In
+            <User size={14} />
+            <span>Portal Sign In</span>
+          </button>
+
+          <button
+            className={`tab-btn ${activeTab === 'cookie' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('cookie'); setError(null); }}
+            style={{
+              flex: 1,
+              padding: '12px 6px',
+              fontSize: '0.82rem',
+              backgroundColor: activeTab === 'cookie' ? '#1e293b' : '#090d16',
+              color: activeTab === 'cookie' ? '#fff' : 'var(--text-muted)',
+              borderBottom: activeTab === 'cookie' ? '2px solid #ef4444' : '2px solid transparent',
+              fontWeight: activeTab === 'cookie' ? 700 : 500,
+              borderTop: 'none',
+              borderLeft: 'none',
+              borderRight: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4
+            }}
+          >
+            <Key size={14} />
+            <span>Session Cookie</span>
           </button>
 
           <button
@@ -420,8 +489,8 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
             onClick={() => { setActiveTab('import'); setError(null); }}
             style={{
               flex: 1,
-              padding: '12px 10px',
-              fontSize: '0.84rem',
+              padding: '12px 6px',
+              fontSize: '0.82rem',
               backgroundColor: activeTab === 'import' ? '#1e293b' : '#090d16',
               color: activeTab === 'import' ? '#fff' : 'var(--text-muted)',
               borderBottom: activeTab === 'import' ? '2px solid #ef4444' : '2px solid transparent',
@@ -429,11 +498,15 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
               borderTop: 'none',
               borderLeft: 'none',
               borderRight: 'none',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4
             }}
           >
-            <FileSpreadsheet size={15} style={{ marginRight: 6 }} />
-            Import Export
+            <FileSpreadsheet size={14} />
+            <span>Import Export</span>
           </button>
         </div>
 
@@ -589,22 +662,25 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                     )}
                   </button>
 
-                  {/* Interactive desktop window fallback button */}
+                  {/* Alternative import link */}
                   <div style={{ marginTop: '14px', textAlign: 'center' }}>
-                    <button
-                      type="button"
-                      onClick={handleInteractivePortalLaunch}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#38bdf8',
-                        fontSize: '0.78rem',
-                        cursor: 'pointer',
-                        textDecoration: 'underline'
-                      }}
-                    >
-                      Having trouble with CAPTCHA / OTP? Open Interactive Desktop Portal Window
-                    </button>
+                    <span style={{ color: 'var(--text-dim)', fontSize: '0.78rem' }}>
+                      Don't want to enter password?{' '}
+                      <button
+                        type="button"
+                        onClick={() => { setActiveTab('import'); setError(null); }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#38bdf8',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          textDecoration: 'underline'
+                        }}
+                      >
+                        Upload Official Export (.xlsx / .json)
+                      </button>
+                    </span>
                   </div>
                 </form>
               ) : (
@@ -699,7 +775,90 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
             </div>
           )}
 
-          {/* TAB 2: IMPORT OFFICIAL EXPORT */}
+          {/* TAB 2: SESSION COOKIE */}
+          {activeTab === 'cookie' && (
+            <form onSubmit={handleCookieSubmit}>
+              <div
+                style={{
+                  background: 'rgba(56, 189, 248, 0.08)',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                  marginBottom: '16px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <Key size={16} style={{ color: '#38bdf8' }} />
+                  <strong style={{ color: '#38bdf8', fontSize: '0.86rem' }}>Instant Session Cookie Connect</strong>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: '#bae6fd', lineHeight: 1.45 }}>
+                  Already logged into CUIET in Chrome/Safari? Paste your active <code>ci_session</code> cookie here to connect instantly without waiting for OTP or cloud browser automation.
+                </p>
+              </div>
+
+              <div className="auth-input-group">
+                <div className="auth-input-label">
+                  <span>Portal Session Cookie (ci_session)</span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
+                    From browser DevTools &gt; Application &gt; Cookies
+                  </span>
+                </div>
+                <div className="auth-input-wrapper">
+                  <textarea
+                    rows={3}
+                    className="auth-input"
+                    placeholder="e.g. ci_session=a1b2c3d4e5f6..."
+                    value={cookieString}
+                    onChange={(e) => setCookieString(e.target.value)}
+                    required
+                    style={{
+                      backgroundColor: '#1e293b',
+                      background: '#1e293b',
+                      border: '1px solid rgba(255, 255, 255, 0.16)',
+                      color: '#ffffff',
+                      borderRadius: '10px',
+                      padding: '12px 14px',
+                      width: '100%',
+                      fontFamily: 'monospace',
+                      fontSize: '0.82rem',
+                      resize: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '0.92rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  marginTop: '12px'
+                }}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="spinning" />
+                    <span>Validating & Synchronizing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Key size={16} />
+                    <span>Connect with Session Cookie</span>
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* TAB 3: IMPORT OFFICIAL EXPORT */}
           {activeTab === 'import' && (
             <div>
               <div
