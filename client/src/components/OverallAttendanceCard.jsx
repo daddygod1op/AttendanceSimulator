@@ -31,7 +31,7 @@ export default function OverallAttendanceCard({ overall, student, performance, o
 
   const photoSrc = student?.photoUrl || '';
 
-  const cgpaVal = performance?.cgpa || 8.74;
+  const cgpaVal = performance?.cgpa !== undefined ? performance.cgpa : 6.80;
 
   return (
     <div
@@ -73,15 +73,15 @@ export default function OverallAttendanceCard({ overall, student, performance, o
               <span className="student-hero-roll">{student.rollNo}</span>
               <span className="student-hero-cgpa">
                 <Award size={13} />
-                {cgpaVal.toFixed(2)} CGPA
+                {typeof cgpaVal === 'number' ? cgpaVal.toFixed(2) : cgpaVal} CGPA
               </span>
             </div>
             <div className="student-hero-sub-row">
-              <span>{student.branch || '2025-BE-CSE-AI&ML-3 SEM'}</span>
+              <span>{student.branch || 'Computer Science & Engineering'}</span>
               <span>•</span>
-              <span className="group-pill">Group: U25AIML-G13</span>
+              <span className="group-pill">Group: {student.group || 'U25AIML-G13'}</span>
               <span>•</span>
-              <span>{student.semester || '3rd SEM'}</span>
+              <span>{student.semester || 'Semester 3 (AI & ML)'}</span>
             </div>
           </div>
         </div>

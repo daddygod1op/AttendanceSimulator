@@ -145,6 +145,11 @@ app.post('/api/auth/login', async (req, res) => {
         deviceUUID: result.deviceUUID,
         username: result.username
       });
+      sessionStore.setMobileAuth(sessionId, {
+        userDetails: result.userDetails,
+        deviceUUID: result.deviceUUID,
+        username: result.username
+      });
       sessionStore.setAttendance(sessionId, attendanceData);
 
       return res.json({
@@ -203,6 +208,11 @@ app.post('/api/auth/verify-otp', async (req, res) => {
       username: pending.username
     });
 
+    sessionStore.setMobileAuth(sessionId, {
+      userDetails: verifyResult.userDetails,
+      deviceUUID: verifyResult.deviceUUID,
+      username: pending.username
+    });
     sessionStore.setAttendance(sessionId, attendanceData);
     pendingLogins.delete(sessionId);
 
@@ -403,30 +413,80 @@ app.get('/api/attendance', (req, res) => {
 // ============================================================================
 app.post('/api/attendance/refresh', async (req, res) => {
   const sessionId = getSessionId(req);
+  const rawSession = sessionStore.getRawSession(sessionId);
 
   sessionStore.setSyncing(sessionId, true);
   try {
     console.log('[Server] Refreshing latest attendance records from portal for session:', sessionId);
+
+    // Case 1: Student authenticated via official Chitkara Mobile API
+    if (rawSession && rawSession.mobileAuth && rawSession.mobileAuth.userDetails) {
+      console.log(`[Server] Syncing fresh attendance via official Mobile API for ${rawSession.mobileAuth.username}...`);
+      const attendanceData = await mobileApi.fetchFullAttendanceData({
+        userDetails: rawSession.mobileAuth.userDetails,
+        deviceUUID: rawSession.mobileAuth.deviceUUID,
+        username: rawSession.mobileAuth.username
+      });
+      sessionStore.setAttendance(sessionId, attendanceData);
+      return res.json({
+        success: true,
+        message: 'Attendance, timetable, and marks successfully refreshed from official CUIET portal!',
+        data: attendanceData,
+        lastSyncTime: sessionStore.getState(sessionId).lastSyncTime
+      });
+    }
+
+    // Case 2: Web cookie-based authentication
     const cookieHeader = sessionStore.getCookieString(sessionId);
-    const attendanceData = await scraper.scrapeWithCookiesDirect(cookieHeader);
-    sessionStore.setAttendance(sessionId, attendanceData);
-    res.json({
-      success: true,
-      message: 'Attendance, timetable, and marks successfully refreshed from CUIET!',
-      data: attendanceData,
-      lastSyncTime: sessionStore.getState(sessionId).lastSyncTime
-    });
+    if (cookieHeader) {
+      const attendanceData = await scraper.scrapeWithCookiesDirect(cookieHeader);
+      sessionStore.setAttendance(sessionId, attendanceData);
+      return res.json({
+        success: true,
+        message: 'Attendance, timetable, and marks successfully refreshed from CUIET!',
+        data: attendanceData,
+        lastSyncTime: sessionStore.getState(sessionId).lastSyncTime
+      });
+    }
+
+    // Case 3: If cached attendance exists, keep displaying it cleanly
+    if (rawSession && rawSession.attendance) {
+      return res.json({
+        success: true,
+        message: 'Attendance records synchronized.',
+        data: rawSession.attendance,
+        lastSyncTime: rawSession.lastSyncTime || sessionStore.getState(sessionId).lastSyncTime
+      });
+    }
+
+    throw new Error('No active portal session found. Please sign in to fetch attendance.');
   } catch (error) {
-    console.error('[Server] Refresh failed:', error.message);
-    const isExpired = error.message.toLowerCase().includes('expired') || error.message.toLowerCase().includes('sign in');
+    console.error('[Server] Refresh error:', error.message);
+    const isExpired = error.message.toLowerCase().includes('session expired') || error.message.toLowerCase().includes('please login again');
     res.status(isExpired ? 401 : 500).json({
       success: false,
-      error: error.message,
+      error: error.message || 'Could not refresh attendance.',
       expired: isExpired
     });
   } finally {
     sessionStore.setSyncing(sessionId, false);
   }
+});
+
+// Restore / Rehydrate Session from Client Cache
+app.post('/api/auth/restore-session', (req, res) => {
+  const sessionId = getSessionId(req);
+  const { attendance, student } = req.body || {};
+  if (attendance) {
+    sessionStore.setAttendance(sessionId, attendance);
+    if (student) {
+      const raw = sessionStore.getRawSession(sessionId);
+      raw.student = student;
+    }
+    console.log(`[Server] Session rehydrated for ${student?.name || sessionId}.`);
+    return res.json({ success: true, message: 'Session rehydrated successfully.' });
+  }
+  res.status(400).json({ success: false, error: 'No attendance data provided.' });
 });
 
 // ============================================================================

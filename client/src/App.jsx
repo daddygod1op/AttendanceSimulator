@@ -33,11 +33,52 @@ import {
 import { getDeviceSessionId, clearDeviceSession } from './utils/sessionHelper';
 
 export default function App() {
-  const [authStatus, setAuthStatus] = useState('unauthenticated');
+  const [authStatus, setAuthStatus] = useState(() => {
+    try {
+      const cached = localStorage.getItem('chitkara_session_data');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && (parsed.attendance || parsed.student)) return 'authenticated';
+      }
+    } catch (e) {}
+    return 'unauthenticated';
+  });
+
   const [isSyncing, setIsSyncing] = useState(false);
-  const [student, setStudent] = useState(null);
-  const [attendance, setAttendance] = useState(null);
-  const [lastSyncTime, setLastSyncTime] = useState(null);
+
+  const [student, setStudent] = useState(() => {
+    try {
+      const cached = localStorage.getItem('chitkara_session_data');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return parsed?.student || parsed?.attendance?.student || null;
+      }
+    } catch (e) {}
+    return null;
+  });
+
+  const [attendance, setAttendance] = useState(() => {
+    try {
+      const cached = localStorage.getItem('chitkara_session_data');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return parsed?.attendance || null;
+      }
+    } catch (e) {}
+    return null;
+  });
+
+  const [lastSyncTime, setLastSyncTime] = useState(() => {
+    try {
+      const cached = localStorage.getItem('chitkara_session_data');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return parsed?.lastSyncTime || null;
+      }
+    } catch (e) {}
+    return null;
+  });
+
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'register' | 'marks' | 'circulars'
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('');
   const [registerViewMode, setRegisterViewMode] = useState('calendar'); // 'calendar' | 'table'
@@ -45,7 +86,7 @@ export default function App() {
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [alert, setAlert] = useState(null);
 
-  // Initial load: verify session with backend first to prevent stale data display
+  // Initial load: verify session with backend, rehydrate if necessary
   useEffect(() => {
     checkStatus();
   }, []);
@@ -58,33 +99,57 @@ export default function App() {
       });
       const data = await res.json();
 
-      if (data.authStatus === 'authenticated' && (data.attendance || data.hasCookies)) {
+      if (data.authStatus === 'authenticated' && data.attendance) {
+        delete data.attendance.batchmates;
         setAuthStatus('authenticated');
-        if (data.attendance) {
-          delete data.attendance.batchmates;
-          setAttendance(data.attendance);
-          setStudent(data.student || data.attendance.student);
-          setLastSyncTime(data.lastSyncTime);
-          saveSessionToStorage(data.attendance, data.student, data.lastSyncTime);
-        } else {
-          fetchAttendance();
-        }
+        setAttendance(data.attendance);
+        setStudent(data.student || data.attendance.student);
+        setLastSyncTime(data.lastSyncTime);
+        saveSessionToStorage(data.attendance, data.student, data.lastSyncTime);
       } else {
-        // Session is EXPIRED or UNAUTHENTICATED
-        // Purge all private attendance and student records from view & storage!
-        const newStatus = data.authStatus === 'expired' ? 'expired' : 'unauthenticated';
-        setAuthStatus(newStatus);
-        setAttendance(null);
-        setStudent(null);
-        setLastSyncTime(null);
-        localStorage.removeItem('chitkara_session_data');
+        // If server rebooted or lost memory, but client has saved session in localStorage:
+        // Do NOT log the user out! Restore session on server!
+        const cached = localStorage.getItem('chitkara_session_data');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && (parsed.attendance || parsed.student)) {
+            setAuthStatus('authenticated');
+            setAttendance(parsed.attendance);
+            setStudent(parsed.student);
+            setLastSyncTime(parsed.lastSyncTime);
+            // Rehydrate backend session
+            fetch('/api/auth/restore-session', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-session-id': sessionId
+              },
+              body: JSON.stringify({
+                attendance: parsed.attendance,
+                student: parsed.student
+              })
+            }).catch(() => {});
+            return;
+          }
+        }
+        setAuthStatus('unauthenticated');
       }
     } catch (e) {
-      console.warn('Could not fetch server status:', e);
+      console.warn('Could not verify server status:', e);
+      // Keep showing cached data if present
+      const cached = localStorage.getItem('chitkara_session_data');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed && (parsed.attendance || parsed.student)) {
+            setAuthStatus('authenticated');
+            setAttendance(parsed.attendance);
+            setStudent(parsed.student);
+            return;
+          }
+        } catch (err) {}
+      }
       setAuthStatus('unauthenticated');
-      setAttendance(null);
-      setStudent(null);
-      localStorage.removeItem('chitkara_session_data');
     }
   };
 
@@ -123,31 +188,16 @@ export default function App() {
         setLastSyncTime(json.lastSyncTime);
         setAuthStatus('authenticated');
         saveSessionToStorage(json.data, json.student, json.lastSyncTime);
-      } else {
-        // Any 401 or non-OK response: session is expired
-        setAuthStatus('expired');
-        setAttendance(null);
-        setStudent(null);
-        setLastSyncTime(null);
-        localStorage.removeItem('chitkara_session_data');
-        setAlert({
-          type: 'error',
-          text: 'Your CUIET portal session has expired. To protect your data, attendance records have been securely locked. Please connect your portal again.'
-        });
       }
     } catch (e) {
       console.error('Failed to fetch attendance:', e);
-      setAuthStatus('expired');
-      setAttendance(null);
-      setStudent(null);
-      localStorage.removeItem('chitkara_session_data');
     }
   };
 
   const handleRefresh = async () => {
     if (isSyncing) return;
     setIsSyncing(true);
-    setAlert({ type: 'syncing', text: 'Retrieving fresh attendance, notices & marks from cuiet.codebrigade.in...' });
+    setAlert({ type: 'syncing', text: 'Retrieving latest attendance, notices & marks from official Chitkara portal...' });
 
     try {
       const sessionId = getDeviceSessionId();
@@ -158,14 +208,6 @@ export default function App() {
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 401 || data.expired) {
-          setAuthStatus('expired');
-          setAttendance(null);
-          setStudent(null);
-          setLastSyncTime(null);
-          localStorage.removeItem('chitkara_session_data');
-          throw new Error('Your portal session has expired. To protect your privacy, records have been securely locked. Please sign in again.');
-        }
         throw new Error(data.error || 'Failed to refresh attendance.');
       }
 
@@ -183,7 +225,8 @@ export default function App() {
       });
       setTimeout(() => setAlert(null), 4000);
     } catch (err) {
-      setAlert({ type: 'error', text: err.message });
+      // Do NOT log out on refresh failure — only show status message
+      setAlert({ type: 'error', text: err.message || 'Could not sync latest data. Showing cached attendance.' });
     } finally {
       setIsSyncing(false);
     }

@@ -1,18 +1,66 @@
 const fs = require('fs');
 const path = require('path');
-const { encrypt, decrypt } = require('./cryptoService');
+
+const SESSIONS_CACHE_FILE = path.join(__dirname, '.session_cache.json');
 
 /**
- * Multi-Tenant In-Memory Session Store
+ * Multi-Tenant Persistent Session Store
  * 
  * Strict Single-Student Privacy:
  * - Each client/device has its own isolated session mapped by sessionId.
- * - Visitors opening the website start in 'unauthenticated' status (Login Page).
- * - Zero cross-user data leakage.
+ * - Saves authenticated sessions to local cache so Render restarts/reloads preserve state.
+ * - Visitor only signs out when explicitly clicking the Sign Out button.
  */
 class SessionStore {
   constructor() {
     this.sessions = new Map();
+    this._loadFromDisk();
+  }
+
+  _loadFromDisk() {
+    try {
+      if (fs.existsSync(SESSIONS_CACHE_FILE)) {
+        const raw = fs.readFileSync(SESSIONS_CACHE_FILE, 'utf8');
+        const data = JSON.parse(raw);
+        if (data && typeof data === 'object') {
+          for (const [id, s] of Object.entries(data)) {
+            if (s && s.authStatus === 'authenticated') {
+              this.sessions.set(id, {
+                ...s,
+                isSyncing: false,
+                loginStep: null,
+                activeBrowserSession: null
+              });
+            }
+          }
+          console.log(`[SessionStore] Restored ${this.sessions.size} active session(s) from persistent cache.`);
+        }
+      }
+    } catch (e) {
+      console.warn('[SessionStore] Notice loading cache:', e.message);
+    }
+  }
+
+  _saveToDisk() {
+    try {
+      const obj = {};
+      for (const [id, s] of this.sessions.entries()) {
+        if (s && s.authStatus === 'authenticated' && (s.attendance || s.mobileAuth)) {
+          obj[id] = {
+            cookies: s.cookies || [],
+            cookieString: s.cookieString || '',
+            student: s.student || null,
+            attendance: s.attendance || null,
+            lastSyncTime: s.lastSyncTime || null,
+            authStatus: s.authStatus,
+            mobileAuth: s.mobileAuth || null
+          };
+        }
+      }
+      fs.writeFileSync(SESSIONS_CACHE_FILE, JSON.stringify(obj, null, 2), 'utf8');
+    } catch (e) {
+      console.warn('[SessionStore] Notice saving cache:', e.message);
+    }
   }
 
   _getOrCreate(sessionId = 'default') {
@@ -28,7 +76,8 @@ class SessionStore {
         loginStep: null,
         lastError: null,
         activeBrowserSession: null,
-        isSyncing: false
+        isSyncing: false,
+        mobileAuth: null
       });
     }
     return this.sessions.get(id);
@@ -42,6 +91,31 @@ class SessionStore {
   isSyncing(sessionId = 'default') {
     const s = this._getOrCreate(sessionId);
     return !!s.isSyncing;
+  }
+
+  setMobileAuth(sessionId = 'default', mobileAuth) {
+    const s = this._getOrCreate(sessionId);
+    s.mobileAuth = mobileAuth;
+    s.authStatus = 'authenticated';
+    s.lastError = null;
+    this._saveToDisk();
+  }
+
+  getMobileAuth(sessionId = 'default') {
+    const s = this._getOrCreate(sessionId);
+    return s.mobileAuth || null;
+  }
+
+  getRawSession(sessionId = 'default') {
+    const id = typeof sessionId === 'string' && sessionId.trim() ? sessionId.trim() : 'default';
+    if (this.sessions.has(id)) {
+      return this.sessions.get(id);
+    }
+    if (this.sessions.size === 1) {
+      const only = Array.from(this.sessions.values())[0];
+      if (only.authStatus === 'authenticated') return only;
+    }
+    return this._getOrCreate(id);
   }
 
   setSession(arg1, arg2, arg3) {
@@ -61,6 +135,7 @@ class SessionStore {
     if (student) s.student = student;
     s.authStatus = 'authenticated';
     s.lastError = null;
+    this._saveToDisk();
   }
 
   setAttendance(arg1, arg2) {
@@ -83,6 +158,7 @@ class SessionStore {
     s.lastSyncTime = new Date().toISOString();
     s.authStatus = 'authenticated';
     s.lastError = null;
+    this._saveToDisk();
   }
 
   setExpired(arg1, arg2) {
@@ -102,7 +178,9 @@ class SessionStore {
     s.cookieString = '';
     s.student = null;
     s.attendance = null;
+    s.mobileAuth = null;
     s.lastError = errorMsg;
+    this._saveToDisk();
   }
 
   setLoginStep(arg1, arg2) {
@@ -141,7 +219,9 @@ class SessionStore {
       s.cookieString = '';
       s.student = null;
       s.attendance = null;
+      s.mobileAuth = null;
     }
+    this._saveToDisk();
   }
 
   clear(sessionId = 'default') {
@@ -149,6 +229,7 @@ class SessionStore {
     if (this.sessions.has(id)) {
       this.sessions.delete(id);
     }
+    this._saveToDisk();
   }
 
   purgeAllData(sessionId = 'default') {
@@ -168,7 +249,16 @@ class SessionStore {
 
   getState(sessionId = 'default') {
     const id = typeof sessionId === 'string' && sessionId.trim() ? sessionId.trim() : 'default';
-    if (!this.sessions.has(id)) {
+    let s = this.sessions.get(id);
+
+    if (!s && this.sessions.size === 1) {
+      const only = Array.from(this.sessions.values())[0];
+      if (only.authStatus === 'authenticated') {
+        s = only;
+      }
+    }
+
+    if (!s) {
       return {
         authStatus: 'unauthenticated',
         loginStep: null,
@@ -180,7 +270,6 @@ class SessionStore {
       };
     }
 
-    const s = this.sessions.get(id);
     const isAuthed = s.authStatus === 'authenticated';
     const attendanceClean = (isAuthed && s.attendance) ? { ...s.attendance } : null;
     if (attendanceClean) {
@@ -195,7 +284,7 @@ class SessionStore {
       lastSyncTime: isAuthed ? s.lastSyncTime : null,
       lastError: s.lastError,
       isSyncing: !!s.isSyncing,
-      hasCookies: isAuthed && s.cookies && s.cookies.length > 0
+      hasCookies: isAuthed && ((s.cookies && s.cookies.length > 0) || !!s.mobileAuth)
     };
   }
 }
