@@ -4,17 +4,37 @@
  * seating plans, datesheets, and grade cards.
  */
 
-export function getCircularDocument(notice, student = {}) {
-  const id = notice?.id || '4611';
-  const title = notice?.title || 'University Circular';
-  const description = notice?.description || '';
-  const date = notice?.date || '15 October 2026';
-  const category = notice?.category || 'General';
+function safeString(val, fallback = '') {
+  if (val === null || val === undefined) return fallback;
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (typeof val === 'object') {
+    if (val.N !== undefined) return safeString(val.N, fallback);
+    if (val.S !== undefined) return safeString(val.S, fallback);
+    if (val.name !== undefined) return safeString(val.name, fallback);
+    if (val.title !== undefined) return safeString(val.title, fallback);
+    if (val.text !== undefined) return safeString(val.text, fallback);
+    if (val.value !== undefined) return safeString(val.value, fallback);
+    try {
+      return JSON.stringify(val);
+    } catch {
+      return fallback;
+    }
+  }
+  return String(val);
+}
 
-  const studentName = student?.name || 'Student Candidate';
-  const studentRoll = student?.rollNo || '';
-  const studentGroup = student?.group || student?.className || 'Engineering';
-  const studentSem = student?.semester || 'Current Term';
+export function getCircularDocument(notice, student = {}) {
+  const id = safeString(notice?.id, '4611');
+  const title = safeString(notice?.title, 'University Circular');
+  const description = safeString(notice?.description, '');
+  const date = safeString(notice?.date, '15 October 2026');
+  const category = safeString(notice?.category, 'General');
+
+  const studentName = safeString(student?.name, 'Student Candidate');
+  const studentRoll = safeString(student?.rollNo, '');
+  const studentGroup = safeString(student?.group || student?.className, 'Engineering');
+  const studentSem = safeString(student?.semester, 'Current Term');
 
   // Base Document Structure
   const doc = {

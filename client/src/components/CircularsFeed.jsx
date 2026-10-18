@@ -115,12 +115,13 @@ export default function CircularsFeed({ circulars = [], student }) {
     }
   };
   const getNoticeAttachments = (notice) => {
-    const title = notice?.title || 'Notice';
-    const id = notice?.id || '4611';
+    const rawTitle = safeText(notice?.title, 'Notice');
+    const id = safeText(notice?.id, '4611');
+    const cleanTitle = String(rawTitle).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 36) || 'Notice';
 
     return [{
       id: `att_${id}`,
-      name: `${title.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 36)}.pdf`,
+      name: `${cleanTitle}.pdf`,
       type: 'application/pdf',
       size: 'Official CUIET Attachment',
       url: `https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${id}`
@@ -165,7 +166,10 @@ export default function CircularsFeed({ circulars = [], student }) {
 
   const handleDownloadNoticeDocument = (notice, att) => {
     const doc = getCircularDocument(notice, student);
-    const cleanFileName = (att?.name || `${notice?.title || 'Notice'}.pdf`).replace(/\.pdf$/i, '');
+    const rawAttName = safeText(att?.name, '');
+    const rawTitle = safeText(notice?.title, 'Notice');
+    const baseName = rawAttName || `${rawTitle}.pdf`;
+    const cleanFileName = String(baseName).replace(/\.pdf$/i, '');
     
     // Create an authentic, fully styled printable document
     const htmlContent = `<!DOCTYPE html>

@@ -457,7 +457,7 @@ export default function PerformanceMarks({ performance = null }) {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <span className="brand-source-pill" style={{ background: '#ef4444', color: '#fff', fontWeight: 800 }}>
-                  {selectedSem === 'All' ? 'Consolidated Transcript' : selectedSem.replace('SEM', 'Semester')}
+                  {selectedSem === 'All' ? 'Consolidated Transcript' : String(selectedSem).replace('SEM', 'Semester')}
                 </span>
                 <span style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
                   {selectedSem === '1 SEM' && 'Session: JulDec2025 • BE-CSE (AI&ML)'}
@@ -467,7 +467,7 @@ export default function PerformanceMarks({ performance = null }) {
                 </span>
               </div>
               <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#fff', fontWeight: 800 }}>
-                {selectedSem === 'All' ? 'All Semester Courses & Grade Records' : `Results for ${selectedSem.replace('SEM', 'Semester')}`}
+                {selectedSem === 'All' ? 'All Semester Courses & Grade Records' : `Results for ${String(selectedSem).replace('SEM', 'Semester')}`}
               </h3>
             </div>
 
