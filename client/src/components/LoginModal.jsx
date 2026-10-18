@@ -33,43 +33,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const [loginStepStatus, setLoginStepStatus] = useState(null);
   const [error, setError] = useState(null);
 
-  // Instant session helper state
-  const [showSessionHelper, setShowSessionHelper] = useState(false);
-  const [cookieInput, setCookieInput] = useState('');
-  const [cookieLoading, setCookieLoading] = useState(false);
 
-  const handleCookieSubmit = async (e) => {
-    e.preventDefault();
-    if (!cookieInput.trim()) {
-      setError('Please paste your portal session cookie (e.g. ci_session=...)');
-      return;
-    }
-    setError(null);
-    setCookieLoading(true);
-    try {
-      const sessionId = getDeviceSessionId();
-      const res = await fetch('/api/auth/cookie-login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-session-id': sessionId
-        },
-        body: JSON.stringify({ cookieString: cookieInput.trim(), sessionId })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to authenticate with session cookie.');
-      }
-      if (onLoginSuccess) {
-        onLoginSuccess(data.data);
-      }
-      onClose();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setCookieLoading(false);
-    }
-  };
 
   // Cooldown timer for OTP resend
   useEffect(() => {
@@ -130,10 +94,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     setLoading(true);
     setLoginStepStatus({ step: 1, totalSteps: 4, label: 'Connecting to Portal', detail: 'Connecting to CUIET server in cloud...', percent: 20 });
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 19000);
+
     try {
       const sessionId = getDeviceSessionId();
       const res = await fetch('/api/auth/login', {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           'x-session-id': sessionId
@@ -145,6 +113,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           sessionId
         })
       });
+      clearTimeout(timeoutId);
 
       const data = await res.json();
 
@@ -168,11 +137,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
       }
       onClose();
     } catch (err) {
-      setError(err.message);
-      if (err.message && (err.message.toLowerCase().includes('cloudflare') || err.message.toLowerCase().includes('captcha') || err.message.toLowerCase().includes('turnstile'))) {
-        setShowSessionHelper(true);
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        setError('Connection to portal timed out after 18 seconds. Please check your credentials and try again.');
+      } else {
+        setError(err.message || 'Authentication error. Please try again.');
       }
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
       setLoginStepStatus(null);
     }
@@ -188,16 +160,21 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     setError(null);
     setLoading(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+
     try {
       const sessionId = getDeviceSessionId();
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           'x-session-id': sessionId
         },
         body: JSON.stringify({ otp: otp.trim(), sessionId })
       });
+      clearTimeout(timeoutId);
 
       const data = await res.json();
 
@@ -210,8 +187,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
       }
       onClose();
     } catch (err) {
-      setError(err.message);
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        setError('Verification timed out. Please tap Verify again.');
+      } else {
+        setError(err.message || 'Failed to verify OTP. Please try again.');
+      }
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
       setLoginStepStatus(null);
     }
@@ -492,80 +475,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                   </>
                 )}
               </button>
-
-              {/* Instant Session Sync Fallback (If Cloudflare blocks automated cloud login) */}
-              <div style={{ marginTop: '16px', textAlign: 'center' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowSessionHelper(!showSessionHelper)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: showSessionHelper ? '#38bdf8' : 'var(--text-muted)',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    textDecoration: 'underline',
-                    padding: '4px',
-                    transition: 'color 0.2s'
-                  }}
-                >
-                  {showSessionHelper ? 'Hide Session Sync' : '⚡ Cloudflare issue? Connect in 5s via Active Portal Session'}
-                </button>
-              </div>
-
-              {showSessionHelper && (
-                <div
-                  className="animate-fade-in"
-                  style={{
-                    marginTop: '12px',
-                    background: 'rgba(30, 41, 59, 0.8)',
-                    border: '1px solid rgba(56, 189, 248, 0.2)',
-                    borderRadius: '12px',
-                    padding: '14px',
-                    textAlign: 'left'
-                  }}
-                >
-                  <p style={{ margin: '0 0 10px 0', fontSize: '0.78rem', color: '#bae6fd', lineHeight: 1.45 }}>
-                    When Cloudflare protects the cloud server, log in to{' '}
-                    <a
-                      href="https://cuiet.codebrigade.in/loginManager/load"
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ color: '#38bdf8', textDecoration: 'underline', fontWeight: 600 }}
-                    >
-                      cuiet.codebrigade.in ↗
-                    </a>{' '}
-                    in your browser, copy your session cookie (<code style={{ color: '#f59e0b', background: 'rgba(0,0,0,0.3)', padding: '1px 4px', borderRadius: 4 }}>ci_session=...</code>), and paste it below:
-                  </p>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <input
-                      type="text"
-                      placeholder="Paste ci_session=... or PHPSESSID=..."
-                      value={cookieInput}
-                      onChange={(e) => setCookieInput(e.target.value)}
-                      style={{
-                        flex: 1,
-                        fontSize: '0.82rem',
-                        padding: '9px 12px',
-                        background: '#0f172a',
-                        border: '1px solid rgba(255,255,255,0.18)',
-                        color: '#fff',
-                        borderRadius: '8px',
-                        outline: 'none'
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleCookieSubmit}
-                      disabled={cookieLoading}
-                      className="btn btn-primary"
-                      style={{ padding: '9px 16px', fontSize: '0.82rem', whiteSpace: 'nowrap', fontWeight: 700 }}
-                    >
-                      {cookieLoading ? <Loader2 size={14} className="spinning" /> : 'Sync'}
-                    </button>
-                  </div>
-                </div>
-              )}
             </form>
           ) : (
             /* STEP 2: OTP VERIFICATION */

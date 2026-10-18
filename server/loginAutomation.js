@@ -1,26 +1,34 @@
 let chromium = null;
 try {
-  const pw = require('playwright');
-  chromium = pw.chromium;
+  const { chromium: extraChromium } = require('playwright-extra');
+  const stealth = require('puppeteer-extra-plugin-stealth')();
+  extraChromium.use(stealth);
+  chromium = extraChromium;
 } catch (e) {
-  // Playwright is optional in cloud environments (direct scraping and cookie login work without it)
+  try {
+    const pw = require('playwright');
+    chromium = pw.chromium;
+  } catch (e2) {}
 }
+
 const sessionStore = require('./sessionStore');
 const scraper = require('./scraper');
 const path = require('path');
 
-let activeSession = null;
-let sessionTimeoutTimer = null;
+// Multi-device active login sessions map keyed by sessionId
+const activeSessions = new Map();
 
-function cleanupActiveSession() {
-  if (sessionTimeoutTimer) {
-    clearTimeout(sessionTimeoutTimer);
-    sessionTimeoutTimer = null;
+function cleanupActiveSession(sessionId = 'default') {
+  if (activeSessions.has(sessionId)) {
+    const s = activeSessions.get(sessionId);
+    if (s.sessionTimeoutTimer) {
+      clearTimeout(s.sessionTimeoutTimer);
+    }
+    if (s.browser) {
+      s.browser.close().catch(() => {});
+    }
+    activeSessions.delete(sessionId);
   }
-  if (activeSession && activeSession.browser) {
-    activeSession.browser.close().catch(() => {});
-  }
-  activeSession = null;
 }
 
 /**
@@ -43,62 +51,60 @@ function parsePortalError(rawText) {
 }
 
 /**
- * Finds Turnstile frame, clicks checkbox with natural mouse movement, and fast-polls for token
+ * Finds Turnstile frame, clicks checkbox if required, and polls for token without leaking CDP
  */
 async function solveTurnstile(page) {
-  console.log('[LoginAutomation] Locating Cloudflare Turnstile...');
-  // Quick initial check if token is already present
+  console.log('[LoginAutomation] Checking for Cloudflare Turnstile token...');
   let token = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
   if (token && token.length > 50) {
     console.log(`[LoginAutomation] Turnstile already verified! Token length: ${token.length}`);
     return true;
   }
 
-  // Allow Turnstile widget to finish initial render
-  await page.waitForTimeout(2000);
-
-  // Check again
-  token = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
-  if (token && token.length > 50) {
-    console.log(`[LoginAutomation] Turnstile verified automatically! Token length: ${token.length}`);
-    return true;
+  // Find cfFrame
+  let cfFrame = null;
+  for (let i = 0; i < 8; i++) {
+    await page.waitForTimeout(400);
+    cfFrame = page.frames().find(f => f.url().includes('challenges.cloudflare.com') || f.url().includes('turnstile'));
+    if (cfFrame) break;
   }
 
-  // Locate Turnstile frame and perform precise natural click
-  try {
-    const cfFrame = page.frames().find(f => f.url().includes('cloudflare') || f.url().includes('turnstile'));
-    if (cfFrame) {
+  if (cfFrame) {
+    try {
       const frameEl = await cfFrame.frameElement();
       const box = await frameEl.boundingBox();
       if (box) {
-        const clickX = Math.round(box.x + 21);
-        const clickY = Math.round(box.y + 33);
-        console.log(`[LoginAutomation] Executing natural click on Turnstile checkbox at (${clickX}, ${clickY})...`);
-        await page.mouse.move(box.x - 20, box.y - 20);
-        await page.waitForTimeout(100);
-        await page.mouse.move(clickX, clickY, { steps: 10 });
-        await page.waitForTimeout(150);
-        await page.mouse.down();
+        const clickX = box.x + 28;
+        const clickY = box.y + box.height / 2;
+        console.log(`[LoginAutomation] Natural mouse click on Turnstile checkbox at (${clickX}, ${clickY})...`);
+        await page.mouse.move(clickX - 25, clickY - 10);
         await page.waitForTimeout(80);
-        await page.mouse.up();
+        await page.mouse.move(clickX, clickY, { steps: 3 });
+        await page.waitForTimeout(100);
+        await page.mouse.click(clickX, clickY);
       }
+
+      // Also dispatch element click inside frame if accessible
+      const cb = await cfFrame.$('input[type="checkbox"], #cf-stage, .ctp-checkbox-label');
+      if (cb) {
+        await cb.click({ force: true }).catch(() => {});
+      }
+    } catch (clickErr) {
+      console.warn('[LoginAutomation] Turnstile click notice:', clickErr.message);
     }
-  } catch (clickErr) {
-    console.warn('[LoginAutomation] Turnstile click attempt warning:', clickErr.message);
   }
 
-  // Fast poll for token: every 400ms for up to 6 seconds max
-  console.log('[LoginAutomation] Waiting up to 6s for Turnstile token...');
-  for (let s = 0; s < 15; s++) {
-    await page.waitForTimeout(400);
+  // Fast poll for token: every 300ms for up to 6 seconds max
+  console.log('[LoginAutomation] Polling for Turnstile token...');
+  for (let s = 0; s < 20; s++) {
+    await page.waitForTimeout(300);
     token = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
     if (token && token.length > 50) {
-      console.log(`[LoginAutomation] Turnstile token acquired in ${((s + 1) * 0.4).toFixed(1)}s! Length: ${token.length}`);
+      console.log(`[LoginAutomation] Turnstile token acquired in ${((s + 1) * 0.3).toFixed(1)}s! Length: ${token.length}`);
       return true;
     }
   }
 
-  console.log('[LoginAutomation] Turnstile token not generated within 6s.');
   return false;
 }
 
@@ -110,8 +116,8 @@ async function solveTurnstile(page) {
  * 4. Submits login form
  * 5. Handles OTP screen or direct success
  */
-async function loginWithCredentials({ username, password, session = '20' }) {
-  cleanupActiveSession();
+async function loginWithCredentials({ username, password, session = '20', sessionId = 'default' }) {
+  cleanupActiveSession(sessionId);
 
   if (!chromium) {
     throw new Error('Official portal automation service is initializing. Please try signing in again in a moment.');
@@ -120,7 +126,7 @@ async function loginWithCredentials({ username, password, session = '20' }) {
   const isCloudLinux = process.env.NODE_ENV === 'production' || process.platform === 'linux';
   const headlessMode = isCloudLinux ? true : false;
 
-  console.log(`[LoginAutomation] Starting login attempt for user: ${username} (headless: ${headlessMode})...`);
+  console.log(`[LoginAutomation] Starting login attempt for user: ${username} (sessionId: ${sessionId}, headless: ${headlessMode})...`);
 
   let browser;
   try {
@@ -140,36 +146,26 @@ async function loginWithCredentials({ username, password, session = '20' }) {
 
     // If browser executable is missing in cloud cache, auto-install immediately and retry
     if (e.message.includes("doesn't exist") || e.message.includes('playwright install')) {
-      console.log('[LoginAutomation] Chromium binary missing in environment. Auto-installing Playwright Chromium now...');
+      console.log('[LoginAutomation] Chromium binary missing. Auto-installing Playwright Chromium...');
       try {
         const { execSync } = require('child_process');
         const cliPath = path.join(__dirname, 'node_modules/playwright/cli.js');
         execSync(`node "${cliPath}" install chromium`, { stdio: 'inherit' });
-        console.log('[LoginAutomation] Playwright Chromium installed successfully! Retrying browser launch...');
         browser = await chromium.launch({
           headless: true,
           ignoreDefaultArgs: ['--enable-automation'],
           args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--disable-blink-features=AutomationControlled']
         });
       } catch (installErr) {
-        console.error('[LoginAutomation] On-the-fly browser install failed:', installErr.message);
+        console.error('[LoginAutomation] Browser install failed:', installErr.message);
       }
     }
 
     if (!browser) {
-      try {
-        browser = await chromium.launch({
-          channel: 'chrome',
-          headless: headlessMode,
-          ignoreDefaultArgs: ['--enable-automation'],
-          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled']
-        });
-      } catch (e2) {
-        browser = await chromium.launch({
-          headless: true,
-          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-        });
-      }
+      browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled']
+      });
     }
   }
 
@@ -182,13 +178,22 @@ async function loginWithCredentials({ username, password, session = '20' }) {
         'Accept-Language': 'en-IN,en-US;q=0.9,en;q=0.8'
       }
     });
-    const page = await context.newPage();
-    sessionStore.setLoginStep({ step: 1, totalSteps: 4, label: 'Opening Portal', detail: 'Connecting to official CUIET portal in Chrome...', percent: 20 });
-    await page.goto('https://cuiet.codebrigade.in/loginManager/load', { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.bringToFront();
 
-    sessionStore.setLoginStep({ step: 2, totalSteps: 4, label: 'Entering Credentials', detail: 'Filling Roll Number & Password...', percent: 40 });
-    await page.waitForSelector('#txtUsername', { timeout: 10000 });
+    // Stealth evasion script injection
+    await context.addInitScript(() => {
+      delete Object.getPrototypeOf(navigator).webdriver;
+      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+      window.chrome = { runtime: {}, loadTimes: () => {}, csi: () => {}, app: {} };
+      Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+      Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+    });
+
+    const page = await context.newPage();
+    sessionStore.setLoginStep(sessionId, { step: 1, totalSteps: 4, label: 'Opening Portal', detail: 'Connecting to official CUIET portal...', percent: 25 });
+    await page.goto('https://cuiet.codebrigade.in/loginManager/load', { waitUntil: 'domcontentloaded', timeout: 10000 });
+
+    sessionStore.setLoginStep(sessionId, { step: 2, totalSteps: 4, label: 'Entering Credentials', detail: 'Filling Roll Number & Password...', percent: 50 });
+    await page.waitForSelector('#txtUsername', { timeout: 4000 });
     await page.fill('#txtUsername', username.trim());
     await page.fill('#txtPassword', password);
 
@@ -200,25 +205,25 @@ async function loginWithCredentials({ username, password, session = '20' }) {
       }
     }
 
-    sessionStore.setLoginStep({ step: 3, totalSteps: 4, label: 'Bypassing Security', detail: 'Verifying Cloudflare Turnstile (~2-3s)...', percent: 65 });
+    sessionStore.setLoginStep(sessionId, { step: 3, totalSteps: 4, label: 'Security Verification', detail: 'Validating security checkpoint...', percent: 75 });
     const solved = await solveTurnstile(page);
-    console.log('[LoginAutomation] Turnstile verification status:', solved ? 'VERIFIED' : 'TIMED OUT');
+    console.log('[LoginAutomation] Turnstile verification status:', solved ? 'VERIFIED' : 'PENDING');
 
-    if (!solved) {
-      console.warn('[LoginAutomation] Cloudflare Turnstile token missing. Closing browser immediately without submitting empty form.');
-      await browser.close().catch(() => {});
-      sessionStore.setLoginStep(null);
-      throw new Error('Cloudflare Turnstile verification required. Automated verification was restricted by Cloudflare on cloud servers. Please use the Instant Session Connect option below to sign in instantly.');
+    const tokenAfter = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
+    if (!tokenAfter || tokenAfter.length < 50) {
+      console.warn('[LoginAutomation] Turnstile token not obtained. Aborting submission to avoid captcha failure.');
+      await browser.close();
+      throw new Error('Chitkara security verification took too long to complete. Please tap Log In again.');
     }
 
-    sessionStore.setLoginStep({ step: 4, totalSteps: 4, label: 'Submitting Form', detail: 'Submitting credentials to Chitkara servers...', percent: 85 });
-    console.log('[LoginAutomation] Submitting login form...');
+    sessionStore.setLoginStep(sessionId, { step: 4, totalSteps: 4, label: 'Submitting Form', detail: 'Submitting credentials to Chitkara servers...', percent: 85 });
+    console.log('[LoginAutomation] Submitting login form with verified token (length: ' + tokenAfter.length + ')...');
 
     // Wait for checkLogin AJAX response
     const checkLoginPromise = page.waitForResponse(
       res => res.url().includes('loginManager/checkLogin'),
-      { timeout: 15000 }
-    );
+      { timeout: 8000 }
+    ).catch(() => null);
 
     await page.evaluate(() => {
       if (window.$ && window.$('#loginForm').length) {
@@ -230,23 +235,29 @@ async function loginWithCredentials({ username, password, session = '20' }) {
     });
 
     const checkLoginRes = await checkLoginPromise;
+    if (!checkLoginRes) {
+      await browser.close();
+      throw new Error('Chitkara login server did not respond in time. Please try again in a few moments.');
+    }
+
     const responseBody = await checkLoginRes.text();
     console.log('[LoginAutomation] Portal checkLogin response body:', responseBody);
 
     // Case 1: OTP required by portal
     if (responseBody.includes('otpBit')) {
       console.log('[LoginAutomation] Portal requested OTP verification! Waiting for OTP screen...');
-      sessionStore.setLoginStep({ step: 4, totalSteps: 4, label: 'OTP Dispatched', detail: 'OTP sent to your registered mobile / email. Awaiting your input...', percent: 100 });
+      sessionStore.setLoginStep(sessionId, { step: 4, totalSteps: 4, label: 'OTP Dispatched', detail: 'OTP sent to your registered mobile / email. Awaiting your input...', percent: 100 });
 
-      await page.waitForURL(url => url.href.includes('multiAuthentication'), { timeout: 15000 }).catch(() => {});
-      await page.waitForSelector('#OTPText', { timeout: 10000 }).catch(() => {});
+      await page.waitForURL(url => url.href.includes('multiAuthentication'), { timeout: 8000 }).catch(() => {});
+      await page.waitForSelector('#OTPText', { timeout: 6000 }).catch(() => {});
 
-      // Keep session active for OTP submission
-      activeSession = { browser, context: page.context(), page, username };
-      sessionTimeoutTimer = setTimeout(() => {
-        console.log('[LoginAutomation] OTP session timed out after 5 minutes.');
-        cleanupActiveSession();
+      // Keep session active for OTP submission for up to 5 minutes
+      const sessionTimeoutTimer = setTimeout(() => {
+        console.log(`[LoginAutomation] OTP session timed out after 5 minutes (session: ${sessionId}).`);
+        cleanupActiveSession(sessionId);
       }, 5 * 60 * 1000);
+
+      activeSessions.set(sessionId, { browser, context: page.context(), page, username, sessionTimeoutTimer });
 
       return {
         requiresOtp: true,
@@ -257,26 +268,26 @@ async function loginWithCredentials({ username, password, session = '20' }) {
     // Case 2: Succeeded directly without OTP
     if (responseBody.includes('success')) {
       console.log('[LoginAutomation] Direct login succeeded without OTP requirement!');
-      sessionStore.setLoginStep({ step: 4, totalSteps: 4, label: 'Syncing Attendance', detail: 'Direct login approved! Syncing full records...', percent: 95 });
+      sessionStore.setLoginStep(sessionId, { step: 4, totalSteps: 4, label: 'Syncing Attendance', detail: 'Direct login approved! Syncing full records...', percent: 95 });
 
-      await page.waitForURL(url => url.href.includes('main') || url.href.includes('chalkpadpro'), { timeout: 15000 }).catch(() => {});
+      await page.waitForURL(url => url.href.includes('main') || url.href.includes('chalkpadpro'), { timeout: 10000 }).catch(() => {});
 
       const cookies = await page.context().cookies();
       await browser.close();
 
-      return await handleSuccessfulAuthCookies(cookies);
+      return await handleSuccessfulAuthCookies(cookies, sessionId);
     }
 
     // Case 3: Error returned by portal
     await browser.close();
     const errorMsg = parsePortalError(responseBody);
     console.warn('[LoginAutomation] Portal login rejected:', errorMsg);
-    throw new Error(errorMsg);
+    throw new Error(errorMsg || 'Chitkara login rejected. Please check your Roll Number and Password.');
   } catch (err) {
-    if (browser && (!activeSession || activeSession.browser !== browser)) {
+    if (browser && (!activeSessions.has(sessionId) || activeSessions.get(sessionId).browser !== browser)) {
       await browser.close().catch(() => {});
     }
-    sessionStore.setLoginStep(null);
+    sessionStore.setLoginStep(sessionId, null);
     throw err;
   }
 }
@@ -284,28 +295,28 @@ async function loginWithCredentials({ username, password, session = '20' }) {
 /**
  * Submits the OTP received on mobile/email to the active portal session
  */
-async function verifyOtp(otp) {
-  if (!activeSession || !activeSession.page) {
+async function verifyOtp(otp, sessionId = 'default') {
+  if (!activeSessions.has(sessionId) || !activeSessions.get(sessionId).page) {
     throw new Error('No active login session found or OTP session expired. Please sign in with your credentials again.');
   }
 
-  const { browser, context, page } = activeSession;
-  console.log(`[LoginAutomation] Submitting OTP: ${otp}...`);
-  sessionStore.setLoginStep({ step: 1, totalSteps: 4, label: 'Submitting OTP', detail: 'Submitting 4-digit OTP to portal...', percent: 25 });
+  const { browser, context, page } = activeSessions.get(sessionId);
+  console.log(`[LoginAutomation] Submitting OTP: ${otp} (sessionId: ${sessionId})...`);
+  sessionStore.setLoginStep(sessionId, { step: 1, totalSteps: 4, label: 'Submitting OTP', detail: 'Submitting 4-digit OTP to portal...', percent: 30 });
 
   try {
-    await page.waitForSelector('#OTPText', { timeout: 5000 });
+    await page.waitForSelector('#OTPText', { timeout: 4000 });
     await page.evaluate(() => {
       const el = document.getElementById('OTPText');
       if (el) el.removeAttribute('readonly');
     });
 
-    sessionStore.setLoginStep({ step: 2, totalSteps: 4, label: 'Verifying Code', detail: 'Validating OTP with Chitkara authentication server...', percent: 50 });
+    sessionStore.setLoginStep(sessionId, { step: 2, totalSteps: 4, label: 'Verifying Code', detail: 'Validating OTP with Chitkara authentication server...', percent: 60 });
     await page.fill('#OTPText', String(otp).trim());
 
     const otpResponsePromise = page.waitForResponse(
       res => res.url().includes('multiAuthentication/checkOtp') || res.url().includes('checkOtp'),
-      { timeout: 15000 }
+      { timeout: 10000 }
     ).catch(() => null);
 
     await page.evaluate(() => {
@@ -323,11 +334,11 @@ async function verifyOtp(otp) {
       console.log('[LoginAutomation] Portal OTP response body:', otpResText);
 
       if (otpResText.includes('expiredOtp')) {
-        cleanupActiveSession();
+        cleanupActiveSession(sessionId);
         throw new Error('Your OTP has expired. Please sign in again to generate a new one.');
       }
       if (otpResText.includes('attempt')) {
-        cleanupActiveSession();
+        cleanupActiveSession(sessionId);
         throw new Error('Incorrect OTP entered 3 times. Please sign in again.');
       }
       if (otpResText.search('10') !== -1) {
@@ -336,16 +347,16 @@ async function verifyOtp(otp) {
       }
     }
 
-    sessionStore.setLoginStep({ step: 3, totalSteps: 4, label: 'Syncing Attendance', detail: 'OTP approved! Fetching attendance register & timetable...', percent: 75 });
-    await page.waitForURL(url => url.href.includes('main') || url.href.includes('chalkpadpro'), { timeout: 15000 }).catch(() => {});
+    sessionStore.setLoginStep(sessionId, { step: 3, totalSteps: 4, label: 'Syncing Attendance', detail: 'OTP approved! Fetching attendance register & timetable...', percent: 80 });
+    await page.waitForURL(url => url.href.includes('main') || url.href.includes('chalkpadpro'), { timeout: 10000 }).catch(() => {});
 
-    sessionStore.setLoginStep({ step: 4, totalSteps: 4, label: 'Finalizing Dashboard', detail: 'Syncing profile photo, circulars, marks & classmates...', percent: 95 });
+    sessionStore.setLoginStep(sessionId, { step: 4, totalSteps: 4, label: 'Finalizing Dashboard', detail: 'Syncing profile photo, circulars & timetable...', percent: 95 });
     const cookies = await context.cookies();
-    cleanupActiveSession();
+    cleanupActiveSession(sessionId);
 
-    return await handleSuccessfulAuthCookies(cookies);
+    return await handleSuccessfulAuthCookies(cookies, sessionId);
   } catch (err) {
-    sessionStore.setLoginStep(null);
+    sessionStore.setLoginStep(sessionId, null);
     throw err;
   }
 }
@@ -353,13 +364,13 @@ async function verifyOtp(otp) {
 /**
  * Triggers resend OTP on the active page
  */
-async function resendOtp() {
-  if (!activeSession || !activeSession.page) {
+async function resendOtp(sessionId = 'default') {
+  if (!activeSessions.has(sessionId) || !activeSessions.get(sessionId).page) {
     throw new Error('No active login session. Please sign in again.');
   }
 
-  const { page } = activeSession;
-  console.log('[LoginAutomation] Triggering Resend OTP on portal...');
+  const { page } = activeSessions.get(sessionId);
+  console.log(`[LoginAutomation] Triggering Resend OTP on portal (sessionId: ${sessionId})...`);
 
   try {
     await page.evaluate(() => {
@@ -371,7 +382,7 @@ async function resendOtp() {
       }
     });
 
-    return { success: true, message: 'A new OTP has been requested.' };
+    return { success: true, message: 'A new OTP has been requested from Chitkara.' };
   } catch (e) {
     throw new Error('Failed to request OTP resend: ' + e.message);
   }
@@ -381,11 +392,11 @@ async function resendOtp() {
  * Launches an interactive desktop Chrome window for user to log in visually,
  * and automatically captures the session the instant authentication succeeds.
  */
-async function launchInteractivePortal({ username = '', password = '', session = '20' } = {}) {
-  cleanupActiveSession();
+async function launchInteractivePortal({ username = '', password = '', session = '20', sessionId = 'default' } = {}) {
+  cleanupActiveSession(sessionId);
 
   if (!chromium) {
-    throw new Error('Interactive browser helper is not available in cloud hosting environment. Please connect using your session cookie (ci_session) or official export file.');
+    throw new Error('Interactive browser helper is not available in cloud hosting environment.');
   }
 
   let browser;
@@ -403,8 +414,8 @@ async function launchInteractivePortal({ username = '', password = '', session =
   }
 
   const page = await browser.newPage();
-  sessionStore.setLoginStep('Official portal opened in desktop browser. Please log in...');
-  await page.goto('https://cuiet.codebrigade.in/loginManager/load', { waitUntil: 'load', timeout: 30000 });
+  sessionStore.setLoginStep(sessionId, 'Official portal opened in desktop browser. Please log in...');
+  await page.goto('https://cuiet.codebrigade.in/loginManager/load', { waitUntil: 'load', timeout: 20000 });
   await page.bringToFront();
 
   // Pre-fill fields if user already entered them in the app
@@ -418,8 +429,8 @@ async function launchInteractivePortal({ username = '', password = '', session =
     await page.selectOption('#txtSession', String(session)).catch(() => {});
   }
 
-  // Attempt automatic Turnstile solve once
-  solveTurnstile(page).catch(() => {});
+  // Attempt automatic Turnstile solve
+  solveTurnstile(page, page.context()).catch(() => {});
 
   // Wait for user to complete login (URL changes to main or chalkpadpro)
   return new Promise((resolve, reject) => {
@@ -430,12 +441,12 @@ async function launchInteractivePortal({ username = '', password = '', session =
         const url = page.url();
         if (url.includes('main') || url.includes('chalkpadpro') || url.includes('studentDetails')) {
           resolved = true;
-          sessionStore.setLoginStep('Authentication detected! Syncing attendance & timetable...');
+          sessionStore.setLoginStep(sessionId, 'Authentication detected! Syncing attendance & timetable...');
           try {
             await page.waitForTimeout(2000);
             const cookies = await page.context().cookies();
             await browser.close();
-            const result = await handleSuccessfulAuthCookies(cookies);
+            const result = await handleSuccessfulAuthCookies(cookies, sessionId);
             resolve(result);
           } catch (e) {
             reject(e);
@@ -455,15 +466,15 @@ async function launchInteractivePortal({ username = '', password = '', session =
 /**
  * Stores authenticated cookies and triggers full attendance scrape
  */
-async function handleSuccessfulAuthCookies(cookies) {
+async function handleSuccessfulAuthCookies(cookies, sessionId = 'default') {
   const cookieString = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-  console.log('[LoginAutomation] Extracted cookies count:', cookies.length);
+  console.log(`[LoginAutomation] Extracted cookies count: ${cookies.length} (session: ${sessionId})`);
 
-  sessionStore.setSession(cookies);
-  sessionStore.setLoginStep('Retrieving full date-wise attendance register & timetable...');
+  sessionStore.setSession(sessionId, cookies);
+  sessionStore.setLoginStep(sessionId, 'Retrieving full date-wise attendance register & timetable...');
 
   const attendanceData = await scraper.scrapeWithCookiesDirect(cookieString);
-  sessionStore.setLoginStep(null);
+  sessionStore.setLoginStep(sessionId, null);
 
   return {
     success: true,

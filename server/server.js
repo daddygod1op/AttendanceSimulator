@@ -38,8 +38,6 @@ if (fs.existsSync(clientPublicPath)) {
   app.use(express.static(clientPublicPath));
 }
 
-let isSyncing = false;
-
 function getSessionId(req) {
   return (
     req.headers['x-session-id'] ||
@@ -57,7 +55,7 @@ app.get('/api/status', (req, res) => {
   const state = sessionStore.getState(sessionId);
   res.json({
     ...state,
-    isSyncing,
+    isSyncing: sessionStore.isSyncing(sessionId),
     portalUrl: scraper.PORTAL_BASE,
     loginUrl: scraper.LOGIN_URL
   });
@@ -101,20 +99,28 @@ app.get('/api/student/photo', (req, res) => {
 // 2. Direct Server-Side Credentials Login (Username + Password + Session)
 // ============================================================================
 app.post('/api/auth/login', async (req, res) => {
+  const sessionId = getSessionId(req);
   const { username, password, session } = req.body;
   if (!username || !password) {
     return res.status(400).json({ success: false, error: 'Roll number / username and portal password are required.' });
   }
 
-  if (isSyncing) {
-    return res.status(409).json({ success: false, error: 'An authentication or synchronization operation is already in progress.' });
-  }
+  // Cancel any prior stalled login session for this device
+  loginAutomation.cleanupActiveSession(sessionId);
 
-  isSyncing = true;
+  sessionStore.setSyncing(sessionId, true);
+  sessionStore.setLoginStep(sessionId, { step: 1, totalSteps: 4, label: 'Connecting to Portal', detail: 'Contacting Chitkara authentication server...', percent: 20 });
+
   try {
-    console.log(`[Server] Initiating portal login for user: ${username}...`);
-    const result = await loginAutomation.loginWithCredentials({ username, password, session });
-    isSyncing = false;
+    console.log(`[Server] Initiating portal login for user: ${username} (session: ${sessionId})...`);
+    
+    // Strict 18-second maximum timeout on the whole login attempt so the client never hangs
+    const loginPromise = loginAutomation.loginWithCredentials({ username, password, session, sessionId });
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection to Chitkara portal timed out. Please try signing in again.')), 18000)
+    );
+
+    const result = await Promise.race([loginPromise, timeoutPromise]);
 
     // Portal issued an OTP
     if (result.requiresOtp) {
@@ -126,18 +132,23 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Direct login succeeded
+    if (result.data) {
+      sessionStore.setAttendance(sessionId, result.data);
+    }
     res.json({
       success: true,
       message: result.message || 'Login approved! Attendance records synchronized.',
       data: result.data
     });
   } catch (error) {
-    isSyncing = false;
     console.error('[Server] Login error:', error.message);
     res.status(401).json({
       success: false,
-      error: error.message || 'Login failed. Please verify your credentials, or connect via session cookie / manual import.'
+      error: error.message || 'Login failed. Please verify your credentials.'
     });
+  } finally {
+    sessionStore.setSyncing(sessionId, false);
+    sessionStore.setLoginStep(sessionId, null);
   }
 });
 
@@ -145,39 +156,41 @@ app.post('/api/auth/login', async (req, res) => {
 // 3. Verify OTP Step
 // ============================================================================
 app.post('/api/auth/verify-otp', async (req, res) => {
+  const sessionId = getSessionId(req);
   const { otp } = req.body;
   if (!otp) {
     return res.status(400).json({ success: false, error: 'Please enter the 4-digit OTP sent to your phone/email.' });
   }
 
-  if (isSyncing) {
-    return res.status(409).json({ success: false, error: 'An operation is currently in progress.' });
-  }
-
-  isSyncing = true;
+  sessionStore.setSyncing(sessionId, true);
   try {
-    console.log(`[Server] Verifying OTP: ${otp}...`);
-    const result = await loginAutomation.verifyOtp(otp);
-    isSyncing = false;
+    console.log(`[Server] Verifying OTP: ${otp} (session: ${sessionId})...`);
+    const result = await loginAutomation.verifyOtp(otp, sessionId);
+    if (result && result.data) {
+      sessionStore.setAttendance(sessionId, result.data);
+    }
     res.json({
       success: true,
       message: result.message || 'OTP verified successfully! Records retrieved.',
       data: result.data
     });
   } catch (error) {
-    isSyncing = false;
     console.error('[Server] OTP verification failed:', error.message);
     res.status(400).json({
       success: false,
-      error: error.message || 'Failed to verify OTP. Please try again or use the session cookie option.'
+      error: error.message || 'Failed to verify OTP. Please try again.'
     });
+  } finally {
+    sessionStore.setSyncing(sessionId, false);
+    sessionStore.setLoginStep(sessionId, null);
   }
 });
 
 // Resend OTP
 app.post('/api/auth/resend-otp', async (req, res) => {
+  const sessionId = getSessionId(req);
   try {
-    const result = await loginAutomation.resendOtp();
+    const result = await loginAutomation.resendOtp(sessionId);
     res.json(result);
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -186,17 +199,17 @@ app.post('/api/auth/resend-otp', async (req, res) => {
 
 // Cancel in-progress login
 app.post('/api/auth/cancel-login', (req, res) => {
-  loginAutomation.cleanupActiveSession();
-  isSyncing = false;
-  sessionStore.setLoginStep(null);
+  const sessionId = getSessionId(req);
+  loginAutomation.cleanupActiveSession(sessionId);
+  sessionStore.setSyncing(sessionId, false);
+  sessionStore.setLoginStep(sessionId, null);
   res.json({ success: true, message: 'Login cancelled.' });
 });
 
 // Logout endpoint to clear session and cache
 app.post('/api/auth/logout', (req, res) => {
   const sessionId = getSessionId(req);
-  loginAutomation.cleanupActiveSession();
-  isSyncing = false;
+  loginAutomation.cleanupActiveSession(sessionId);
   sessionStore.clear(sessionId);
   console.log(`[Server] User logged out (session: ${sessionId}). Session data cleared.`);
   res.json({ success: true, message: 'Logged out successfully. All session data cleared.' });
@@ -208,35 +221,32 @@ app.post('/api/auth/logout', (req, res) => {
 app.post('/api/auth/launch-interactive-portal', async (req, res) => {
   const sessionId = getSessionId(req);
   const { username, password, session } = req.body || {};
-  if (isSyncing) {
-    return res.status(409).json({ success: false, error: 'An authentication operation is already running.' });
-  }
 
-  isSyncing = true;
+  sessionStore.setSyncing(sessionId, true);
   try {
     console.log('[Server] Launching interactive portal window on desktop for user:', username || 'unspecified');
-    const result = await loginAutomation.launchInteractivePortal({ username, password, session });
+    const result = await loginAutomation.launchInteractivePortal({ username, password, session, sessionId });
     if (result && result.data) {
       sessionStore.setAttendance(sessionId, result.data);
     }
-    isSyncing = false;
     res.json({
       success: true,
       message: result.message || 'Logged in successfully via portal window!',
       data: result.data
     });
   } catch (err) {
-    isSyncing = false;
     console.error('[Server] Interactive portal session failed or was closed:', err.message);
     res.status(500).json({
       success: false,
       error: err.message || 'Interactive portal session ended before login was completed.'
     });
+  } finally {
+    sessionStore.setSyncing(sessionId, false);
   }
 });
 
 // ============================================================================
-// 5. Connect via Saved Session Cookie (ci_session - Solves repeat OTP!)
+// 5. Connect via Saved Session Cookie
 // ============================================================================
 app.post('/api/auth/cookie-login', async (req, res) => {
   const sessionId = getSessionId(req);
@@ -245,28 +255,24 @@ app.post('/api/auth/cookie-login', async (req, res) => {
     return res.status(400).json({ error: 'Cookie string is required (e.g. ci_session=...)' });
   }
 
-  if (isSyncing) {
-    return res.status(409).json({ error: 'A sync operation is already in progress.' });
-  }
-
-  isSyncing = true;
+  sessionStore.setSyncing(sessionId, true);
   try {
     console.log('[Server] Connecting using provided session cookie string...');
     const attendanceData = await scraper.connectWithCookieString(cookieString);
     sessionStore.setAttendance(sessionId, attendanceData);
-    isSyncing = false;
     res.json({
       success: true,
       message: 'Authenticated and retrieved attendance successfully! Session cookie saved.',
       data: attendanceData
     });
   } catch (error) {
-    isSyncing = false;
     console.error('[Server] Cookie connection failed:', error.message);
     res.status(401).json({
       success: false,
       error: error.message || 'Invalid or expired session cookie. Please log in with your credentials.'
     });
+  } finally {
+    sessionStore.setSyncing(sessionId, false);
   }
 });
 
@@ -316,23 +322,21 @@ app.get('/api/attendance', (req, res) => {
 // 8. Refresh Attendance Records on Demand
 // ============================================================================
 app.post('/api/attendance/refresh', async (req, res) => {
-  if (isSyncing) {
-    return res.status(409).json({ error: 'Sync already in progress.' });
-  }
+  const sessionId = getSessionId(req);
 
-  isSyncing = true;
+  sessionStore.setSyncing(sessionId, true);
   try {
-    console.log('[Server] Refreshing latest attendance records from portal...');
-    const attendanceData = await scraper.scrapeWithStoredCookies();
-    isSyncing = false;
+    console.log('[Server] Refreshing latest attendance records from portal for session:', sessionId);
+    const cookieHeader = sessionStore.getCookieString(sessionId);
+    const attendanceData = await scraper.scrapeWithCookiesDirect(cookieHeader);
+    sessionStore.setAttendance(sessionId, attendanceData);
     res.json({
       success: true,
       message: 'Attendance, timetable, and marks successfully refreshed from CUIET!',
       data: attendanceData,
-      lastSyncTime: sessionStore.getState().lastSyncTime
+      lastSyncTime: sessionStore.getState(sessionId).lastSyncTime
     });
   } catch (error) {
-    isSyncing = false;
     console.error('[Server] Refresh failed:', error.message);
     const isExpired = error.message.toLowerCase().includes('expired') || error.message.toLowerCase().includes('sign in');
     res.status(isExpired ? 401 : 500).json({
@@ -340,6 +344,8 @@ app.post('/api/attendance/refresh', async (req, res) => {
       error: error.message,
       expired: isExpired
     });
+  } finally {
+    sessionStore.setSyncing(sessionId, false);
   }
 });
 

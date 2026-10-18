@@ -27,10 +27,21 @@ class SessionStore {
         authStatus: 'unauthenticated',
         loginStep: null,
         lastError: null,
-        activeBrowserSession: null
+        activeBrowserSession: null,
+        isSyncing: false
       });
     }
     return this.sessions.get(id);
+  }
+
+  setSyncing(sessionId = 'default', syncing = false) {
+    const s = this._getOrCreate(sessionId);
+    s.isSyncing = !!syncing;
+  }
+
+  isSyncing(sessionId = 'default') {
+    const s = this._getOrCreate(sessionId);
+    return !!s.isSyncing;
   }
 
   setSession(arg1, arg2, arg3) {
@@ -183,6 +194,7 @@ class SessionStore {
       attendance: attendanceClean,
       lastSyncTime: isAuthed ? s.lastSyncTime : null,
       lastError: s.lastError,
+      isSyncing: !!s.isSyncing,
       hasCookies: isAuthed && s.cookies && s.cookies.length > 0
     };
   }
