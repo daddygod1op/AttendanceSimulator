@@ -21,6 +21,26 @@ import {
 import CircularDocumentViewerModal from './CircularDocumentViewerModal';
 import { getCircularDocument } from '../utils/circularDocumentData';
 
+export function safeText(val, fallback = '') {
+  if (val === null || val === undefined) return fallback;
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (typeof val === 'object') {
+    if (val.N !== undefined) return safeText(val.N, fallback);
+    if (val.S !== undefined) return safeText(val.S, fallback);
+    if (val.name !== undefined) return safeText(val.name, fallback);
+    if (val.title !== undefined) return safeText(val.title, fallback);
+    if (val.text !== undefined) return safeText(val.text, fallback);
+    if (val.value !== undefined) return safeText(val.value, fallback);
+    try {
+      return JSON.stringify(val);
+    } catch {
+      return fallback;
+    }
+  }
+  return String(val);
+}
+
 export default function CircularsFeed({ circulars = [], student }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -45,7 +65,7 @@ export default function CircularsFeed({ circulars = [], student }) {
     const list = Array.isArray(circulars) ? circulars : [];
     const counts = { All: list.length };
     list.forEach(c => {
-      const cat = c?.category || 'General';
+      const cat = safeText(c?.category, 'General');
       counts[cat] = (counts[cat] || 0) + 1;
     });
     return counts;
@@ -56,14 +76,15 @@ export default function CircularsFeed({ circulars = [], student }) {
     const list = Array.isArray(circulars) ? circulars : [];
     return list.filter(c => {
       if (!c) return false;
-      if (selectedCategory !== 'All' && (c.category || 'General') !== selectedCategory) return false;
+      const cat = safeText(c.category, 'General');
+      if (selectedCategory !== 'All' && cat !== selectedCategory) return false;
       if (onlyUnread && !c.isUnread) return false;
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const matchesTitle = (c.title || '').toLowerCase().includes(query);
-        const matchesDesc = (c.description || c.snippet || '').toLowerCase().includes(query);
-        const matchesDate = (c.date || '').toLowerCase().includes(query);
-        const matchesCat = (c.category || '').toLowerCase().includes(query);
+        const matchesTitle = safeText(c.title).toLowerCase().includes(query);
+        const matchesDesc = safeText(c.description || c.snippet).toLowerCase().includes(query);
+        const matchesDate = safeText(c.date).toLowerCase().includes(query);
+        const matchesCat = cat.toLowerCase().includes(query);
         return matchesTitle || matchesDesc || matchesDate || matchesCat;
       }
       return true;
@@ -275,8 +296,8 @@ export default function CircularsFeed({ circulars = [], student }) {
               className={`cat-pill-btn ${selectedCategory === cat ? 'active' : ''}`}
               onClick={() => setSelectedCategory(cat)}
             >
-              <span>{cat}</span>
-              <span className="pill-count">{count}</span>
+              <span>{safeText(cat)}</span>
+              <span className="pill-count">{safeText(count, '0')}</span>
             </button>
           ))}
 
@@ -292,9 +313,9 @@ export default function CircularsFeed({ circulars = [], student }) {
 
       {/* Results Count Summary */}
       <div className="feed-meta-bar">
-        <span>Showing <strong>{filteredCirculars.length}</strong> of {circulars.length} total circulars</span>
+        <span>Showing <strong>{safeText(filteredCirculars.length, '0')}</strong> of {safeText(circulars.length, '0')} total circulars</span>
         {selectedCategory !== 'All' && (
-          <span className="filter-tag">Filtered by: {selectedCategory}</span>
+          <span className="filter-tag">Filtered by: {safeText(selectedCategory)}</span>
         )}
       </div>
 
@@ -325,9 +346,9 @@ export default function CircularsFeed({ circulars = [], student }) {
             >
               <div className="card-top-meta">
                 <div className="meta-left">
-                  <span className={`category-tag ${getCategoryBadgeClass(item.category)}`}>
+                  <span className={`category-tag ${getCategoryBadgeClass(safeText(item.category))}`}>
                     <Tag size={11} />
-                    {item.category}
+                    {safeText(item.category, 'General')}
                   </span>
                   {item.isUnread && (
                     <span className="unread-tag">
@@ -339,14 +360,14 @@ export default function CircularsFeed({ circulars = [], student }) {
 
                 <div className="meta-date">
                   <Clock size={13} />
-                  <span>{item.date}</span>
+                  <span>{safeText(item.date, 'Official Notice')}</span>
                 </div>
               </div>
 
-              <h3 className="circular-card-title">{item.title}</h3>
+              <h3 className="circular-card-title">{safeText(item.title, 'University Circular')}</h3>
 
               <p className="circular-card-desc">
-                {item.description || item.snippet || ''}
+                {safeText(item.description || item.snippet, '')}
               </p>
 
               <div className="card-bottom-actions">
@@ -475,12 +496,12 @@ export default function CircularsFeed({ circulars = [], student }) {
             >
               <div className="modal-title-group" style={{ flex: 1 }}>
                 <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                  <span className={`category-tag ${getCategoryBadgeClass(activeModalNotice.category)}`}>
-                    {activeModalNotice.category}
+                  <span className={`category-tag ${getCategoryBadgeClass(safeText(activeModalNotice.category))}`}>
+                    {safeText(activeModalNotice.category, 'General')}
                   </span>
                   <span className="meta-date" style={{ color: 'var(--text-muted)', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Clock size={13} />
-                    {activeModalNotice.date}
+                    {safeText(activeModalNotice.date, 'Official Notice')}
                   </span>
                   {activeModalNotice.isUnread && (
                     <span className="unread-tag">
@@ -490,7 +511,7 @@ export default function CircularsFeed({ circulars = [], student }) {
                   )}
                 </div>
                 <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 800, lineHeight: 1.35 }}>
-                  {activeModalNotice.title}
+                  {safeText(activeModalNotice.title, 'University Circular')}
                 </h3>
               </div>
               <button

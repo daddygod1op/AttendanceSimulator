@@ -53,53 +53,54 @@ export default function AttendanceRegister({
     }
   }, [initialViewMode]);
 
-  // Default weekly timetable if not supplied from scrape
-  const activeTimetable = timetable || {
+  // Default weekly timetable if not supplied from scrape or if old scrape had night shift hours (Standard Chitkara College Hours: 09:00 AM - 03:00 PM)
+  const isNightShift = timetable?.periods?.[0]?.time?.includes('04:10') || timetable?.periods?.[0]?.time?.includes('05:00');
+  const activeTimetable = (!timetable || isNightShift) ? {
     periods: [
-      { period: 1, time: '04:10 PM - 05:00 PM' },
-      { period: 2, time: '05:00 PM - 05:50 PM' },
-      { period: 3, time: '05:50 PM - 06:40 PM' },
-      { period: 4, time: '06:40 PM - 07:30 PM' },
-      { period: 5, time: '07:50 PM - 08:30 PM' },
-      { period: 6, time: '08:30 PM - 09:20 PM' }
+      { period: 1, time: '09:00 AM - 09:50 AM' },
+      { period: 2, time: '09:50 AM - 10:40 AM' },
+      { period: 3, time: '10:50 AM - 11:40 AM' },
+      { period: 4, time: '11:40 AM - 12:30 PM' },
+      { period: 5, time: '01:20 PM - 02:10 PM' },
+      { period: 6, time: '02:10 PM - 03:00 PM' }
     ],
     schedule: {
       Monday: [
-        { period: 1, time: '04:10 PM - 05:00 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 2, time: '05:00 PM - 05:50 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 3, time: '05:50 PM - 06:40 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
-        { period: 4, time: '06:40 PM - 07:30 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
-        { period: 5, time: '07:50 PM - 08:30 PM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' },
-        { period: 6, time: '08:30 PM - 09:20 PM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' }
+        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
+        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
+        { period: 3, time: '10:50 AM - 11:40 AM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
+        { period: 4, time: '11:40 AM - 12:30 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
+        { period: 5, time: '01:20 PM - 02:10 PM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' },
+        { period: 6, time: '02:10 PM - 03:00 PM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' }
       ],
       Tuesday: [
-        { period: 1, time: '04:10 PM - 05:00 PM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' },
-        { period: 2, time: '05:00 PM - 05:50 PM', subjectCode: '25CSE0204 / 25CSE0202', room: 'LH-402 / MB104', faculty: 'Gourav Kaloniya' },
-        { period: 3, time: '05:50 PM - 06:40 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 4, time: '06:40 PM - 07:30 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 5, time: '07:50 PM - 08:30 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
-        { period: 6, time: '08:30 PM - 09:20 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' }
+        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CSE0202', room: 'MB104', faculty: 'Gourav Kaloniya' },
+        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
+        { period: 3, time: '10:50 AM - 11:40 AM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
+        { period: 4, time: '11:40 AM - 12:30 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
+        { period: 5, time: '01:20 PM - 02:10 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
+        { period: 6, time: '02:10 PM - 03:00 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' }
       ],
       Wednesday: [
-        { period: 1, time: '04:10 PM - 05:00 PM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar, SARAVJEET SINGH' },
-        { period: 2, time: '05:00 PM - 05:50 PM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar, SARAVJEET SINGH' },
-        { period: 3, time: '05:50 PM - 06:40 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 4, time: '06:40 PM - 07:30 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 5, time: '07:50 PM - 08:30 PM', subjectCode: '25CSE0204 / 25CSE0202', room: 'LH-402 / MB104', faculty: 'Gourav Kaloniya' },
-        { period: 6, time: '08:30 PM - 09:20 PM', subjectCode: '25CSE0204 / 25CSE0202', room: 'LH-402 / MB104', faculty: 'Gourav Kaloniya' }
+        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' },
+        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' },
+        { period: 3, time: '10:50 AM - 11:40 AM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
+        { period: 4, time: '11:40 AM - 12:30 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
+        { period: 5, time: '01:20 PM - 02:10 PM', subjectCode: '25CSE0204 / 25CSE0202', room: 'LH-402 / MB104', faculty: 'Gourav Kaloniya' },
+        { period: 6, time: '02:10 PM - 03:00 PM', subjectCode: '25CSE0204 / 25CSE0202', room: 'LH-402 / MB104', faculty: 'Gourav Kaloniya' }
       ],
       Thursday: [
-        { period: 1, time: '04:10 PM - 05:00 PM', subjectCode: '25CSE0204 / 25CSE0202', room: 'LH-402 / MB104', faculty: 'Gourav Kaloniya' },
-        { period: 2, time: '05:00 PM - 05:50 PM', subjectCode: '25CSE0204 / 25CSE0202', room: 'LH-402 / MB104', faculty: 'Gourav Kaloniya' },
-        { period: 3, time: '05:50 PM - 06:40 PM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar, SARAVJEET SINGH' },
-        { period: 4, time: '06:40 PM - 07:30 PM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar, SARAVJEET SINGH' }
+        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
+        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
+        { period: 3, time: '10:50 AM - 11:40 AM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' },
+        { period: 4, time: '11:40 AM - 12:30 PM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' }
       ],
       Friday: [
-        { period: 1, time: '04:10 PM - 05:00 PM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' },
-        { period: 2, time: '05:00 PM - 05:50 PM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' }
+        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' },
+        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' }
       ]
     }
-  };
+  } : timetable;
 
   // Group lectures by date and calculate day-wise bunks / timetable stats
   const { dayStatsMap, fullDayMissedDates } = useMemo(() => {

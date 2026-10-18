@@ -12,13 +12,14 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { safeText } from './CircularsFeed';
 
 export default function CircularDocumentViewerModal({ notice, student, onClose }) {
   const [copied, setCopied] = useState(false);
 
   if (!notice) return null;
 
-  const id = notice.id || '4611';
+  const id = safeText(notice.id, '4611');
   const cuietPrintUrl = `https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${id}`;
   const cuietFeedUrl = `https://cuiet.codebrigade.in/notifications/display`;
 
@@ -290,13 +291,13 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
               }}
             >
               <div>
-                Notice ID: <strong style="color: #800000;">#{id}</strong>
+                Notice ID: <strong style={{ color: '#800000' }}>#{id}</strong>
               </div>
               <div>
-                Category: <strong>{notice.category || 'Official Announcement'}</strong>
+                Category: <strong>{safeText(notice.category, 'Official Announcement')}</strong>
               </div>
               <div>
-                Published Date: <strong>{notice.date || 'October 2026'}</strong>
+                Published Date: <strong>{safeText(notice.date, 'October 2026')}</strong>
               </div>
               <div>
                 Portal Source: <strong style={{ color: '#0284c7' }}>cuiet.codebrigade.in</strong>
@@ -320,7 +321,7 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
                 OFFICIAL NOTICE TITLE:
               </div>
               <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#1e293b', lineHeight: 1.4 }}>
-                {notice.title}
+                {safeText(notice.title, 'University Circular')}
               </h2>
             </div>
 
@@ -414,7 +415,7 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
                   whiteSpace: 'pre-wrap'
                 }}
               >
-                {notice.description || 'Official academic communication dispatched via Chitkara University CUIET ERP portal.'}
+                {safeText(notice.description, 'Official academic communication dispatched via Chitkara University CUIET ERP portal.')}
               </div>
             </div>
 
