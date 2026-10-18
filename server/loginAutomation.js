@@ -51,7 +51,7 @@ function parsePortalError(rawText) {
 }
 
 /**
- * Finds Turnstile frame, clicks checkbox if required, and polls for token without leaking CDP
+ * Finds Turnstile frame, clicks checkbox if needed, and polls for token
  */
 async function solveTurnstile(page) {
   console.log('[LoginAutomation] Checking for Cloudflare Turnstile token...');
@@ -63,7 +63,7 @@ async function solveTurnstile(page) {
 
   // Find cfFrame
   let cfFrame = null;
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 10; i++) {
     await page.waitForTimeout(400);
     cfFrame = page.frames().find(f => f.url().includes('challenges.cloudflare.com') || f.url().includes('turnstile'));
     if (cfFrame) break;
@@ -71,22 +71,9 @@ async function solveTurnstile(page) {
 
   if (cfFrame) {
     try {
-      const frameEl = await cfFrame.frameElement();
-      const box = await frameEl.boundingBox();
-      if (box) {
-        const clickX = box.x + 28;
-        const clickY = box.y + box.height / 2;
-        console.log(`[LoginAutomation] Natural mouse click on Turnstile checkbox at (${clickX}, ${clickY})...`);
-        await page.mouse.move(clickX - 25, clickY - 10);
-        await page.waitForTimeout(80);
-        await page.mouse.move(clickX, clickY, { steps: 3 });
-        await page.waitForTimeout(100);
-        await page.mouse.click(clickX, clickY);
-      }
-
-      // Also dispatch element click inside frame if accessible
-      const cb = await cfFrame.$('input[type="checkbox"], #cf-stage, .ctp-checkbox-label');
+      const cb = await cfFrame.$('input[type="checkbox"], #cf-stage, .ctp-checkbox-label, body');
       if (cb) {
+        console.log('[LoginAutomation] Clicking Turnstile checkbox...');
         await cb.click({ force: true }).catch(() => {});
       }
     } catch (clickErr) {
@@ -94,13 +81,13 @@ async function solveTurnstile(page) {
     }
   }
 
-  // Fast poll for token: every 300ms for up to 6 seconds max
+  // Poll for token: every 500ms for up to 14 seconds max
   console.log('[LoginAutomation] Polling for Turnstile token...');
-  for (let s = 0; s < 20; s++) {
-    await page.waitForTimeout(300);
+  for (let s = 0; s < 28; s++) {
+    await page.waitForTimeout(500);
     token = await page.$eval('input[name="cf-turnstile-response"]', el => el.value).catch(() => '');
     if (token && token.length > 50) {
-      console.log(`[LoginAutomation] Turnstile token acquired in ${((s + 1) * 0.3).toFixed(1)}s! Length: ${token.length}`);
+      console.log(`[LoginAutomation] Turnstile token acquired in ${((s + 1) * 0.5).toFixed(1)}s! Length: ${token.length}`);
       return true;
     }
   }
@@ -131,69 +118,50 @@ async function loginWithCredentials({ username, password, session = '20', sessio
   let browser;
   try {
     browser = await chromium.launch({
+      channel: 'chrome',
       headless: headlessMode,
-      ignoreDefaultArgs: ['--enable-automation'],
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
-        '--disable-gpu',
         '--disable-blink-features=AutomationControlled'
       ]
     });
   } catch (e) {
-    console.warn('[LoginAutomation] Primary chromium launch failed:', e.message);
-
-    // If browser executable is missing in cloud cache, auto-install immediately and retry
-    if (e.message.includes("doesn't exist") || e.message.includes('playwright install')) {
-      console.log('[LoginAutomation] Chromium binary missing. Auto-installing Playwright Chromium...');
-      try {
-        const { execSync } = require('child_process');
-        const cliPath = path.join(__dirname, 'node_modules/playwright/cli.js');
-        execSync(`node "${cliPath}" install chromium`, { stdio: 'inherit' });
-        browser = await chromium.launch({
-          headless: true,
-          ignoreDefaultArgs: ['--enable-automation'],
-          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--disable-blink-features=AutomationControlled']
-        });
-      } catch (installErr) {
-        console.error('[LoginAutomation] Browser install failed:', installErr.message);
-      }
-    }
-
-    if (!browser) {
-      browser = await chromium.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled']
-      });
-    }
+    console.log('[LoginAutomation] Chrome channel launch fallback to default chromium:', e.message);
+    browser = await chromium.launch({
+      headless: headlessMode,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-blink-features=AutomationControlled'
+      ]
+    });
   }
 
   try {
     const context = await browser.newContext({
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
       viewport: { width: 1280, height: 800 },
-      locale: 'en-US',
-      extraHTTPHeaders: {
-        'Accept-Language': 'en-IN,en-US;q=0.9,en;q=0.8'
-      }
-    });
-
-    // Stealth evasion script injection
-    await context.addInitScript(() => {
-      delete Object.getPrototypeOf(navigator).webdriver;
-      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-      window.chrome = { runtime: {}, loadTimes: () => {}, csi: () => {}, app: {} };
-      Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
-      Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+      locale: 'en-US'
     });
 
     const page = await context.newPage();
+
+    // Abort heavy image/media assets to make portal load 5x faster
+    await page.route('**/*.{png,jpg,jpeg,gif,webp,ico,woff,woff2,ttf,mp4}', route => {
+      if (route.request().url().includes('cloudflare') || route.request().url().includes('turnstile')) {
+        return route.continue();
+      }
+      return route.abort();
+    });
+
     sessionStore.setLoginStep(sessionId, { step: 1, totalSteps: 4, label: 'Opening Portal', detail: 'Connecting to official CUIET portal...', percent: 25 });
-    await page.goto('https://cuiet.codebrigade.in/loginManager/load', { waitUntil: 'domcontentloaded', timeout: 10000 });
+    await page.goto('https://cuiet.codebrigade.in/loginManager/load', { waitUntil: 'domcontentloaded', timeout: 15000 });
 
     sessionStore.setLoginStep(sessionId, { step: 2, totalSteps: 4, label: 'Entering Credentials', detail: 'Filling Roll Number & Password...', percent: 50 });
-    await page.waitForSelector('#txtUsername', { timeout: 4000 });
+    await page.waitForSelector('#txtUsername', { timeout: 6000 });
     await page.fill('#txtUsername', username.trim());
     await page.fill('#txtPassword', password);
 

@@ -114,10 +114,10 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     console.log(`[Server] Initiating portal login for user: ${username} (session: ${sessionId})...`);
     
-    // Strict 18-second maximum timeout on the whole login attempt so the client never hangs
+    // Generous 42-second timeout to allow full Turnstile security resolution & OTP dispatch
     const loginPromise = loginAutomation.loginWithCredentials({ username, password, session, sessionId });
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Connection to Chitkara portal timed out. Please try signing in again.')), 18000)
+      setTimeout(() => reject(new Error('Connection to Chitkara portal timed out. Please try signing in again.')), 42000)
     );
 
     const result = await Promise.race([loginPromise, timeoutPromise]);

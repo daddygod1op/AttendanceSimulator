@@ -95,7 +95,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     setLoginStepStatus({ step: 1, totalSteps: 4, label: 'Connecting to Portal', detail: 'Connecting to CUIET server in cloud...', percent: 20 });
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 19000);
+    const timeoutId = setTimeout(() => controller.abort(), 44000);
 
     try {
       const sessionId = getDeviceSessionId();
@@ -139,7 +139,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     } catch (err) {
       clearTimeout(timeoutId);
       if (err.name === 'AbortError') {
-        setError('Connection to portal timed out after 18 seconds. Please check your credentials and try again.');
+        setError('Connection to portal took longer than expected. Please tap Log In again.');
       } else {
         setError(err.message || 'Authentication error. Please try again.');
       }
