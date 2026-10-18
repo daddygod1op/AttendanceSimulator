@@ -271,6 +271,11 @@ app.post('/api/auth/cookie-login', async (req, res) => {
       success: false,
       error: error.message || 'Invalid or expired session cookie. Please log in with your credentials.'
     });
+  } finally {
+    sessionStore.setSyncing(sessionId, false);
+  }
+});
+
 // ============================================================================
 // 5b. 1-Tap Mobile Sync Endpoint (Zero DevTools, Instant iOS/Android Redirect)
 // ============================================================================
@@ -504,14 +509,5 @@ app.listen(PORT, () => {
   console.log(` Encryption: AES-256-GCM Encrypted at Rest with Instant Purge`);
   console.log(` Target Portal: ${scraper.PORTAL_BASE}`);
   console.log(`=================================================================`);
-
-  // In cloud Linux environments, verify that Playwright Chromium is cached and ready
-  if (process.env.NODE_ENV === 'production' && process.platform === 'linux') {
-    const { exec } = require('child_process');
-    const cliPath = path.join(__dirname, 'node_modules/playwright/cli.js');
-    exec(`node "${cliPath}" install chromium`, (err) => {
-      if (err) console.warn('[Server Startup] Playwright background verification:', err.message);
-      else console.log('[Server Startup] Playwright Chromium verified and ready in cache.');
-    });
-  }
 });
+

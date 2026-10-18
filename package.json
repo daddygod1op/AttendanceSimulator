@@ -5,9 +5,8 @@
   "scripts": {
     "start": "node server/server.js",
     "serve": "node server/server.js",
-    "dev": "node start.js",
-    "build": "cd client && npm install && npm run build && cd ../server && npm install && node ./node_modules/playwright/cli.js install chromium",
-    "server": "node server/server.js",
+    "build": "cd client && npm install && npm run build && cd ../server && npm install",
+
     "client": "npm --prefix client dev"
   },
   "keywords": ["chitkara", "sis", "directory", "attendance", "dpdpa", "ferpa", "u25aiml-g13"],

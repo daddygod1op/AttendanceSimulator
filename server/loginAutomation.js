@@ -110,8 +110,12 @@ async function loginWithCredentials({ username, password, session = '20', sessio
     throw new Error('Official portal automation service is initializing. Please try signing in again in a moment.');
   }
 
-  const isCloudLinux = process.env.NODE_ENV === 'production' || process.platform === 'linux';
-  const headlessMode = isCloudLinux ? true : false;
+  const isCloudLinux = process.env.NODE_ENV === 'production' && process.platform === 'linux';
+  if (isCloudLinux) {
+    throw new Error('Chitkara University portal is protected by Cloudflare Turnstile, which prevents automated cloud server logins. Please use ⚡ 1-Tap Mobile Sync (instant on iOS & Android) or 📁 File Import!');
+  }
+
+  const headlessMode = false;
 
   console.log(`[LoginAutomation] Starting login attempt for user: ${username} (sessionId: ${sessionId}, headless: ${headlessMode})...`);
 
@@ -129,16 +133,22 @@ async function loginWithCredentials({ username, password, session = '20', sessio
     });
   } catch (e) {
     console.log('[LoginAutomation] Chrome channel launch fallback to default chromium:', e.message);
-    browser = await chromium.launch({
-      headless: headlessMode,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-blink-features=AutomationControlled'
-      ]
-    });
+    try {
+      browser = await chromium.launch({
+        headless: headlessMode,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-blink-features=AutomationControlled'
+        ]
+      });
+    } catch (launchErr) {
+      console.warn('[LoginAutomation] Browser launch failed:', launchErr.message);
+      throw new Error('Chitkara portal is protected by Cloudflare Turnstile. Please use the ⚡ 1-Tap Mobile Sync tab (recommended for iOS & Android) or 📁 File Import!');
+    }
   }
+
 
   try {
     const context = await browser.newContext({

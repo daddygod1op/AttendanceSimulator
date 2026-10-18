@@ -35,10 +35,12 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const [loginStepStatus, setLoginStepStatus] = useState(null);
   const [error, setError] = useState(null);
 
-  // Tab mode: 'credentials' | 'mobile_sync' | 'file_import'
-  const [authMode, setAuthMode] = useState('credentials');
+  // Tab mode: 'mobile_sync' | 'file_import' | 'credentials'
+  const [authMode, setAuthMode] = useState('mobile_sync');
   const [copiedSync, setCopiedSync] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
+  const [manualCookie, setManualCookie] = useState('');
+  const [cookieSubmitting, setCookieSubmitting] = useState(false);
 
 
 
@@ -282,6 +284,43 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     }
   };
 
+  const handleCookieSubmit = async (e) => {
+    e.preventDefault();
+    if (!manualCookie.trim()) {
+      setError('Please paste your session token or PHPSESSID.');
+      return;
+    }
+    setError(null);
+    setCookieSubmitting(true);
+    try {
+      let cStr = manualCookie.trim();
+      if (!cStr.includes('=')) {
+        cStr = `PHPSESSID=${cStr}`;
+      }
+      const sessionId = getDeviceSessionId();
+      const res = await fetch('/api/auth/cookie-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session-id': sessionId
+        },
+        body: JSON.stringify({ cookieString: cStr })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to sync with this session token.');
+      }
+      if (onLoginSuccess) {
+        onLoginSuccess(data.data);
+      }
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Session cookie sync failed. Please verify your portal session.');
+    } finally {
+      setCookieSubmitting(false);
+    }
+  };
+
   return (
     <div
       className="modal-backdrop animate-fade-in"
@@ -363,10 +402,37 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           {error && (
             <div
               className="alert-banner error"
-              style={{ marginBottom: '18px', padding: '10px 14px', borderRadius: '10px', fontSize: '0.85rem' }}
+              style={{ marginBottom: '18px', padding: '12px 14px', borderRadius: '10px', fontSize: '0.85rem' }}
             >
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
-              <span>{error}</span>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+                <span style={{ lineHeight: 1.45 }}>{error}</span>
+              </div>
+              {authMode === 'credentials' && (
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('mobile_sync'); setError(null); }}
+                  style={{
+                    marginTop: '10px',
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    background: '#10b981',
+                    color: '#000',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6
+                  }}
+                >
+                  <Sparkles size={14} />
+                  <span>Switch to ⚡ 1-Tap Mobile Sync (Recommended for iOS & Android)</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -400,30 +466,12 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           <div style={{ display: 'flex', background: '#1e293b', borderRadius: '10px', padding: '4px', marginBottom: '18px' }}>
             <button
               type="button"
-              onClick={() => { setAuthMode('credentials'); setError(null); }}
-              style={{
-                flex: 1,
-                padding: '9px 6px',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                borderRadius: '8px',
-                background: authMode === 'credentials' ? '#0f172a' : 'transparent',
-                color: authMode === 'credentials' ? '#38bdf8' : 'var(--text-muted)',
-                border: authMode === 'credentials' ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              Roll No & OTP
-            </button>
-            <button
-              type="button"
               onClick={() => { setAuthMode('mobile_sync'); setError(null); }}
               style={{
-                flex: 1,
+                flex: 1.2,
                 padding: '9px 6px',
                 fontSize: '0.78rem',
-                fontWeight: 600,
+                fontWeight: 700,
                 borderRadius: '8px',
                 background: authMode === 'mobile_sync' ? '#0f172a' : 'transparent',
                 color: authMode === 'mobile_sync' ? '#10b981' : 'var(--text-muted)',
@@ -437,13 +485,13 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
               }}
             >
               <Sparkles size={13} />
-              <span>1-Tap Mobile Sync</span>
+              <span>⚡ 1-Tap Mobile Sync</span>
             </button>
             <button
               type="button"
               onClick={() => { setAuthMode('file_import'); setError(null); }}
               style={{
-                flex: 1,
+                flex: 0.9,
                 padding: '9px 6px',
                 fontSize: '0.78rem',
                 fontWeight: 600,
@@ -460,9 +508,28 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
               }}
             >
               <Upload size={13} />
-              <span>File Import</span>
+              <span>📁 File Import</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthMode('credentials'); setError(null); }}
+              style={{
+                flex: 0.9,
+                padding: '9px 6px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                borderRadius: '8px',
+                background: authMode === 'credentials' ? '#0f172a' : 'transparent',
+                color: authMode === 'credentials' ? '#38bdf8' : 'var(--text-muted)',
+                border: authMode === 'credentials' ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span>Roll No & OTP</span>
             </button>
           </div>
+
 
           {/* STEP 1: CREDENTIALS */}
           {step === 'credentials' ? (
@@ -665,6 +732,54 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                     {copiedSync ? <CheckCircle2 size={16} /> : <Sparkles size={16} />}
                     <span>{copiedSync ? 'Copied! Paste in Portal Address Bar' : 'Copy 1-Tap Sync Code'}</span>
                   </button>
+
+                  {/* Direct Session Token Input */}
+                  <div style={{ margin: '18px 0 14px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.1)' }} />
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', fontWeight: 600 }}>OR PASTE SESSION TOKEN DIRECTLY</span>
+                    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.1)' }} />
+                  </div>
+
+                  <form onSubmit={handleCookieSubmit} style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      type="text"
+                      className="auth-input"
+                      placeholder="PHPSESSID=... or paste session token"
+                      value={manualCookie}
+                      onChange={(e) => setManualCookie(e.target.value)}
+                      style={{
+                        backgroundColor: '#1e293b',
+                        background: '#1e293b',
+                        border: '1px solid rgba(255, 255, 255, 0.16)',
+                        color: '#ffffff',
+                        borderRadius: '10px',
+                        padding: '10px 14px',
+                        fontSize: '0.82rem',
+                        flex: 1
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={cookieSubmitting || !manualCookie.trim()}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: '10px',
+                        background: '#10b981',
+                        color: '#000',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {cookieSubmitting ? <Loader2 size={14} className="spinning" /> : <Shield size={14} />}
+                      <span>Sync</span>
+                    </button>
+                  </form>
                 </div>
               )}
 

@@ -3,9 +3,10 @@ services:
     name: chitkara-attendance
     env: node
     plan: free
-    buildCommand: "cd client && npm install && npm run build && cd ../server && npm install && node ./node_modules/playwright/cli.js install chromium"
+    buildCommand: "cd client && npm install && npm run build && cd ../server && npm install"
     startCommand: "node server/server.js"
     envVars:
       - key: NODE_ENV
         value: production
+
 
