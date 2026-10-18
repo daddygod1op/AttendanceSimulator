@@ -35,8 +35,8 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const [loginStepStatus, setLoginStepStatus] = useState(null);
   const [error, setError] = useState(null);
 
-  // Tab mode: 'mobile_sync' | 'file_import' | 'credentials'
-  const [authMode, setAuthMode] = useState('mobile_sync');
+  // Tab mode: 'credentials' | 'mobile_sync' | 'file_import'
+  const [authMode, setAuthMode] = useState('credentials');
   const [copiedSync, setCopiedSync] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
   const [manualCookie, setManualCookie] = useState('');
@@ -408,31 +408,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                 <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
                 <span style={{ lineHeight: 1.45 }}>{error}</span>
               </div>
-              {authMode === 'credentials' && (
-                <button
-                  type="button"
-                  onClick={() => { setAuthMode('mobile_sync'); setError(null); }}
-                  style={{
-                    marginTop: '10px',
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    background: '#10b981',
-                    color: '#000',
-                    fontWeight: 700,
-                    fontSize: '0.8rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6
-                  }}
-                >
-                  <Sparkles size={14} />
-                  <span>Switch to ⚡ 1-Tap Mobile Sync (Recommended for iOS & Android)</span>
-                </button>
-              )}
             </div>
           )}
 
@@ -466,12 +441,35 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           <div style={{ display: 'flex', background: '#1e293b', borderRadius: '10px', padding: '4px', marginBottom: '18px' }}>
             <button
               type="button"
-              onClick={() => { setAuthMode('mobile_sync'); setError(null); }}
+              onClick={() => { setAuthMode('credentials'); setError(null); }}
               style={{
                 flex: 1.2,
                 padding: '9px 6px',
                 fontSize: '0.78rem',
                 fontWeight: 700,
+                borderRadius: '8px',
+                background: authMode === 'credentials' ? '#0f172a' : 'transparent',
+                color: authMode === 'credentials' ? '#38bdf8' : 'var(--text-muted)',
+                border: authMode === 'credentials' ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 4,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Shield size={13} />
+              <span>Roll No & OTP</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthMode('mobile_sync'); setError(null); }}
+              style={{
+                flex: 1,
+                padding: '9px 6px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
                 borderRadius: '8px',
                 background: authMode === 'mobile_sync' ? '#0f172a' : 'transparent',
                 color: authMode === 'mobile_sync' ? '#10b981' : 'var(--text-muted)',
@@ -485,7 +483,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
               }}
             >
               <Sparkles size={13} />
-              <span>⚡ 1-Tap Mobile Sync</span>
+              <span>⚡ 1-Tap Sync</span>
             </button>
             <button
               type="button"
@@ -509,24 +507,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
             >
               <Upload size={13} />
               <span>📁 File Import</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setAuthMode('credentials'); setError(null); }}
-              style={{
-                flex: 0.9,
-                padding: '9px 6px',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                borderRadius: '8px',
-                background: authMode === 'credentials' ? '#0f172a' : 'transparent',
-                color: authMode === 'credentials' ? '#38bdf8' : 'var(--text-muted)',
-                border: authMode === 'credentials' ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <span>Roll No & OTP</span>
             </button>
           </div>
 

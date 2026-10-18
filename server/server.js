@@ -21,10 +21,15 @@ const fs = require('fs');
 const sessionStore = require('./sessionStore');
 const scraper = require('./scraper');
 const loginAutomation = require('./loginAutomation');
+const mobileApi = require('./mobileApi');
 const importService = require('./importService');
 const auditLogger = require('./auditLogger');
 const { encrypt, decrypt } = require('./cryptoService');
 const { renderCircularHtml } = require('./circularDocumentRenderer');
+
+// In-memory active pending OTP sessions keyed by sessionId
+const pendingLogins = new Map();
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -96,34 +101,35 @@ app.get('/api/student/photo', (req, res) => {
 });
 
 // ============================================================================
-// 2. Direct Server-Side Credentials Login (Username + Password + Session)
+// 2. Official Direct Credentials Login (Initiates 4-digit OTP dispatch)
 // ============================================================================
 app.post('/api/auth/login', async (req, res) => {
   const sessionId = getSessionId(req);
-  const { username, password, session } = req.body;
+  const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ success: false, error: 'Roll number / username and portal password are required.' });
   }
 
-  // Cancel any prior stalled login session for this device
-  loginAutomation.cleanupActiveSession(sessionId);
+  // Clear previous pending login
+  pendingLogins.delete(sessionId);
 
   sessionStore.setSyncing(sessionId, true);
-  sessionStore.setLoginStep(sessionId, { step: 1, totalSteps: 4, label: 'Connecting to Portal', detail: 'Contacting Chitkara authentication server...', percent: 20 });
+  sessionStore.setLoginStep(sessionId, { step: 1, totalSteps: 3, label: 'Authenticating', detail: 'Contacting Chitkara authentication gateway...', percent: 35 });
 
   try {
-    console.log(`[Server] Initiating portal login for user: ${username} (session: ${sessionId})...`);
+    console.log(`[Server] Initiating official login for user: ${username} (session: ${sessionId})...`);
     
-    // Generous 42-second timeout to allow full Turnstile security resolution & OTP dispatch
-    const loginPromise = loginAutomation.loginWithCredentials({ username, password, session, sessionId });
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Connection to Chitkara portal timed out. Please try signing in again.')), 42000)
-    );
+    const result = await mobileApi.initiateLogin({ username, password });
 
-    const result = await Promise.race([loginPromise, timeoutPromise]);
-
-    // Portal issued an OTP
+    // Case 1: OTP dispatched to student's phone / email
     if (result.requiresOtp) {
+      pendingLogins.set(sessionId, {
+        authUserId: result.authUserId,
+        deviceUUID: result.deviceUUID,
+        username: result.username,
+        timestamp: Date.now()
+      });
+
       return res.json({
         success: true,
         requiresOtp: true,
@@ -131,15 +137,24 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    // Direct login succeeded
-    if (result.data) {
-      sessionStore.setAttendance(sessionId, result.data);
+    // Case 2: Succeeded directly without OTP
+    if (result.userDetails) {
+      sessionStore.setLoginStep(sessionId, { step: 3, totalSteps: 3, label: 'Syncing Attendance', detail: 'Retrieving official attendance register...', percent: 85 });
+      const attendanceData = await mobileApi.fetchFullAttendanceData({
+        userDetails: result.userDetails,
+        deviceUUID: result.deviceUUID,
+        username: result.username
+      });
+      sessionStore.setAttendance(sessionId, attendanceData);
+
+      return res.json({
+        success: true,
+        message: 'Login approved! Attendance records synchronized.',
+        data: attendanceData
+      });
     }
-    res.json({
-      success: true,
-      message: result.message || 'Login approved! Attendance records synchronized.',
-      data: result.data
-    });
+
+    throw new Error('Unexpected authentication response. Please try again.');
   } catch (error) {
     console.error('[Server] Login error:', error.message);
     res.status(401).json({
@@ -153,7 +168,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ============================================================================
-// 3. Verify OTP Step
+// 3. Verify OTP Step (Validates 4-digit code and synchronizes attendance)
 // ============================================================================
 app.post('/api/auth/verify-otp', async (req, res) => {
   const sessionId = getSessionId(req);
@@ -162,17 +177,39 @@ app.post('/api/auth/verify-otp', async (req, res) => {
     return res.status(400).json({ success: false, error: 'Please enter the 4-digit OTP sent to your phone/email.' });
   }
 
+  const pending = pendingLogins.get(sessionId);
+  if (!pending || !pending.authUserId) {
+    return res.status(400).json({ success: false, error: 'Your login session has expired. Please enter your Roll Number and Password again.' });
+  }
+
   sessionStore.setSyncing(sessionId, true);
+  sessionStore.setLoginStep(sessionId, { step: 2, totalSteps: 3, label: 'Verifying OTP', detail: 'Validating one-time password with Chitkara...', percent: 65 });
+
   try {
-    console.log(`[Server] Verifying OTP: ${otp} (session: ${sessionId})...`);
-    const result = await loginAutomation.verifyOtp(otp, sessionId);
-    if (result && result.data) {
-      sessionStore.setAttendance(sessionId, result.data);
-    }
+    console.log(`[Server] Verifying OTP: ${otp} for authUserId: ${pending.authUserId} (session: ${sessionId})...`);
+    
+    const verifyResult = await mobileApi.verifyOtp({
+      authUserId: pending.authUserId,
+      otpText: otp,
+      deviceUUID: pending.deviceUUID,
+      username: pending.username
+    });
+
+    sessionStore.setLoginStep(sessionId, { step: 3, totalSteps: 3, label: 'Loading Attendance', detail: 'Fetching latest attendance register and subjects...', percent: 90 });
+
+    const attendanceData = await mobileApi.fetchFullAttendanceData({
+      userDetails: verifyResult.userDetails,
+      deviceUUID: verifyResult.deviceUUID,
+      username: pending.username
+    });
+
+    sessionStore.setAttendance(sessionId, attendanceData);
+    pendingLogins.delete(sessionId);
+
     res.json({
       success: true,
-      message: result.message || 'OTP verified successfully! Records retrieved.',
-      data: result.data
+      message: 'OTP verified successfully! Attendance records loaded.',
+      data: attendanceData
     });
   } catch (error) {
     console.error('[Server] OTP verification failed:', error.message);
@@ -189,18 +226,30 @@ app.post('/api/auth/verify-otp', async (req, res) => {
 // Resend OTP
 app.post('/api/auth/resend-otp', async (req, res) => {
   const sessionId = getSessionId(req);
+  const pending = pendingLogins.get(sessionId);
+  if (!pending || !pending.username) {
+    return res.status(400).json({ success: false, error: 'Session expired. Please enter your Roll Number again.' });
+  }
   try {
-    const result = await loginAutomation.resendOtp(sessionId);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    const url = 'https://cuiet.codebrigade.in/loginManager/forgotPassword';
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 10; SM-G960F)',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `txtForgotPassword=${encodeURIComponent(pending.username)}&submitClose=1`
+    });
+    res.json({ success: true, message: 'New OTP dispatched to your registered phone / email.' });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
   }
 });
 
 // Cancel in-progress login
 app.post('/api/auth/cancel-login', (req, res) => {
   const sessionId = getSessionId(req);
-  loginAutomation.cleanupActiveSession(sessionId);
+  pendingLogins.delete(sessionId);
   sessionStore.setSyncing(sessionId, false);
   sessionStore.setLoginStep(sessionId, null);
   res.json({ success: true, message: 'Login cancelled.' });
@@ -209,7 +258,7 @@ app.post('/api/auth/cancel-login', (req, res) => {
 // Logout endpoint to clear session and cache
 app.post('/api/auth/logout', (req, res) => {
   const sessionId = getSessionId(req);
-  loginAutomation.cleanupActiveSession(sessionId);
+  pendingLogins.delete(sessionId);
   sessionStore.clear(sessionId);
   console.log(`[Server] User logged out (session: ${sessionId}). Session data cleared.`);
   res.json({ success: true, message: 'Logged out successfully. All session data cleared.' });
