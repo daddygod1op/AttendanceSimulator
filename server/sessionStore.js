@@ -151,14 +151,14 @@ class SessionStore {
     if (attendanceData) {
       delete attendanceData.batchmates;
       if (attendanceData.student && (!attendanceData.student.rollNo || attendanceData.student.rollNo === '40613')) {
-        attendanceData.student.rollNo = '2510993347';
+        attendanceData.student.rollNo = s.mobileAuth?.username || attendanceData.student.rollNo || '';
       }
     }
     s.attendance = attendanceData;
     if (attendanceData && attendanceData.student) {
       s.student = attendanceData.student;
       if (!s.student.rollNo || s.student.rollNo === '40613') {
-        s.student.rollNo = '2510993347';
+        s.student.rollNo = s.mobileAuth?.username || s.student.rollNo || '';
       }
     }
     s.lastSyncTime = new Date().toISOString();
@@ -281,13 +281,13 @@ class SessionStore {
     if (attendanceClean) {
       delete attendanceClean.batchmates;
       if (attendanceClean.student && (!attendanceClean.student.rollNo || attendanceClean.student.rollNo === '40613')) {
-        attendanceClean.student.rollNo = '2510993347';
+        attendanceClean.student.rollNo = s.mobileAuth?.username || attendanceClean.student.rollNo || '';
       }
     }
 
     const studentClean = isAuthed && s.student ? { ...s.student } : null;
     if (studentClean && (!studentClean.rollNo || studentClean.rollNo === '40613')) {
-      studentClean.rollNo = '2510993347';
+      studentClean.rollNo = s.mobileAuth?.username || studentClean.rollNo || '';
     }
 
     return {

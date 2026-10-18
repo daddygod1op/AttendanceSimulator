@@ -160,15 +160,22 @@ export default function AttendanceTrendsAndUpcoming({
     };
   }, [timetable, currentDayName, defaultSchedule]);
 
-  // Overall attendance trend calculations
-  const totalClasses = overall?.totalLectures || 148;
-  const attendedClasses = overall?.attendedLectures || 131;
-  const currentPct = overall?.percentage || 88.5;
+  // Overall attendance trend calculations (Dynamic from real delivered/attended data)
+  const totalClasses = overall?.delivered ?? overall?.totalLectures ?? (subjects.reduce((a, s) => a + (s.delivered || 0), 0));
+  const calculatedAttended = subjects.reduce((a, s) => a + (s.attended || 0) + (s.dutyLeave || 0) + (s.medicalLeave || 0), 0);
+  const effectiveAttended = overall?.effectiveAttended ?? (calculatedAttended > 0 ? calculatedAttended : (overall?.attended ?? overall?.attendedLectures ?? 0));
+  const currentPct = totalClasses > 0 ? Number(((effectiveAttended / totalClasses) * 100).toFixed(1)) : (overall?.percentage || 0);
 
   // Forecast: attend next 3 classes
-  const pctIfAttend3 = Number((((attendedClasses + 3) / (totalClasses + 3)) * 100).toFixed(1));
+  const pctIfAttend3 = totalClasses > 0 ? Number((((effectiveAttended + 3) / (totalClasses + 3)) * 100).toFixed(1)) : 0;
+  const gain3 = totalClasses > 0 ? Math.max(0, Number((pctIfAttend3 - currentPct).toFixed(1))) : 0;
+
   // Forecast: miss next 3 classes
-  const pctIfMiss3 = Number(((attendedClasses / (totalClasses + 3)) * 100).toFixed(1));
+  const pctIfMiss3 = totalClasses > 0 ? Number(((effectiveAttended / (totalClasses + 3)) * 100).toFixed(1)) : 0;
+  const drop3 = totalClasses > 0 ? Math.abs(Number((pctIfMiss3 - currentPct).toFixed(1))) : 0;
+
+  const safeBunks = overall?.safeBunks ?? overall?.bunkableClasses ?? overall?.bunksAllowedAt75 ?? Math.max(0, Math.floor((effectiveAttended - 0.75 * totalClasses) / 0.75));
+  const needClasses = overall?.needClasses ?? overall?.classesNeeded ?? Math.max(0, Math.ceil((0.75 * totalClasses - effectiveAttended) / (1 - 0.75)));
 
   return (
     <div style={{ margin: '20px 0' }}>
@@ -441,7 +448,7 @@ export default function AttendanceTrendsAndUpcoming({
               <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', marginTop: 4 }}>
                 {pctIfAttend3}%
               </div>
-              <span style={{ fontSize: '0.7rem', color: '#10b981' }}>+{(pctIfAttend3 - currentPct).toFixed(1)}% gain</span>
+              <span style={{ fontSize: '0.7rem', color: '#10b981' }}>+{gain3}% gain</span>
             </div>
 
             <div
@@ -459,7 +466,7 @@ export default function AttendanceTrendsAndUpcoming({
               <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#fff', marginTop: 4 }}>
                 {pctIfMiss3}%
               </div>
-              <span style={{ fontSize: '0.7rem', color: '#ef4444' }}>{(pctIfMiss3 - currentPct).toFixed(1)}% drop</span>
+              <span style={{ fontSize: '0.7rem', color: '#ef4444' }}>-{drop3}% drop</span>
             </div>
           </div>
 
@@ -474,10 +481,17 @@ export default function AttendanceTrendsAndUpcoming({
               lineHeight: 1.5
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span>Classes you can safely miss (75% rule):</span>
-              <strong style={{ color: '#10b981' }}>{overall?.bunksAllowedAt75 ?? overall?.marginClasses ?? 20} Lectures</strong>
-            </div>
+            {safeBunks > 0 ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span>Classes you can safely miss (75% rule):</span>
+                <strong style={{ color: '#10b981' }}>{safeBunks} Lectures</strong>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span>Lectures needed to reach 75%:</span>
+                <strong style={{ color: '#ef4444' }}>{needClasses} Lectures</strong>
+              </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>Minimum statutory requirement:</span>
               <strong style={{ color: '#fff' }}>75.0% Attendance</strong>

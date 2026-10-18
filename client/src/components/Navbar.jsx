@@ -147,7 +147,7 @@ export default function Navbar({
                 }}
               >
                 <img
-                  src={student.photoUrl || '/student_profile.jpg'}
+                  src={student.photoUrl || (student.name ? `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=1e293b&color=38bdf8&bold=true&size=128` : '/student_profile.jpg')}
                   alt={student.name}
                   style={{
                     width: '100%',
@@ -156,10 +156,9 @@ export default function Navbar({
                     objectPosition: 'top'
                   }}
                   onError={(e) => {
-                    if (e.target.src !== window.location.origin + '/student_profile.jpg') {
-                      e.target.src = '/student_profile.jpg';
-                    } else {
-                      e.target.style.display = 'none';
+                    const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name || 'Student')}&background=1e293b&color=38bdf8&bold=true&size=128`;
+                    if (e.target.src !== fallback) {
+                      e.target.src = fallback;
                     }
                   }}
                 />

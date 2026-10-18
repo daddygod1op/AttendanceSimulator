@@ -69,19 +69,27 @@ export default function OverallAttendanceCard({ overall, student, performance, o
 
           <div className="student-hero-meta">
             <div className="student-hero-title-row">
-              <h3 className="student-hero-name">{student.name}</h3>
-              <span className="student-hero-roll">{(!student.rollNo || student.rollNo === '40613') ? '2510993347' : student.rollNo}</span>
+              <h3 className="student-hero-name">{student.name || 'Student'}</h3>
+              {student.rollNo && <span className="student-hero-roll">{student.rollNo}</span>}
               <span className="student-hero-cgpa">
                 <Award size={13} />
                 {typeof cgpaVal === 'number' ? cgpaVal.toFixed(2) : cgpaVal} CGPA
               </span>
             </div>
             <div className="student-hero-sub-row">
-              <span>{student.branch || 'Computer Science & Engineering'}</span>
-              <span>•</span>
-              <span className="group-pill">Group: {student.group || 'U25AIML-G13'}</span>
-              <span>•</span>
-              <span>{student.semester || 'Semester 3 (AI & ML)'}</span>
+              <span>{student.branch || student.className || 'B.Tech Engineering'}</span>
+              {student.group && (
+                <>
+                  <span>•</span>
+                  <span className="group-pill">Group: {student.group}</span>
+                </>
+              )}
+              {student.semester && (
+                <>
+                  <span>•</span>
+                  <span>{student.semester}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -184,37 +192,50 @@ export default function OverallAttendanceCard({ overall, student, performance, o
         <div className="bunk-calculator-box">
           <div className="metric-label" style={{ marginBottom: '0.2rem' }}>Attendance Target Status (75% Rule)</div>
 
-          {overall.bunkableClasses > 0 ? (
-            <div>
-              <div className="bunk-status-badge safe">
-                <CheckCircle size={18} />
-                <span>{overall.bunkableClasses} Bunk{overall.bunkableClasses > 1 ? 's' : ''} Available</span>
-              </div>
-              <div className="bunk-subtext" style={{ marginTop: '0.3rem' }}>
-                You can safely miss up to {overall.bunkableClasses} lecture{overall.bunkableClasses > 1 ? 's' : ''} and still stay at or above 75%.
-              </div>
-            </div>
-          ) : overall.classesNeeded > 0 ? (
-            <div>
-              <div className="bunk-status-badge danger">
-                <ShieldAlert size={18} />
-                <span>Attend Next {overall.classesNeeded} Classes</span>
-              </div>
-              <div className="bunk-subtext" style={{ marginTop: '0.3rem' }}>
-                Attendance is currently below the 75% requirement. You must attend {overall.classesNeeded} consecutive class{overall.classesNeeded > 1 ? 'es' : ''} to recover.
-              </div>
-            </div>
-          ) : (
-            <div>
-              <div className="bunk-status-badge safe">
-                <CheckCircle size={18} />
-                <span>On The Limit (75%)</span>
-              </div>
-              <div className="bunk-subtext" style={{ marginTop: '0.3rem' }}>
-                You are exactly at the 75% threshold. Do not miss any upcoming lectures.
-              </div>
-            </div>
-          )}
+          {(() => {
+            const safeBunks = overall?.bunkableClasses ?? overall?.safeBunks ?? 0;
+            const classesNeeded = overall?.classesNeeded ?? overall?.needClasses ?? 0;
+            const pct = overall?.percentage || 0;
+
+            if (safeBunks > 0) {
+              return (
+                <div>
+                  <div className="bunk-status-badge safe">
+                    <CheckCircle size={18} />
+                    <span>{safeBunks} Bunk{safeBunks > 1 ? 's' : ''} Available</span>
+                  </div>
+                  <div className="bunk-subtext" style={{ marginTop: '0.3rem' }}>
+                    You can safely miss up to {safeBunks} lecture{safeBunks > 1 ? 's' : ''} and still stay at or above 75%.
+                  </div>
+                </div>
+              );
+            } else if (classesNeeded > 0 || pct < 75) {
+              const req = classesNeeded > 0 ? classesNeeded : Math.max(1, Math.ceil((0.75 * (overall.delivered || 0) - (overall.attended || 0)) / 0.25));
+              return (
+                <div>
+                  <div className="bunk-status-badge danger">
+                    <ShieldAlert size={18} />
+                    <span>Attend Next {req} Classes</span>
+                  </div>
+                  <div className="bunk-subtext" style={{ marginTop: '0.3rem' }}>
+                    Attendance is currently at {pct}%, below the 75% requirement. You must attend {req} consecutive class{req > 1 ? 'es' : ''} to reach 75%.
+                  </div>
+                </div>
+              );
+            } else {
+              return (
+                <div>
+                  <div className="bunk-status-badge safe">
+                    <CheckCircle size={18} />
+                    <span>On The Limit (75%)</span>
+                  </div>
+                  <div className="bunk-subtext" style={{ marginTop: '0.3rem' }}>
+                    You are exactly at the 75% threshold. Do not miss any upcoming lectures.
+                  </div>
+                </div>
+              );
+            }
+          })()}
 
           {overall.bunkableClasses85 > 0 && (
             <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.4rem', marginTop: '0.4rem' }}>

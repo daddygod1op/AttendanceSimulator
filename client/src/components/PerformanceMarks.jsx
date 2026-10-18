@@ -179,6 +179,48 @@ export default function PerformanceMarks({ performance = null }) {
         })}
       </div>
 
+      {/* Sessional Tests Quick Access Callout */}
+      {tests.length > 0 && activeTab !== 'tests' && (
+        <div
+          onClick={() => setActiveTab('tests')}
+          style={{
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.1))',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            borderRadius: '12px',
+            padding: '12px 18px',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            flexWrap: 'wrap',
+            gap: 10
+          }}
+          className="sessional-tests-banner"
+          title="Click to view all internal sessional test marks"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Sparkles size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
+            <div>
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.92rem' }}>
+                Internal Sessional Test Marks Updated ({tests.length} Evaluations Published)
+              </span>
+              <p style={{ margin: '2px 0 0 0', color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                ST-I, Practical Evaluations (PE), and Continuous Assessments (CE) synced directly from CUIET Performance tab.
+              </p>
+            </div>
+          </div>
+          <button
+            className="btn btn-primary"
+            style={{ padding: '6px 14px', fontSize: '0.82rem', fontWeight: 700, background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+          >
+            <span>View Sessional Tests</span>
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Main Subtab Navigation: Grades vs Tests */}
       <div className="perf-subtab-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div className="tab-buttons-group">

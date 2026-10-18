@@ -40,25 +40,28 @@ export default function CircularsFeed({ circulars = [], student }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeModalNotice]);
 
-  // Extract categories and counts
+  // Extract categories and counts safely
   const categories = useMemo(() => {
-    const counts = { All: circulars.length };
-    circulars.forEach(c => {
-      const cat = c.category || 'General';
+    const list = Array.isArray(circulars) ? circulars : [];
+    const counts = { All: list.length };
+    list.forEach(c => {
+      const cat = c?.category || 'General';
       counts[cat] = (counts[cat] || 0) + 1;
     });
     return counts;
   }, [circulars]);
 
-  // Filter circulars
+  // Filter circulars safely
   const filteredCirculars = useMemo(() => {
-    return circulars.filter(c => {
-      if (selectedCategory !== 'All' && c.category !== selectedCategory) return false;
+    const list = Array.isArray(circulars) ? circulars : [];
+    return list.filter(c => {
+      if (!c) return false;
+      if (selectedCategory !== 'All' && (c.category || 'General') !== selectedCategory) return false;
       if (onlyUnread && !c.isUnread) return false;
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const matchesTitle = (c.title || '').toLowerCase().includes(query);
-        const matchesDesc = (c.description || '').toLowerCase().includes(query);
+        const matchesDesc = (c.description || c.snippet || '').toLowerCase().includes(query);
         const matchesDate = (c.date || '').toLowerCase().includes(query);
         const matchesCat = (c.category || '').toLowerCase().includes(query);
         return matchesTitle || matchesDesc || matchesDate || matchesCat;
@@ -68,7 +71,8 @@ export default function CircularsFeed({ circulars = [], student }) {
   }, [circulars, selectedCategory, onlyUnread, searchQuery]);
 
   const handleCopyLink = (item) => {
-    navigator.clipboard.writeText(`${item.title}\n${item.description}\nSource: Chitkara University CUIET Portal`);
+    if (!item) return;
+    navigator.clipboard.writeText(`${item.title || 'Notice'}\n${item.description || item.snippet || ''}\nSource: Chitkara University CUIET Portal`);
     setCopiedId(item.id);
     setTimeout(() => setCopiedId(null), 2500);
   };
@@ -103,12 +107,11 @@ export default function CircularsFeed({ circulars = [], student }) {
   };
 
   const renderFormattedContent = (text) => {
-    if (!text) return null;
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = text.split(urlRegex);
+    if (!text || typeof text !== 'string') return null;
+    const parts = text.split(/(https?:\/\/[^\s]+)/);
 
     return parts.map((part, index) => {
-      if (part.match(urlRegex)) {
+      if (part && (part.startsWith('http://') || part.startsWith('https://'))) {
         return (
           <a
             key={index}
@@ -343,7 +346,7 @@ export default function CircularsFeed({ circulars = [], student }) {
               <h3 className="circular-card-title">{item.title}</h3>
 
               <p className="circular-card-desc">
-                {item.description}
+                {item.description || item.snippet || ''}
               </p>
 
               <div className="card-bottom-actions">

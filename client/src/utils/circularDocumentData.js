@@ -11,10 +11,10 @@ export function getCircularDocument(notice, student = {}) {
   const date = notice?.date || '15 October 2026';
   const category = notice?.category || 'General';
 
-  const studentName = student?.name || 'AARUSH WADHWA';
-  const studentRoll = student?.rollNo || '2510993347';
-  const studentGroup = 'G13 (AI & ML)';
-  const studentSem = student?.semester || '3rd SEM';
+  const studentName = student?.name || 'Student Candidate';
+  const studentRoll = student?.rollNo || '';
+  const studentGroup = student?.group || student?.className || 'Engineering';
+  const studentSem = student?.semester || 'Current Term';
 
   // Base Document Structure
   const doc = {

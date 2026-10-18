@@ -168,7 +168,9 @@ function extractStudentInfo($, html) {
   });
 
   if (!photoUrl) {
-    photoUrl = 'https://s3.amazonaws.com/cbrig-assets/cuiet/resources/Student/S173232szi.jpg';
+    photoUrl = name && name !== 'Chitkara Student'
+      ? `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1e293b&color=38bdf8&bold=true&size=128`
+      : '';
   }
 
   // Specific Chitkara pattern: VYOM KUMAR 's(2510990000) Details
@@ -569,11 +571,17 @@ function calculateOverallAttendance(subjects, registerEntries) {
     return {
       percentage,
       attended: totalAttended,
+      totalLectures: totalDelivered,
+      attendedLectures: totalAttended,
       effectiveAttended,
       delivered: totalDelivered,
       dutyLeave: totalDuty,
       medicalLeave: totalMedical,
+      safeBunks: Math.max(0, bunkable75),
       bunkableClasses: Math.max(0, bunkable75),
+      bunksAllowedAt75: Math.max(0, bunkable75),
+      marginClasses: Math.max(0, bunkable75),
+      needClasses: Math.max(0, needed75),
       classesNeeded: Math.max(0, needed75),
       bunkableClasses85: Math.max(0, bunkable85),
       classesNeeded85: Math.max(0, needed85),
@@ -584,10 +592,16 @@ function calculateOverallAttendance(subjects, registerEntries) {
   return {
     percentage: 0,
     attended: 0,
+    totalLectures: 0,
+    attendedLectures: 0,
     delivered: 0,
     dutyLeave: 0,
     medicalLeave: 0,
+    safeBunks: 0,
     bunkableClasses: 0,
+    bunksAllowedAt75: 0,
+    marginClasses: 0,
+    needClasses: 0,
     classesNeeded: 0,
     bunkableClasses85: 0,
     classesNeeded85: 0,

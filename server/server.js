@@ -96,7 +96,7 @@ app.get('/api/student/photo', (req, res) => {
   }
   const sessionId = getSessionId(req);
   const state = sessionStore.getState(sessionId);
-  const photoUrl = state?.student?.photoUrl || 'https://s3.amazonaws.com/cbrig-assets/cuiet/resources/Student/S173232szi.jpg';
+  const photoUrl = state?.student?.photoUrl || (state?.student?.name ? `https://ui-avatars.com/api/?name=${encodeURIComponent(state.student.name)}&background=1e293b&color=38bdf8&bold=true&size=128` : '/student_profile.jpg');
   res.redirect(photoUrl);
 });
 
@@ -460,11 +460,12 @@ app.post('/api/attendance/refresh', async (req, res) => {
     }
 
     // Case 4: Sync directly via official Chitkara Mobile API
-    console.log('[Server] Syncing fresh attendance records via official Mobile API...');
+    const userRoll = rawSession?.student?.rollNo || rawSession?.mobileAuth?.username || '';
+    console.log('[Server] Syncing fresh attendance records via official Mobile API for:', userRoll || 'student');
     const attendanceData = await mobileApi.fetchFullAttendanceData({
-      userDetails: { userId: '40613', sessionId: '20', roleId: '4' },
+      userDetails: rawSession?.mobileAuth?.userDetails || { userId: '40613', sessionId: '20', roleId: '4' },
       deviceUUID: 'device_sync_' + sessionId,
-      username: '2510993347'
+      username: userRoll
     });
     sessionStore.setAttendance(sessionId, attendanceData);
     return res.json({
