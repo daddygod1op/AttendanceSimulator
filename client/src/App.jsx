@@ -27,7 +27,8 @@ import {
   Upload,
   FileSpreadsheet,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Award
 } from 'lucide-react';
 
 import { getDeviceSessionId, clearDeviceSession } from './utils/sessionHelper';
