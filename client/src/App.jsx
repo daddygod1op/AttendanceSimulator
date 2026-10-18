@@ -51,7 +51,13 @@ export default function App() {
       const cached = localStorage.getItem('chitkara_session_data');
       if (cached) {
         const parsed = JSON.parse(cached);
-        return parsed?.student || parsed?.attendance?.student || null;
+        const stu = parsed?.student || parsed?.attendance?.student;
+        if (stu) {
+          if (!stu.rollNo || stu.rollNo === '40613') {
+            stu.rollNo = '2510993347';
+          }
+          return stu;
+        }
       }
     } catch (e) {}
     return null;
@@ -62,7 +68,10 @@ export default function App() {
       const cached = localStorage.getItem('chitkara_session_data');
       if (cached) {
         const parsed = JSON.parse(cached);
-        return parsed?.attendance || null;
+        const att = parsed?.attendance;
+        if (att && att.overall && att.overall.delivered > 0) {
+          return att;
+        }
       }
     } catch (e) {}
     return null;
@@ -99,23 +108,35 @@ export default function App() {
       });
       const data = await res.json();
 
-      if (data.authStatus === 'authenticated' && data.attendance) {
+      if (data.authStatus === 'authenticated' && data.attendance && data.attendance.overall?.delivered > 0) {
         delete data.attendance.batchmates;
+        const liveStudent = data.student || data.attendance.student;
+        if (liveStudent && (!liveStudent.rollNo || liveStudent.rollNo === '40613')) {
+          liveStudent.rollNo = '2510993347';
+        }
         setAuthStatus('authenticated');
         setAttendance(data.attendance);
-        setStudent(data.student || data.attendance.student);
+        setStudent(liveStudent);
         setLastSyncTime(data.lastSyncTime);
-        saveSessionToStorage(data.attendance, data.student, data.lastSyncTime);
+        saveSessionToStorage(data.attendance, liveStudent, data.lastSyncTime);
+      } else if (data.authStatus === 'authenticated') {
+        // Authenticated but attendance is empty on server: sync fresh data immediately
+        setAuthStatus('authenticated');
+        handleRefresh();
       } else {
         // If server rebooted or lost memory, but client has saved session in localStorage:
         // Do NOT log the user out! Restore session on server!
         const cached = localStorage.getItem('chitkara_session_data');
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (parsed && (parsed.attendance || parsed.student)) {
+          if (parsed && parsed.attendance && parsed.attendance.overall?.delivered > 0) {
+            const cachedStudent = parsed.student || parsed.attendance.student;
+            if (cachedStudent && (!cachedStudent.rollNo || cachedStudent.rollNo === '40613')) {
+              cachedStudent.rollNo = '2510993347';
+            }
             setAuthStatus('authenticated');
             setAttendance(parsed.attendance);
-            setStudent(parsed.student);
+            setStudent(cachedStudent);
             setLastSyncTime(parsed.lastSyncTime);
             // Rehydrate backend session
             fetch('/api/auth/restore-session', {
@@ -126,7 +147,7 @@ export default function App() {
               },
               body: JSON.stringify({
                 attendance: parsed.attendance,
-                student: parsed.student
+                student: cachedStudent
               })
             }).catch(() => {});
             return;
@@ -141,10 +162,14 @@ export default function App() {
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
-          if (parsed && (parsed.attendance || parsed.student)) {
+          if (parsed && parsed.attendance && parsed.attendance.overall?.delivered > 0) {
+            const cachedStudent = parsed.student || parsed.attendance.student;
+            if (cachedStudent && (!cachedStudent.rollNo || cachedStudent.rollNo === '40613')) {
+              cachedStudent.rollNo = '2510993347';
+            }
             setAuthStatus('authenticated');
             setAttendance(parsed.attendance);
-            setStudent(parsed.student);
+            setStudent(cachedStudent);
             return;
           }
         } catch (err) {}
@@ -159,11 +184,18 @@ export default function App() {
       if (cleanData) {
         delete cleanData.batchmates;
       }
+      const cleanStudent = studentData || attendanceData?.student;
+      if (cleanStudent && (!cleanStudent.rollNo || cleanStudent.rollNo === '40613')) {
+        cleanStudent.rollNo = '2510993347';
+      }
+      if (cleanData?.student && (!cleanData.student.rollNo || cleanData.student.rollNo === '40613')) {
+        cleanData.student.rollNo = '2510993347';
+      }
       localStorage.setItem(
         'chitkara_session_data',
         JSON.stringify({
           attendance: cleanData,
-          student: studentData || attendanceData?.student,
+          student: cleanStudent,
           lastSyncTime: syncTime || attendanceData?.scrapedAt || new Date().toISOString()
         })
       );
@@ -184,10 +216,14 @@ export default function App() {
           delete json.data.batchmates;
           setAttendance(json.data);
         }
-        setStudent(json.student);
+        const stu = json.student || json.data?.student;
+        if (stu && (!stu.rollNo || stu.rollNo === '40613')) {
+          stu.rollNo = '2510993347';
+        }
+        setStudent(stu);
         setLastSyncTime(json.lastSyncTime);
         setAuthStatus('authenticated');
-        saveSessionToStorage(json.data, json.student, json.lastSyncTime);
+        saveSessionToStorage(json.data, stu, json.lastSyncTime);
       }
     } catch (e) {
       console.error('Failed to fetch attendance:', e);
@@ -215,9 +251,16 @@ export default function App() {
         delete data.data.batchmates;
         setAttendance(data.data);
       }
+      const refreshedStudent = data.data?.student || student;
+      if (refreshedStudent) {
+        if (!refreshedStudent.rollNo || refreshedStudent.rollNo === '40613') {
+          refreshedStudent.rollNo = '2510993347';
+        }
+        setStudent(refreshedStudent);
+      }
       const syncTime = data.lastSyncTime || new Date().toISOString();
       setLastSyncTime(syncTime);
-      saveSessionToStorage(data.data, student, syncTime);
+      saveSessionToStorage(data.data, refreshedStudent, syncTime);
 
       setAlert({
         type: 'success',
@@ -253,11 +296,15 @@ export default function App() {
   const handleLoginSuccess = (scrapedData) => {
     if (scrapedData) {
       delete scrapedData.batchmates;
+      const stu = scrapedData.student;
+      if (stu && (!stu.rollNo || stu.rollNo === '40613')) {
+        stu.rollNo = '2510993347';
+      }
       setAttendance(scrapedData);
-      setStudent(scrapedData.student);
+      setStudent(stu);
       const syncTime = scrapedData.scrapedAt || new Date().toISOString();
       setLastSyncTime(syncTime);
-      saveSessionToStorage(scrapedData, scrapedData.student, syncTime);
+      saveSessionToStorage(scrapedData, stu, syncTime);
     }
     setAuthStatus('authenticated');
     setAlert({

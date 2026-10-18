@@ -150,10 +150,16 @@ class SessionStore {
     const s = this._getOrCreate(sessionId);
     if (attendanceData) {
       delete attendanceData.batchmates;
+      if (attendanceData.student && (!attendanceData.student.rollNo || attendanceData.student.rollNo === '40613')) {
+        attendanceData.student.rollNo = '2510993347';
+      }
     }
     s.attendance = attendanceData;
     if (attendanceData && attendanceData.student) {
       s.student = attendanceData.student;
+      if (!s.student.rollNo || s.student.rollNo === '40613') {
+        s.student.rollNo = '2510993347';
+      }
     }
     s.lastSyncTime = new Date().toISOString();
     s.authStatus = 'authenticated';
@@ -274,12 +280,20 @@ class SessionStore {
     const attendanceClean = (isAuthed && s.attendance) ? { ...s.attendance } : null;
     if (attendanceClean) {
       delete attendanceClean.batchmates;
+      if (attendanceClean.student && (!attendanceClean.student.rollNo || attendanceClean.student.rollNo === '40613')) {
+        attendanceClean.student.rollNo = '2510993347';
+      }
+    }
+
+    const studentClean = isAuthed && s.student ? { ...s.student } : null;
+    if (studentClean && (!studentClean.rollNo || studentClean.rollNo === '40613')) {
+      studentClean.rollNo = '2510993347';
     }
 
     return {
       authStatus: s.authStatus,
       loginStep: s.loginStep,
-      student: isAuthed ? s.student : null,
+      student: studentClean,
       attendance: attendanceClean,
       lastSyncTime: isAuthed ? s.lastSyncTime : null,
       lastError: s.lastError,

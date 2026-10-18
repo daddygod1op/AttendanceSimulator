@@ -70,7 +70,7 @@ export default function OverallAttendanceCard({ overall, student, performance, o
           <div className="student-hero-meta">
             <div className="student-hero-title-row">
               <h3 className="student-hero-name">{student.name}</h3>
-              <span className="student-hero-roll">{student.rollNo}</span>
+              <span className="student-hero-roll">{(!student.rollNo || student.rollNo === '40613') ? '2510993347' : student.rollNo}</span>
               <span className="student-hero-cgpa">
                 <Award size={13} />
                 {typeof cgpaVal === 'number' ? cgpaVal.toFixed(2) : cgpaVal} CGPA
