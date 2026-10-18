@@ -11,7 +11,9 @@ import {
   EyeOff,
   Smartphone,
   ArrowLeft,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles,
+  Upload
 } from 'lucide-react';
 import { getDeviceSessionId } from '../utils/sessionHelper';
 
@@ -32,6 +34,11 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [loginStepStatus, setLoginStepStatus] = useState(null);
   const [error, setError] = useState(null);
+
+  // Tab mode: 'credentials' | 'mobile_sync' | 'file_import'
+  const [authMode, setAuthMode] = useState('credentials');
+  const [copiedSync, setCopiedSync] = useState(false);
+  const [fileUploading, setFileUploading] = useState(false);
 
 
 
@@ -223,6 +230,58 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     }
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError(null);
+    setFileUploading(true);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const content = event.target.result;
+          const sessionId = getDeviceSessionId();
+          let payload;
+
+          if (file.name.endsWith('.json')) {
+            payload = { jsonContent: content, fileName: file.name };
+          } else {
+            payload = { csvContent: content, fileName: file.name };
+          }
+
+          const res = await fetch('/api/attendance/import', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-session-id': sessionId
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.error || 'Failed to process import file.');
+          }
+
+          if (onLoginSuccess) {
+            onLoginSuccess(data.data);
+          }
+          onClose();
+        } catch (err) {
+          setError(err.message || 'Failed to parse file.');
+        } finally {
+          setFileUploading(false);
+        }
+      };
+      reader.readAsText(file);
+    } catch (err) {
+      setError('Could not read the uploaded file.');
+      setFileUploading(false);
+    }
+  };
+
   return (
     <div
       className="modal-backdrop animate-fade-in"
@@ -337,145 +396,319 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
             </div>
           )}
 
+          {/* Tab Selection */}
+          <div style={{ display: 'flex', background: '#1e293b', borderRadius: '10px', padding: '4px', marginBottom: '18px' }}>
+            <button
+              type="button"
+              onClick={() => { setAuthMode('credentials'); setError(null); }}
+              style={{
+                flex: 1,
+                padding: '9px 6px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                borderRadius: '8px',
+                background: authMode === 'credentials' ? '#0f172a' : 'transparent',
+                color: authMode === 'credentials' ? '#38bdf8' : 'var(--text-muted)',
+                border: authMode === 'credentials' ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Roll No & OTP
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthMode('mobile_sync'); setError(null); }}
+              style={{
+                flex: 1,
+                padding: '9px 6px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                borderRadius: '8px',
+                background: authMode === 'mobile_sync' ? '#0f172a' : 'transparent',
+                color: authMode === 'mobile_sync' ? '#10b981' : 'var(--text-muted)',
+                border: authMode === 'mobile_sync' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid transparent',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 4,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Sparkles size={13} />
+              <span>1-Tap Mobile Sync</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthMode('file_import'); setError(null); }}
+              style={{
+                flex: 1,
+                padding: '9px 6px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                borderRadius: '8px',
+                background: authMode === 'file_import' ? '#0f172a' : 'transparent',
+                color: authMode === 'file_import' ? '#f59e0b' : 'var(--text-muted)',
+                border: authMode === 'file_import' ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid transparent',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 4,
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Upload size={13} />
+              <span>File Import</span>
+            </button>
+          </div>
+
           {/* STEP 1: CREDENTIALS */}
           {step === 'credentials' ? (
-            <form onSubmit={handleCredentialsSubmit} autoComplete="off">
-              {/* Roll Number / Username */}
-              <div className="auth-input-group">
-                <div className="auth-input-label">
-                  <span>University Roll Number / Username</span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
-                    e.g. 251099xxxx
-                  </span>
-                </div>
-                <div className="auth-input-wrapper">
-                  <User size={16} className="auth-input-icon" />
-                  <input
-                    type="text"
-                    name="cuiet_username"
-                    autoComplete="off"
-                    className="auth-input"
-                    placeholder="Enter your university roll number"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    id="cuiet-roll-input"
-                    style={{
-                      backgroundColor: '#1e293b',
-                      background: '#1e293b',
-                      border: '1px solid rgba(255, 255, 255, 0.16)',
-                      color: '#ffffff',
-                      borderRadius: '10px',
-                      padding: '12px 14px 12px 42px',
-                      width: '100%'
-                    }}
-                  />
-                </div>
-              </div>
+            <>
+              {/* MODE A: ROLL NUMBER & PASSWORD */}
+              {authMode === 'credentials' && (
+                <form onSubmit={handleCredentialsSubmit} autoComplete="off">
+                  {/* Roll Number / Username */}
+                  <div className="auth-input-group">
+                    <div className="auth-input-label">
+                      <span>University Roll Number / Username</span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
+                        e.g. 251099xxxx
+                      </span>
+                    </div>
+                    <div className="auth-input-wrapper">
+                      <User size={16} className="auth-input-icon" />
+                      <input
+                        type="text"
+                        name="cuiet_username"
+                        autoComplete="off"
+                        className="auth-input"
+                        placeholder="Enter your university roll number"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                        id="cuiet-roll-input"
+                        style={{
+                          backgroundColor: '#1e293b',
+                          background: '#1e293b',
+                          border: '1px solid rgba(255, 255, 255, 0.16)',
+                          color: '#ffffff',
+                          borderRadius: '10px',
+                          padding: '12px 14px 12px 42px',
+                          width: '100%'
+                        }}
+                      />
+                    </div>
+                  </div>
 
-              {/* Password */}
-              <div className="auth-input-group">
-                <div className="auth-input-label">
-                  <span>Portal Password</span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
-                    Chalkpad account password
-                  </span>
-                </div>
-                <div className="auth-input-wrapper">
-                  <Lock size={16} className="auth-input-icon" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="cuiet_pass"
-                    autoComplete="new-password"
-                    className="auth-input"
-                    placeholder="Enter your official portal password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    id="cuiet-password-input"
+                  {/* Password */}
+                  <div className="auth-input-group">
+                    <div className="auth-input-label">
+                      <span>Portal Password</span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
+                        Chalkpad account password
+                      </span>
+                    </div>
+                    <div className="auth-input-wrapper">
+                      <Lock size={16} className="auth-input-icon" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="cuiet_pass"
+                        autoComplete="new-password"
+                        className="auth-input"
+                        placeholder="Enter your official portal password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        id="cuiet-password-input"
+                        style={{
+                          backgroundColor: '#1e293b',
+                          background: '#1e293b',
+                          border: '1px solid rgba(255, 255, 255, 0.16)',
+                          color: '#ffffff',
+                          borderRadius: '10px',
+                          padding: '12px 42px 12px 42px',
+                          width: '100%'
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="auth-password-toggle"
+                        onClick={() => setShowPassword(!showPassword)}
+                        title={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Academic Session */}
+                  <div className="auth-input-group">
+                    <div className="auth-input-label">
+                      <span>Academic Session</span>
+                      <span style={{ fontSize: '0.72rem', color: '#10b981' }}>
+                        Active 2026-27
+                      </span>
+                    </div>
+                    <div className="auth-input-wrapper">
+                      <Calendar size={16} className="auth-input-icon" />
+                      <select
+                        value={session}
+                        onChange={(e) => setSession(e.target.value)}
+                        className="auth-input"
+                        id="cuiet-session-select"
+                        style={{
+                          backgroundColor: '#1e293b',
+                          background: '#1e293b',
+                          border: '1px solid rgba(255, 255, 255, 0.16)',
+                          color: '#ffffff',
+                          borderRadius: '10px',
+                          padding: '12px 14px 12px 42px',
+                          width: '100%'
+                        }}
+                      >
+                        <option value="20">JulDec2026 (Semester 3 AI & ML - Active)</option>
+                        <option value="19">JanJun2026 (Semester 2)</option>
+                        <option value="18">JulDec2025 (Semester 1)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
                     style={{
-                      backgroundColor: '#1e293b',
-                      background: '#1e293b',
-                      border: '1px solid rgba(255, 255, 255, 0.16)',
-                      color: '#ffffff',
-                      borderRadius: '10px',
-                      padding: '12px 42px 12px 42px',
-                      width: '100%'
+                      width: '100%',
+                      padding: '13px',
+                      fontSize: '0.96rem',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      marginTop: '10px'
                     }}
-                  />
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 size={16} className="spinning" />
+                        <span>Signing In... ({elapsedSeconds}s)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Shield size={16} />
+                        <span>Log In to Portal</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {/* MODE B: 1-TAP MOBILE SYNC */}
+              {authMode === 'mobile_sync' && (
+                <div>
+                  <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '12px', padding: '14px', marginBottom: '16px' }}>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '0.88rem', color: '#34d399', fontWeight: 700 }}>
+                      ⚡ 1-Tap Mobile Sync (iOS Safari & Android Chrome)
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '0.78rem', color: '#d1fae5', lineHeight: 1.45 }}>
+                      Bypasses Cloudflare firewalls instantly! Zero developer tools and zero typing needed.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '18px' }}>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                      <div style={{ background: '#38bdf8', color: '#000', fontWeight: 800, width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0, marginTop: 2 }}>
+                        1
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
+                        Log in to your portal: <a href="https://cuiet.codebrigade.in/loginManager/load" target="_blank" rel="noreferrer" style={{ color: '#38bdf8', textDecoration: 'underline', fontWeight: 600 }}>cuiet.codebrigade.in ↗</a> on this phone or browser.
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                      <div style={{ background: '#38bdf8', color: '#000', fontWeight: 800, width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0, marginTop: 2 }}>
+                        2
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
+                        Tap the button below to copy the 1-Tap Sync bookmark, paste it into your portal address bar and press Go:
+                      </div>
+                    </div>
+                  </div>
+
                   <button
                     type="button"
-                    className="auth-password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                    title={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Academic Session */}
-              <div className="auth-input-group">
-                <div className="auth-input-label">
-                  <span>Academic Session</span>
-                  <span style={{ fontSize: '0.72rem', color: '#10b981' }}>
-                    Active 2026-27
-                  </span>
-                </div>
-                <div className="auth-input-wrapper">
-                  <Calendar size={16} className="auth-input-icon" />
-                  <select
-                    value={session}
-                    onChange={(e) => setSession(e.target.value)}
-                    className="auth-input"
-                    id="cuiet-session-select"
+                    className="btn btn-primary"
+                    onClick={() => {
+                      const syncUrl = `${window.location.origin}/sync?c=`;
+                      const bookmarklet = `javascript:location.href='${syncUrl}'+encodeURIComponent(document.cookie);`;
+                      navigator.clipboard.writeText(bookmarklet);
+                      setCopiedSync(true);
+                      setTimeout(() => setCopiedSync(false), 3000);
+                    }}
                     style={{
-                      backgroundColor: '#1e293b',
-                      background: '#1e293b',
-                      border: '1px solid rgba(255, 255, 255, 0.16)',
-                      color: '#ffffff',
-                      borderRadius: '10px',
-                      padding: '12px 14px 12px 42px',
-                      width: '100%'
+                      width: '100%',
+                      padding: '13px',
+                      fontSize: '0.92rem',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      background: copiedSync ? '#10b981' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'
                     }}
                   >
-                    <option value="20">JulDec2026 (Semester 3 AI & ML - Active)</option>
-                    <option value="19">JanJun2026 (Semester 2)</option>
-                    <option value="18">JulDec2025 (Semester 1)</option>
-                  </select>
+                    {copiedSync ? <CheckCircle2 size={16} /> : <Sparkles size={16} />}
+                    <span>{copiedSync ? 'Copied! Paste in Portal Address Bar' : 'Copy 1-Tap Sync Code'}</span>
+                  </button>
                 </div>
-              </div>
+              )}
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '13px',
-                  fontSize: '0.96rem',
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  marginTop: '10px'
-                }}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={16} className="spinning" />
-                    <span>Signing In... ({elapsedSeconds}s)</span>
-                  </>
-                ) : (
-                  <>
-                    <Shield size={16} />
-                    <span>Log In to Portal</span>
-                  </>
-                )}
-              </button>
-            </form>
+              {/* MODE C: FILE IMPORT */}
+              {authMode === 'file_import' && (
+                <div>
+                  <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '12px', padding: '14px', marginBottom: '16px' }}>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: '0.88rem', color: '#fbbf24', fontWeight: 700 }}>
+                      📁 Official Chalkpad File Import
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '0.78rem', color: '#fef3c7', lineHeight: 1.45 }}>
+                      Log in to your portal, tap <b>Export</b> on your Attendance Register page, and upload the downloaded file (.xlsx, .csv, .json) here.
+                    </p>
+                  </div>
+
+                  <input
+                    type="file"
+                    accept=".xlsx, .csv, .json"
+                    id="portal-file-upload"
+                    style={{ display: 'none' }}
+                    onChange={handleFileUpload}
+                  />
+                  <label
+                    htmlFor="portal-file-upload"
+                    className="btn btn-primary"
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      fontSize: '0.92rem',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      cursor: 'pointer',
+                      background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                    }}
+                  >
+                    <Upload size={16} />
+                    <span>{fileUploading ? 'Parsing Records...' : 'Choose Attendance File (.xlsx / .csv)'}</span>
+                  </label>
+                </div>
+              )}
+            </>
           ) : (
             /* STEP 2: OTP VERIFICATION */
             <form onSubmit={handleVerifyOtp}>

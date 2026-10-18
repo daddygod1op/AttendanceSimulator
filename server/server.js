@@ -271,6 +271,32 @@ app.post('/api/auth/cookie-login', async (req, res) => {
       success: false,
       error: error.message || 'Invalid or expired session cookie. Please log in with your credentials.'
     });
+// ============================================================================
+// 5b. 1-Tap Mobile Sync Endpoint (Zero DevTools, Instant iOS/Android Redirect)
+// ============================================================================
+app.get(['/sync', '/api/sync'], async (req, res) => {
+  const cookieParam = req.query.c || req.query.cookie || req.query.sid || req.query.PHPSESSID || req.query.session;
+  if (!cookieParam) {
+    return res.redirect('/?error=' + encodeURIComponent('Missing session token. Please tap the sync shortcut on your portal page.'));
+  }
+
+  let cookieString = decodeURIComponent(cookieParam).trim();
+  if (!cookieString.includes('=')) {
+    cookieString = `PHPSESSID=${cookieString}`;
+  }
+
+  const sessionId = req.query.sessionId || 'cu_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+  sessionStore.setSyncing(sessionId, true);
+
+  try {
+    console.log('[Server] 1-Tap mobile sync received for session:', sessionId);
+    const attendanceData = await scraper.connectWithCookieString(cookieString);
+    sessionStore.setAttendance(sessionId, attendanceData);
+    console.log('[Server] 1-Tap mobile sync succeeded for:', attendanceData.student?.name || attendanceData.student?.rollNo);
+    res.redirect(`/?synced=true&sessionId=${sessionId}`);
+  } catch (err) {
+    console.error('[Server] 1-Tap mobile sync failed:', err.message);
+    res.redirect(`/?error=${encodeURIComponent(err.message || 'Session expired. Please log in to your portal and try again.')}`);
   } finally {
     sessionStore.setSyncing(sessionId, false);
   }
