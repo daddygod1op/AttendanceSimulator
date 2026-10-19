@@ -124,7 +124,7 @@ export default function CircularsFeed({ circulars = [], student }) {
       name: `${cleanTitle}.pdf`,
       type: 'application/pdf',
       size: 'Official CUIET Attachment',
-      url: `https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${id}`
+      url: `/api/circulars/${id}/document`
     }];
   };
 
@@ -401,10 +401,10 @@ export default function CircularsFeed({ circulars = [], student }) {
                       textDecoration: 'none',
                       cursor: 'pointer'
                     }}
-                    title="Open original document directly on cuiet.codebrigade.in"
+                    title="Open verified official notice document"
                   >
                     <ExternalLink size={12} />
-                    <span>Open in CUIET</span>
+                    <span>Open Doc</span>
                   </a>
 
                   <button
@@ -426,10 +426,10 @@ export default function CircularsFeed({ circulars = [], student }) {
                       gap: 5,
                       cursor: 'pointer'
                     }}
-                    title="View official notice details"
+                    title="View notice particulars"
                   >
                     <Eye size={12} />
-                    <span>Details</span>
+                    <span>View Notice</span>
                   </button>
 
                   <button
@@ -630,10 +630,8 @@ export default function CircularsFeed({ circulars = [], student }) {
                           </div>
 
                           <div className="circular-attachment-actions" style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
-                            <a
-                              href={`https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${activeModalNotice.id}`}
-                              target="_blank"
-                              rel="noreferrer"
+                            <button
+                              onClick={() => setActiveDocNotice(activeModalNotice)}
                               className="btn btn-primary"
                               style={{
                                 padding: '7px 14px',
@@ -644,15 +642,20 @@ export default function CircularsFeed({ circulars = [], student }) {
                                 background: 'linear-gradient(135deg, #e63946, #c1121f)',
                                 boxShadow: '0 2px 8px rgba(230, 57, 70, 0.35)',
                                 color: '#fff',
-                                textDecoration: 'none'
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontWeight: 700
                               }}
-                              title="Open original document directly on cuiet.codebrigade.in"
+                              title="View official notice document"
                             >
-                              <ExternalLink size={14} />
-                              <span>Open in CUIET Portal</span>
-                            </a>
-                            <button
-                              onClick={() => setActiveDocNotice(activeModalNotice)}
+                              <Eye size={14} />
+                              <span>View Notice</span>
+                            </button>
+                            <a
+                              href={`/api/circulars/${activeModalNotice.id}/document`}
+                              target="_blank"
+                              rel="noreferrer"
                               className="btn btn-outline"
                               style={{
                                 padding: '7px 12px',
@@ -661,13 +664,35 @@ export default function CircularsFeed({ circulars = [], student }) {
                                 alignItems: 'center',
                                 gap: 6,
                                 background: 'rgba(255, 255, 255, 0.05)',
-                                color: '#e2e8f0'
+                                color: '#e2e8f0',
+                                textDecoration: 'none',
+                                borderRadius: '6px'
                               }}
-                              title="View notice particulars"
+                              title="Open verified document in new tab"
                             >
-                              <Eye size={14} />
-                              <span>View Notice</span>
-                            </button>
+                              <ExternalLink size={14} />
+                              <span>Open in New Tab</span>
+                            </a>
+                            <a
+                              href={`/api/circulars/${activeModalNotice.id}/download`}
+                              download
+                              className="btn btn-outline"
+                              style={{
+                                padding: '7px 12px',
+                                fontSize: '0.82rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                color: '#e2e8f0',
+                                textDecoration: 'none',
+                                borderRadius: '6px'
+                              }}
+                              title="Download verified official notice"
+                            >
+                              <Download size={14} />
+                              <span>Download</span>
+                            </a>
                           </div>
                         </div>
                       ))}
@@ -711,14 +736,14 @@ export default function CircularsFeed({ circulars = [], student }) {
                     )}
                   </button>
                   <a
-                    href="https://cuiet.codebrigade.in/notifications/display"
+                    href={`/api/circulars/${activeModalNotice.id}/document`}
                     target="_blank"
                     rel="noreferrer"
                     className="btn btn-primary"
-                    style={{ padding: '0.5rem 1.1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 6 }}
+                    style={{ padding: '0.5rem 1.1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}
                   >
                     <ExternalLink size={14} />
-                    <span>Open in CUIET</span>
+                    <span>Open Full Notice</span>
                   </a>
                 </div>
               </div>

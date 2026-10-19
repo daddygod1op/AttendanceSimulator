@@ -25,6 +25,15 @@ class SessionStore {
         if (data && typeof data === 'object') {
           for (const [id, s] of Object.entries(data)) {
             if (s && s.authStatus === 'authenticated') {
+              if (s.attendance && s.attendance.timetable && s.attendance.timetable.schedule) {
+                Object.values(s.attendance.timetable.schedule).forEach(dayArr => {
+                  if (Array.isArray(dayArr)) {
+                    dayArr.forEach(item => {
+                      delete item.faculty;
+                    });
+                  }
+                });
+              }
               this.sessions.set(id, {
                 ...s,
                 isSyncing: false,
@@ -152,6 +161,15 @@ class SessionStore {
       delete attendanceData.batchmates;
       if (attendanceData.student && (!attendanceData.student.rollNo || attendanceData.student.rollNo === '40613')) {
         attendanceData.student.rollNo = s.mobileAuth?.username || attendanceData.student.rollNo || '';
+      }
+      if (attendanceData.timetable && attendanceData.timetable.schedule) {
+        Object.values(attendanceData.timetable.schedule).forEach(dayArr => {
+          if (Array.isArray(dayArr)) {
+            dayArr.forEach(item => {
+              delete item.faculty;
+            });
+          }
+        });
       }
     }
     s.attendance = attendanceData;

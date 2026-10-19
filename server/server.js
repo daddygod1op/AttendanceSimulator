@@ -483,54 +483,35 @@ app.post('/api/attendance/refresh', async (req, res) => {
               tests: perf.tests || []
             };
           }
-          if (!att.timetable || att.timetable.periods?.[0]?.time?.includes('04:10')) {
-            att.timetable = {
-              periods: [
-                { period: 1, time: '09:00 AM - 09:50 AM' },
-                { period: 2, time: '09:50 AM - 10:40 AM' },
-                { period: 3, time: '10:50 AM - 11:40 AM' },
-                { period: 4, time: '11:40 AM - 12:30 PM' },
-                { period: 5, time: '01:20 PM - 02:10 PM' },
-                { period: 6, time: '02:10 PM - 03:00 PM' }
-              ],
-              schedule: {
-                Monday: [
-                  { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Front End Engineering-II', subjectName: 'Front End Engineering-II', subjectCode: '25CSE0203', code: '25CSE0203', faculty: 'Himanshu Sharma', room: 'LH-402' },
-                  { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Front End Engineering-II', subjectName: 'Front End Engineering-II', subjectCode: '25CSE0203', code: '25CSE0203', faculty: 'Himanshu Sharma', room: 'LH-402' },
-                  { period: 3, time: '10:50 AM - 11:40 AM', subject: 'Database Management System', subjectName: 'Database Management System', subjectCode: '24CSE0209', code: '24CSE0209', faculty: 'Sourabh Batra', room: 'LH-402' },
-                  { period: 4, time: '11:40 AM - 12:30 PM', subject: 'Database Management System', subjectName: 'Database Management System', subjectCode: '24CSE0209', code: '24CSE0209', faculty: 'Sourabh Batra', room: 'LH-402' },
-                  { period: 5, time: '01:20 PM - 02:10 PM', subject: 'Programming in Java / OOP', subjectName: 'Programming in Java / OOP', subjectCode: '25CSE0202', code: '25CSE0202', faculty: 'Gourav Kaloniya', room: 'MB-104 / LH-402' },
-                  { period: 6, time: '02:10 PM - 03:00 PM', subject: 'Programming in Java / OOP', subjectName: 'Programming in Java / OOP', subjectCode: '25CSE0202', code: '25CSE0202', faculty: 'Gourav Kaloniya', room: 'MB-104 / LH-402' }
-                ],
-                Tuesday: [
-                  { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Programming in Java', subjectName: 'Programming in Java', subjectCode: '25CSE0202', code: '25CSE0202', faculty: 'Gourav Kaloniya', room: 'MB-104' },
-                  { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Object Oriented Programming', subjectName: 'Object Oriented Programming', subjectCode: '25CSE0204', code: '25CSE0204', faculty: 'Gourav Kaloniya', room: 'LH-402' },
-                  { period: 3, time: '10:50 AM - 11:40 AM', subject: 'Front End Engineering-II', subjectName: 'Front End Engineering-II', subjectCode: '25CSE0203', code: '25CSE0203', faculty: 'Himanshu Sharma', room: 'LH-402' },
-                  { period: 4, time: '11:40 AM - 12:30 PM', subject: 'Front End Engineering-II', subjectName: 'Front End Engineering-II', subjectCode: '25CSE0203', code: '25CSE0203', faculty: 'Himanshu Sharma', room: 'LH-402' },
-                  { period: 5, time: '01:20 PM - 02:10 PM', subject: 'Database Management System', subjectName: 'Database Management System', subjectCode: '24CSE0209', code: '24CSE0209', faculty: 'Sourabh Batra', room: 'LH-402' },
-                  { period: 6, time: '02:10 PM - 03:00 PM', subject: 'Database Management System', subjectName: 'Database Management System', subjectCode: '24CSE0209', code: '24CSE0209', faculty: 'Sourabh Batra', room: 'LH-402' }
-                ],
-                Wednesday: [
-                  { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Statistics and Data Engineering', subjectName: 'Statistics and Data Engineering', subjectCode: '25CAI0201', code: '25CAI0201', faculty: 'Hemant Kumar / Saravjeet Singh', room: 'LH-402' },
-                  { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Statistics and Data Engineering', subjectName: 'Statistics and Data Engineering', subjectCode: '25CAI0201', code: '25CAI0201', faculty: 'Hemant Kumar / Saravjeet Singh', room: 'LH-402' },
-                  { period: 3, time: '10:50 AM - 11:40 AM', subject: 'Front End Engineering-II', subjectName: 'Front End Engineering-II', subjectCode: '25CSE0203', code: '25CSE0203', faculty: 'Himanshu Sharma', room: 'LH-402' },
-                  { period: 4, time: '11:40 AM - 12:30 PM', subject: 'Front End Engineering-II', subjectName: 'Front End Engineering-II', subjectCode: '25CSE0203', code: '25CSE0203', faculty: 'Himanshu Sharma', room: 'LH-402' },
-                  { period: 5, time: '01:20 PM - 02:10 PM', subject: 'Object Oriented Programming / Java', subjectName: 'Object Oriented Programming / Java', subjectCode: '25CSE0204', code: '25CSE0204', faculty: 'Gourav Kaloniya', room: 'LH-402 / MB-104' },
-                  { period: 6, time: '02:10 PM - 03:00 PM', subject: 'Object Oriented Programming / Java', subjectName: 'Object Oriented Programming / Java', subjectCode: '25CSE0204', code: '25CSE0204', faculty: 'Gourav Kaloniya', room: 'LH-402 / MB-104' }
-                ],
-                Thursday: [
-                  { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Object Oriented Programming', subjectName: 'Object Oriented Programming', subjectCode: '25CSE0204', code: '25CSE0204', faculty: 'Gourav Kaloniya', room: 'LH-402' },
-                  { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Object Oriented Programming', subjectName: 'Object Oriented Programming', subjectCode: '25CSE0204', code: '25CSE0204', faculty: 'Gourav Kaloniya', room: 'LH-402' },
-                  { period: 3, time: '10:50 AM - 11:40 AM', subject: 'Statistics and Data Engineering', subjectName: 'Statistics and Data Engineering', subjectCode: '25CAI0201', code: '25CAI0201', faculty: 'Hemant Kumar / Saravjeet Singh', room: 'LH-402' },
-                  { period: 4, time: '11:40 AM - 12:30 PM', subject: 'Statistics and Data Engineering', subjectName: 'Statistics and Data Engineering', subjectCode: '25CAI0201', code: '25CAI0201', faculty: 'Hemant Kumar / Saravjeet Singh', room: 'LH-402' }
-                ],
-                Friday: [
-                  { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Programming in Java / OOP', subjectName: 'Programming in Java / OOP', subjectCode: '25CSE0202', code: '25CSE0202', faculty: 'Gourav Kaloniya', room: 'MB-104 / LH-402' },
-                  { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Programming in Java / OOP', subjectName: 'Programming in Java / OOP', subjectCode: '25CSE0202', code: '25CSE0202', faculty: 'Gourav Kaloniya', room: 'MB-104 / LH-402' }
-                ],
-                Saturday: []
-              }
-            };
+          if (!att.timetable || !att.timetable.schedule) {
+            const defaultPeriods = [
+              { period: 1, time: '09:00 AM - 09:50 AM' },
+              { period: 2, time: '09:50 AM - 10:40 AM' },
+              { period: 3, time: '10:50 AM - 11:40 AM' },
+              { period: 4, time: '11:40 AM - 12:30 PM' },
+              { period: 5, time: '01:20 PM - 02:10 PM' },
+              { period: 6, time: '02:10 PM - 03:00 PM' }
+            ];
+            const schedule = { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [] };
+            const subList = Array.isArray(att.subjects) && att.subjects.length > 0 ? att.subjects : [];
+            const daysList = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            if (subList.length > 0) {
+              daysList.forEach((day, dIdx) => {
+                defaultPeriods.slice(0, 4).forEach((p, pIdx) => {
+                  const sub = subList[(dIdx * 2 + pIdx) % subList.length];
+                  schedule[day].push({
+                    period: p.period,
+                    time: p.time,
+                    subject: sub.name || sub.code || 'Academic Lecture',
+                    subjectName: sub.name || sub.code || 'Academic Lecture',
+                    subjectCode: sub.code || '',
+                    code: sub.code || '',
+                    room: 'Lecture Hall'
+                  });
+                });
+              });
+            }
+            att.timetable = { periods: defaultPeriods, schedule };
           }
           sessionStore.setAttendance(sessionId, att);
         } catch (e) {

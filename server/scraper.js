@@ -294,33 +294,12 @@ function extractSubjects($) {
 }
 
 function extractTimetable($, subjects = []) {
-  const subjectMap = {
-    '24CSE0209': 'Database Management System',
-    '25CAI0201': 'Statistics and Data Engineering',
-    '25CSE0202': 'Programming in Java',
-    '25CSE0203': 'Front End Engineering-II',
-    '25CSE0204': 'Object Oriented Programming'
-  };
-  subjects.forEach(s => { if (s.code && s.name) subjectMap[s.code] = s.name; });
+  const subjectMap = {};
+  (subjects || []).forEach(s => {
+    if (s.code) subjectMap[s.code] = s.name || s.code;
+  });
 
-  const teacherMap = {
-    '24CSE0209': 'Sourabh Batra',
-    '25CAI0201': 'Hemant Kumar / Saravjeet Singh',
-    '25CSE0202': 'Gourav Kaloniya',
-    '25CSE0203': 'Himanshu Sharma',
-    '25CSE0204': 'Gourav Kaloniya'
-  };
-  subjects.forEach(s => { if (s.code && s.faculty) teacherMap[s.code] = s.faculty; });
-
-  const periods = [
-    { period: 1, time: '09:00 AM - 09:50 AM' },
-    { period: 2, time: '09:50 AM - 10:40 AM' },
-    { period: 3, time: '10:50 AM - 11:40 AM' },
-    { period: 4, time: '11:40 AM - 12:30 PM' },
-    { period: 5, time: '01:20 PM - 02:10 PM' },
-    { period: 6, time: '02:10 PM - 03:00 PM' }
-  ];
-
+  const periods = [];
   const schedule = {
     Monday: [],
     Tuesday: [],
@@ -330,58 +309,111 @@ function extractTimetable($, subjects = []) {
     Saturday: []
   };
 
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const table = $('.timetable-desktop table.reportTableBorder').first();
+  if (table.length) {
+    // 1. Parse periods dynamically from header row
+    const headerRow = table.find('tr.rowheading').first();
+    headerRow.find('td').slice(1).each((idx, td) => {
+      const lines = $(td).html().split(/<br\s*\/?>/i).map(s => $(`<span>${s}</span>`).text().trim()).filter(Boolean);
+      const periodNum = parseInt(lines[0]) || (idx + 1);
+      let timeStr = lines.slice(1).join(' - ');
+      if (!timeStr && lines.length > 1) timeStr = `${lines[1]} - ${lines[2] || ''}`;
+      if (!timeStr) timeStr = `Period ${periodNum}`;
 
-  $('.timetable-desktop tr').each((i, tr) => {
-    const cells = $(tr).find('td, th');
-    const firstCellText = cells.first().text().trim();
-    const matchedDay = days.find(d => firstCellText.startsWith(d));
-    if (!matchedDay) return;
-
-    cells.slice(1).each((idx, td) => {
-      const text = $(td).text().trim().replace(/\s+/g, ' ');
-      if (text && text !== '&nbsp;' && text.length > 2) {
-        let matchedCode = '';
-        let matchedName = 'Class Lecture';
-        for (const code of Object.keys(subjectMap)) {
-          if (text.includes(code)) {
-            matchedCode = code;
-            matchedName = subjectMap[code];
-            break;
-          }
-        }
-
-        // Extract Room
-        let room = 'LH-402';
-        const roomMatch = text.match(/(LH-\d+|MB-?\d+|Turing\s*Lab|Lab-\d+)/i);
-        if (roomMatch) {
-          room = roomMatch[1].toUpperCase();
-          if (room === 'MB104') room = 'MB-104';
-        }
-
-        // Extract Faculty
-        let faculty = teacherMap[matchedCode] || 'Faculty Member';
-        if (text.includes('Himanshu Sharma')) faculty = 'Himanshu Sharma';
-        else if (text.includes('Sourabh Batra')) faculty = 'Sourabh Batra';
-        else if (text.includes('Gourav Kaloniya')) faculty = 'Gourav Kaloniya';
-        else if (text.includes('Hemant Kumar')) faculty = 'Hemant Kumar / Saravjeet Singh';
-
-        schedule[matchedDay].push({
-          period: idx + 1,
-          time: periods[idx]?.time || `Period ${idx + 1}`,
-          subject: matchedName,
-          subjectName: matchedName,
-          subjectCode: matchedCode,
-          code: matchedCode,
-          faculty,
-          room,
-          raw: text
-        });
-      }
+      periods.push({
+        period: periodNum,
+        time: timeStr
+      });
     });
-  });
 
-  return { periods, schedule };
+    // 2. Parse each day row
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    table.find('tr').each((_, tr) => {
+      const cells = $(tr).find('td');
+      if (!cells.length) return;
+      const firstCellText = cells.first().text().trim();
+      const matchedDay = days.find(d => firstCellText.startsWith(d));
+      if (!matchedDay) return;
+
+      cells.slice(1).each((cellIdx, td) => {
+        const periodInfo = periods[cellIdx] || { period: cellIdx + 1, time: `Period ${cellIdx + 1}` };
+        
+        // Each cell can contain one or multiple class blocks
+        const spans = $(td).find('div > span');
+        if (spans.length > 0) {
+          spans.each((_, span) => {
+            const titleSpan = $(span).find('span[title]').first();
+            const code = titleSpan.text().trim() || $(span).text().trim().split(/[\s\n<]/)[0];
+            const titleAttr = titleSpan.attr('title') || '';
+            let subjectName = subjectMap[code] || code;
+            const nameMatch = titleAttr.match(/\((.*?)\)/);
+            if (titleAttr && !nameMatch) {
+              subjectName = titleAttr;
+            } else if (titleAttr && nameMatch) {
+              subjectName = titleAttr.replace(/\s*\([^)]*\)\s*/, '').trim();
+            }
+
+            const rawText = $(span).text().replace(/\s+/g, ' ');
+            const roomMatch = rawText.match(/\b(LH-\d+|MB-?\d+|Turing\s*Lab|Lab-\d+|CR-\d+)\b/i);
+            const room = roomMatch ? roomMatch[1].toUpperCase() : 'LH-402';
+
+            const groupMatch = rawText.match(/\b([UP]\d+[A-Z]+-G\d+)\b/i);
+            const group = groupMatch ? groupMatch[1].toUpperCase() : '';
+
+            if (code && code !== '&nbsp;' && code.length > 2) {
+              schedule[matchedDay].push({
+                period: periodInfo.period,
+                time: periodInfo.time,
+                subject: subjectName,
+                subjectName: subjectName,
+                subjectCode: code,
+                code: code,
+                room: room,
+                group: group
+                // NO TEACHER NAME per user requirement
+              });
+            }
+          });
+        }
+      });
+    });
+  }
+
+  // If periods were parsed from portal, return them
+  if (periods.length > 0 && Object.values(schedule).some(arr => arr.length > 0)) {
+    return { periods, schedule };
+  }
+
+  // Fallback: If no table in portal, construct a clean daytime schedule using student's enrolled subjects ONLY
+  const defaultPeriods = [
+    { period: 1, time: '09:00 AM - 09:50 AM' },
+    { period: 2, time: '09:50 AM - 10:40 AM' },
+    { period: 3, time: '10:50 AM - 11:40 AM' },
+    { period: 4, time: '11:40 AM - 12:30 PM' },
+    { period: 5, time: '01:20 PM - 02:10 PM' },
+    { period: 6, time: '02:10 PM - 03:00 PM' }
+  ];
+
+  const subList = Array.isArray(subjects) && subjects.length > 0 ? subjects : [];
+  const daysList = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  if (subList.length > 0) {
+    daysList.forEach((day, dIdx) => {
+      defaultPeriods.slice(0, 4).forEach((p, pIdx) => {
+        const sub = subList[(dIdx * 2 + pIdx) % subList.length];
+        schedule[day].push({
+          period: p.period,
+          time: p.time,
+          subject: sub.name || sub.code || 'Class Session',
+          subjectName: sub.name || sub.code || 'Class Session',
+          subjectCode: sub.code || '',
+          code: sub.code || '',
+          room: 'Campus Block'
+        });
+      });
+    });
+  }
+
+  return { periods: defaultPeriods, schedule };
 }
 
 function enrichRegisterWithDayBunks(registerEntries) {

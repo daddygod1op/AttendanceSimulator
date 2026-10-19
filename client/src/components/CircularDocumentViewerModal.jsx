@@ -5,10 +5,7 @@ import {
   Printer,
   FileText,
   ShieldCheck,
-  CheckCircle2,
-  Clock,
-  Building,
-  Layers,
+  Download,
   Copy,
   Check
 } from 'lucide-react';
@@ -16,25 +13,28 @@ import { safeText } from './CircularsFeed';
 
 export default function CircularDocumentViewerModal({ notice, student, onClose }) {
   const [copied, setCopied] = useState(false);
+  const [iframeError, setIframeError] = useState(false);
 
   if (!notice) return null;
 
   const id = safeText(notice.id, '4611');
-  const cuietPrintUrl = `https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${id}`;
-  const cuietFeedUrl = `https://cuiet.codebrigade.in/notifications/display`;
+  const title = safeText(notice.title, 'Official University Notice');
+  const docUrl = `/api/circulars/${id}/document`;
+  const downloadUrl = `/api/circulars/${id}/download`;
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(cuietPrintUrl);
+    const fullUrl = `${window.location.origin}${docUrl}`;
+    navigator.clipboard.writeText(fullUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleOpenOriginalPortal = () => {
-    window.open(cuietPrintUrl, '_blank', 'noopener,noreferrer');
+  const handleOpenNewTab = () => {
+    window.open(docUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handlePrint = () => {
-    window.print();
+    window.open(`${docUrl}?print=1`, '_blank');
   };
 
   return (
@@ -44,7 +44,7 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 3000,
+        zIndex: 3500,
         backgroundColor: 'rgba(2, 6, 23, 0.94)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
@@ -58,9 +58,9 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
         className="doc-viewer-container animate-scale-up"
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '920px',
+          width: '980px',
           maxWidth: '96vw',
-          maxHeight: '92vh',
+          height: '92vh',
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: '#0f172a',
@@ -73,7 +73,7 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
         {/* Top Control Bar */}
         <div
           style={{
-            height: '60px',
+            height: '62px',
             backgroundColor: '#1e293b',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
@@ -88,11 +88,11 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
             <div
               style={{
-                width: 34,
-                height: 34,
+                width: 36,
+                height: 36,
                 borderRadius: 8,
-                background: 'rgba(128, 0, 0, 0.25)',
-                border: '1px solid rgba(128, 0, 0, 0.45)',
+                background: 'rgba(239, 68, 68, 0.2)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -106,20 +106,21 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
               <div
                 style={{
                   color: '#fff',
-                  fontSize: '0.9rem',
+                  fontSize: '0.92rem',
                   fontWeight: 700,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
-                  textOverflow: 'ellipsis'
+                  textOverflow: 'ellipsis',
+                  maxWidth: '420px'
                 }}
               >
-                {notice.title}
+                {title}
               </div>
               <div style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ color: '#38bdf8', fontWeight: 600 }}>Original CUIET Notice #{id}</span>
+                <span style={{ color: '#38bdf8', fontWeight: 600 }}>CUIET Notice #{id}</span>
                 <span>•</span>
                 <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <ShieldCheck size={11} /> Official University Portal Record
+                  <ShieldCheck size={11} /> Official University Document
                 </span>
               </div>
             </div>
@@ -128,7 +129,7 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
           {/* Action Buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
             <button
-              onClick={handleOpenOriginalPortal}
+              onClick={handleOpenNewTab}
               className="btn btn-primary"
               style={{
                 padding: '7px 14px',
@@ -137,13 +138,40 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
                 alignItems: 'center',
                 gap: 6,
                 background: 'linear-gradient(135deg, #e63946, #c1121f)',
-                boxShadow: '0 2px 10px rgba(230, 57, 70, 0.35)'
+                boxShadow: '0 2px 10px rgba(230, 57, 70, 0.35)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 700
               }}
-              title="Open the real document directly on cuiet.codebrigade.in"
+              title="Open full notice document in a new tab"
             >
               <ExternalLink size={14} />
-              <span>Open in CUIET Portal</span>
+              <span>Open in New Tab</span>
             </button>
+
+            <a
+              href={downloadUrl}
+              download
+              className="btn btn-outline"
+              style={{
+                padding: '7px 12px',
+                fontSize: '0.82rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                background: 'rgba(255, 255, 255, 0.06)',
+                color: '#e2e8f0',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: '6px',
+                textDecoration: 'none'
+              }}
+              title="Download official printable notice"
+            >
+              <Download size={14} />
+              <span className="hidden-mobile">Download</span>
+            </a>
 
             <button
               onClick={handlePrint}
@@ -156,12 +184,33 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
                 gap: 6,
                 background: 'rgba(255, 255, 255, 0.06)',
                 color: '#e2e8f0',
-                border: '1px solid rgba(255, 255, 255, 0.15)'
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                borderRadius: '6px',
+                cursor: 'pointer'
               }}
-              title="Print notice"
+              title="Print official document"
             >
               <Printer size={14} />
               <span className="hidden-mobile">Print</span>
+            </button>
+
+            <button
+              onClick={handleCopyLink}
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#cbd5e1',
+                borderRadius: '6px',
+                padding: '7px 10px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                fontSize: '0.82rem',
+                cursor: 'pointer'
+              }}
+              title="Copy verified document link"
+            >
+              {copied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
             </button>
 
             <button
@@ -178,292 +227,48 @@ export default function CircularDocumentViewerModal({ notice, student, onClose }
                 justifyContent: 'center',
                 cursor: 'pointer'
               }}
-              title="Close modal"
+              title="Close viewer"
             >
               <X size={16} />
             </button>
           </div>
         </div>
 
-        {/* Scrollable Body */}
+        {/* Document Body: Direct In-App Responsive Iframe Reader */}
         <div
           style={{
             flex: 1,
-            overflowY: 'auto',
-            padding: '1.75rem',
-            backgroundColor: '#090d16'
+            position: 'relative',
+            backgroundColor: '#090d16',
+            overflow: 'hidden'
           }}
         >
-          {/* Main Document Paper Card */}
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              color: '#0f172a',
-              borderRadius: '10px',
-              padding: '36px 42px',
-              boxShadow: '0 15px 45px rgba(0, 0, 0, 0.55)',
-              fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-            }}
-          >
-            {/* Chitkara Crest Header */}
-            <div
+          {!iframeError ? (
+            <iframe
+              src={docUrl}
+              onError={() => setIframeError(true)}
+              title={`Chitkara University Official Circular #${id}`}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                borderBottom: '2.5px solid #800000',
-                paddingBottom: '16px',
-                marginBottom: '18px',
-                flexWrap: 'wrap',
-                gap: '16px'
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                backgroundColor: '#ffffff'
               }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <img
-                  src="/chitkara_logo.png"
-                  alt="Chitkara University"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                  style={{
-                    width: 68,
-                    height: 68,
-                    objectFit: 'contain'
-                  }}
-                />
-                <div>
-                  <h1
-                    style={{
-                      margin: '0 0 3px 0',
-                      fontFamily: "'Cinzel', Georgia, serif",
-                      fontSize: '1.4rem',
-                      fontWeight: 800,
-                      color: '#800000',
-                      letterSpacing: '1px'
-                    }}
-                  >
-                    CHITKARA UNIVERSITY
-                  </h1>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>
-                    Chitkara University Institute of Engineering & Technology (CUIET)
-                  </div>
-                  <div style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600 }}>
-                    PUNJAB CAMPUS • NH-64, CHANDIGARH-PATIALA NATIONAL HIGHWAY
-                  </div>
-                </div>
-              </div>
-
-              {/* Official Portal Stamp */}
-              <div
-                style={{
-                  border: '2px solid #800000',
-                  padding: '6px 14px',
-                  borderRadius: '6px',
-                  textAlign: 'center',
-                  background: 'rgba(128, 0, 0, 0.03)'
-                }}
-              >
-                <div style={{ fontSize: '0.64rem', fontWeight: 800, color: '#800000', letterSpacing: '1px' }}>
-                  OFFICIAL PORTAL
-                </div>
-                <div style={{ fontSize: '0.84rem', fontWeight: 800, color: '#1e293b' }}>
-                  CUIET / ERP
-                </div>
-                <div style={{ fontSize: '0.64rem', color: '#10b981', fontWeight: 700 }}>
-                  ✓ AUTHENTIC SYNC
-                </div>
+            />
+          ) : (
+            <div style={{ padding: '2rem', color: '#fff', textAlign: 'center' }}>
+              <h3>Official Notice Document #{id}</h3>
+              <p style={{ color: 'var(--text-muted)' }}>{title}</p>
+              <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                <a href={docUrl} target="_blank" rel="noreferrer" className="btn btn-primary">
+                  Open Document Directly
+                </a>
+                <a href={downloadUrl} download className="btn btn-outline">
+                  Download Document
+                </a>
               </div>
             </div>
-
-            {/* Meta Bar */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                color: '#334155',
-                borderBottom: '1px dashed #cbd5e1',
-                paddingBottom: '10px',
-                marginBottom: '18px',
-                flexWrap: 'wrap',
-                gap: 8
-              }}
-            >
-              <div>
-                Notice ID: <strong style={{ color: '#800000' }}>#{id}</strong>
-              </div>
-              <div>
-                Category: <strong>{safeText(notice.category, 'Official Announcement')}</strong>
-              </div>
-              <div>
-                Published Date: <strong>{safeText(notice.date, 'October 2026')}</strong>
-              </div>
-              <div>
-                Portal Source: <strong style={{ color: '#0284c7' }}>cuiet.codebrigade.in</strong>
-              </div>
-            </div>
-
-            {/* Official Title Banner */}
-            <div
-              style={{
-                backgroundColor: '#fff5f5',
-                borderLeft: '4px solid #800000',
-                borderTop: '1px solid #fee2e2',
-                borderRight: '1px solid #fee2e2',
-                borderBottom: '1px solid #fee2e2',
-                padding: '14px 18px',
-                marginBottom: '20px',
-                borderRadius: '4px'
-              }}
-            >
-              <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#800000', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 2 }}>
-                OFFICIAL NOTICE TITLE:
-              </div>
-              <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#1e293b', lineHeight: 1.4 }}>
-                {safeText(notice.title, 'University Circular')}
-              </h2>
-            </div>
-
-            {/* Primary CUIET Portal Link Banner */}
-            <div
-              style={{
-                backgroundColor: '#f0fdf4',
-                border: '1.5px solid #86efac',
-                borderRadius: '8px',
-                padding: '16px 20px',
-                marginBottom: '22px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '14px'
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#15803d', fontWeight: 700, fontSize: '0.9rem' }}>
-                  <CheckCircle2 size={17} />
-                  <span>Direct Official CUIET CodeBrigade Document Link</span>
-                </div>
-                <div style={{ fontSize: '0.78rem', color: '#166534', marginTop: 3 }}>
-                  This notice is directly connected to the CUIET Chalkpad system. Click to open the official document layout:
-                </div>
-                <div style={{ fontSize: '0.74rem', color: '#475569', marginTop: 4, fontFamily: 'monospace' }}>
-                  {cuietPrintUrl}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={handleOpenOriginalPortal}
-                  className="btn btn-primary"
-                  style={{
-                    padding: '8px 16px',
-                    fontSize: '0.82rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    background: '#800000',
-                    color: '#fff',
-                    border: '1px solid #660000',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: 700
-                  }}
-                >
-                  <ExternalLink size={14} />
-                  <span>Open in CUIET</span>
-                </button>
-
-                <button
-                  onClick={handleCopyLink}
-                  style={{
-                    padding: '8px 12px',
-                    fontSize: '0.82rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    background: '#fff',
-                    color: '#334155',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: 600
-                  }}
-                  title="Copy direct portal URL"
-                >
-                  {copied ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} />}
-                  <span>{copied ? 'Copied' : 'Copy Link'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Authentic Text Body from University */}
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
-                Official Circular Text & Instructions:
-              </div>
-              <div
-                style={{
-                  padding: '18px 22px',
-                  backgroundColor: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '0.92rem',
-                  lineHeight: '1.75',
-                  color: '#1e293b',
-                  whiteSpace: 'pre-wrap'
-                }}
-              >
-                {safeText(notice.description, 'Official academic communication dispatched via Chitkara University CUIET ERP portal.')}
-              </div>
-            </div>
-
-            {/* Official Portal Dispatch Footer */}
-            <div
-              style={{
-                marginTop: '28px',
-                paddingTop: '16px',
-                borderTop: '1px solid #e2e8f0',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                flexWrap: 'wrap',
-                gap: '14px'
-              }}
-            >
-              <div
-                style={{
-                  border: '1.5px dashed #800000',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  background: 'rgba(128, 0, 0, 0.02)'
-                }}
-              >
-                <div style={{ fontSize: '0.66rem', fontWeight: 800, color: '#800000', letterSpacing: '0.8px' }}>
-                  CHITKARA UNIVERSITY CUIET
-                </div>
-                <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#1e293b' }}>
-                  DISPATCHED VIA CODEBRIGADE CHALKPAD
-                </div>
-                <div style={{ fontSize: '0.68rem', color: '#64748b' }}>
-                  Target Endpoint: dashboardFeed/printItem/1/{id}
-                </div>
-              </div>
-
-              <div style={{ textAlign: 'right', fontSize: '0.78rem' }}>
-                <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '0.86rem' }}>
-                  Chitkara University Administration
-                </div>
-                <div style={{ color: '#475569', fontWeight: 600 }}>
-                  Institute of Engineering & Technology (CUIET)
-                </div>
-                <div style={{ color: '#800000', fontSize: '0.72rem', fontWeight: 700 }}>
-                  https://cuiet.codebrigade.in
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

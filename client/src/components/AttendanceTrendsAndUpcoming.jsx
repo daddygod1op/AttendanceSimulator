@@ -25,14 +25,6 @@ const CODE_TO_NAME = {
   '25CSE0204': 'Object Oriented Programming'
 };
 
-const CODE_TO_FACULTY = {
-  '24CSE0209': 'Sourabh Batra',
-  '25CAI0201': 'Hemant Kumar / Saravjeet Singh',
-  '25CSE0202': 'Gourav Kaloniya',
-  '25CSE0203': 'Himanshu Sharma',
-  '25CSE0204': 'Gourav Kaloniya'
-};
-
 export default function AttendanceTrendsAndUpcoming({
   overall,
   subjects = [],
@@ -88,47 +80,36 @@ export default function AttendanceTrendsAndUpcoming({
       .sort((a, b) => a.percentage - b.percentage);
   }, [subjects]);
 
-  // Weekly daytime academic timetable (Chitkara Standard Hours: 09:00 AM - 03:00 PM)
-  const defaultSchedule = useMemo(() => ({
-    Monday: [
-      { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Front End Engineering-II', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-      { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Front End Engineering-II', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-      { period: 3, time: '10:50 AM - 11:40 AM', subject: 'Database Management System', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
-      { period: 4, time: '11:40 AM - 12:30 PM', subject: 'Database Management System', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
-      { period: 5, time: '01:20 PM - 02:10 PM', subject: 'Programming in Java', subjectCode: '25CSE0202', room: 'MB-104', faculty: 'Gourav Kaloniya' },
-      { period: 6, time: '02:10 PM - 03:00 PM', subject: 'Object Oriented Programming', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' }
-    ],
-    Tuesday: [
-      { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Programming in Java', subjectCode: '25CSE0202', room: 'MB-104', faculty: 'Gourav Kaloniya' },
-      { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Object Oriented Programming', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
-      { period: 3, time: '10:50 AM - 11:40 AM', subject: 'Object Oriented Programming', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
-      { period: 4, time: '11:40 AM - 12:30 PM', subject: 'Programming in Java', subjectCode: '25CSE0202', room: 'MB-104', faculty: 'Gourav Kaloniya' },
-      { period: 5, time: '01:20 PM - 02:10 PM', subject: 'Front End Engineering-II', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-      { period: 6, time: '02:10 PM - 03:00 PM', subject: 'Database Management System', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' }
-    ],
-    Wednesday: [
-      { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Statistics and Data Engineering', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' },
-      { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Statistics and Data Engineering', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' },
-      { period: 3, time: '10:50 AM - 11:40 AM', subject: 'Front End Engineering-II', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-      { period: 4, time: '11:40 AM - 12:30 PM', subject: 'Front End Engineering-II', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-      { period: 5, time: '01:20 PM - 02:10 PM', subject: 'Object Oriented Programming', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
-      { period: 6, time: '02:10 PM - 03:00 PM', subject: 'Programming in Java', subjectCode: '25CSE0202', room: 'MB-104', faculty: 'Gourav Kaloniya' }
-    ],
-    Thursday: [
-      { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Object Oriented Programming', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
-      { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Programming in Java', subjectCode: '25CSE0202', room: 'MB-104', faculty: 'Gourav Kaloniya' },
-      { period: 3, time: '10:50 AM - 11:40 AM', subject: 'Object Oriented Programming', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
-      { period: 4, time: '11:40 AM - 12:30 PM', subject: 'Programming in Java', subjectCode: '25CSE0202', room: 'MB-104', faculty: 'Gourav Kaloniya' },
-      { period: 5, time: '01:20 PM - 02:10 PM', subject: 'Statistics and Data Engineering', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' },
-      { period: 6, time: '02:10 PM - 03:00 PM', subject: 'Statistics and Data Engineering', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' }
-    ],
-    Friday: [
-      { period: 1, time: '09:00 AM - 09:50 AM', subject: 'Programming in Java', subjectCode: '25CSE0202', room: 'MB-104', faculty: 'Gourav Kaloniya' },
-      { period: 2, time: '09:50 AM - 10:40 AM', subject: 'Object Oriented Programming', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
-      { period: 3, time: '10:50 AM - 11:40 AM', subject: 'Programming in Java', subjectCode: '25CSE0202', room: 'MB-104', faculty: 'Gourav Kaloniya' },
-      { period: 4, time: '11:40 AM - 12:30 PM', subject: 'Object Oriented Programming', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' }
-    ]
-  }), []);
+  // Dynamic schedule built from student's enrolled subjects if timetable is not supplied
+  const defaultSchedule = useMemo(() => {
+    const defaultPeriods = [
+      { period: 1, time: '09:00 AM - 09:50 AM' },
+      { period: 2, time: '09:50 AM - 10:40 AM' },
+      { period: 3, time: '10:50 AM - 11:40 AM' },
+      { period: 4, time: '11:40 AM - 12:30 PM' },
+      { period: 5, time: '01:20 PM - 02:10 PM' },
+      { period: 6, time: '02:10 PM - 03:00 PM' }
+    ];
+    const sched = { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [] };
+    const subList = Array.isArray(subjects) && subjects.length > 0 ? subjects : [];
+    if (subList.length > 0) {
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day, dIdx) => {
+        defaultPeriods.slice(0, 4).forEach((p, pIdx) => {
+          const sub = subList[(dIdx * 2 + pIdx) % subList.length];
+          sched[day].push({
+            period: p.period,
+            time: p.time,
+            subject: sub.name || sub.code || 'Academic Lecture',
+            subjectName: sub.name || sub.code || 'Academic Lecture',
+            subjectCode: sub.code || '',
+            code: sub.code || '',
+            room: 'Classroom'
+          });
+        });
+      });
+    }
+    return sched;
+  }, [subjects]);
 
   // Today's classes from timetable
   const todayClasses = useMemo(() => {
@@ -141,14 +122,12 @@ export default function AttendanceTrendsAndUpcoming({
     const enriched = rawClasses.map(cls => {
       const code = cls.subjectCode || cls.code || '';
       const name = cls.subjectName || CODE_TO_NAME[code] || cls.subject || cls.name || code;
-      const faculty = cls.faculty || CODE_TO_FACULTY[code] || 'Faculty Member';
-      const room = cls.room || (code === '25CSE0202' ? 'MB-104' : 'LH-402');
+      const room = cls.room || 'Classroom';
       return {
         ...cls,
         subject: name,
         subjectName: name,
         subjectCode: code,
-        faculty,
         room
       };
     });
@@ -387,11 +366,6 @@ export default function AttendanceTrendsAndUpcoming({
                         <Clock size={12} style={{ color: '#38bdf8' }} />
                         {cls.time}
                       </span>
-                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
-                      <span style={{ color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <User size={12} style={{ color: '#a78bfa' }} />
-                        {cls.faculty || 'Faculty Member'}
-                      </span>
                     </div>
                   </div>
 
@@ -614,8 +588,7 @@ export default function AttendanceTrendsAndUpcoming({
               ).map((cls, idx) => {
                 const code = cls.subjectCode || cls.code || '';
                 const name = cls.subjectName || CODE_TO_NAME[code] || cls.subject || cls.name || code;
-                const faculty = cls.faculty || CODE_TO_FACULTY[code] || 'Faculty Member';
-                const room = cls.room || (code === '25CSE0202' ? 'MB-104' : 'LH-402');
+                const room = cls.room || 'Classroom';
 
                 return (
                   <div
@@ -650,11 +623,14 @@ export default function AttendanceTrendsAndUpcoming({
                           <Clock size={12} style={{ color: '#38bdf8' }} />
                           {cls.time}
                         </span>
-                        <span>•</span>
-                        <span style={{ color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <User size={12} style={{ color: '#a78bfa' }} />
-                          {faculty}
-                        </span>
+                        {room && (
+                          <>
+                            <span>•</span>
+                            <span style={{ color: '#94a3b8' }}>
+                              Room: {room}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
 

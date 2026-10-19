@@ -53,54 +53,37 @@ export default function AttendanceRegister({
     }
   }, [initialViewMode]);
 
-  // Default weekly timetable if not supplied from scrape or if old scrape had night shift hours (Standard Chitkara College Hours: 09:00 AM - 03:00 PM)
-  const isNightShift = timetable?.periods?.[0]?.time?.includes('04:10') || timetable?.periods?.[0]?.time?.includes('05:00');
-  const activeTimetable = (!timetable || isNightShift) ? {
-    periods: [
+  // Dynamic weekly timetable from university sync (or built from enrolled subjects)
+  const activeTimetable = useMemo(() => {
+    if (timetable && timetable.periods?.length > 0 && timetable.schedule) {
+      return timetable;
+    }
+    const defaultPeriods = [
       { period: 1, time: '09:00 AM - 09:50 AM' },
       { period: 2, time: '09:50 AM - 10:40 AM' },
       { period: 3, time: '10:50 AM - 11:40 AM' },
       { period: 4, time: '11:40 AM - 12:30 PM' },
       { period: 5, time: '01:20 PM - 02:10 PM' },
       { period: 6, time: '02:10 PM - 03:00 PM' }
-    ],
-    schedule: {
-      Monday: [
-        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 3, time: '10:50 AM - 11:40 AM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
-        { period: 4, time: '11:40 AM - 12:30 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
-        { period: 5, time: '01:20 PM - 02:10 PM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' },
-        { period: 6, time: '02:10 PM - 03:00 PM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' }
-      ],
-      Tuesday: [
-        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CSE0202', room: 'MB104', faculty: 'Gourav Kaloniya' },
-        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
-        { period: 3, time: '10:50 AM - 11:40 AM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 4, time: '11:40 AM - 12:30 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 5, time: '01:20 PM - 02:10 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' },
-        { period: 6, time: '02:10 PM - 03:00 PM', subjectCode: '24CSE0209', room: 'LH-402', faculty: 'Sourabh Batra' }
-      ],
-      Wednesday: [
-        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' },
-        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' },
-        { period: 3, time: '10:50 AM - 11:40 AM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 4, time: '11:40 AM - 12:30 PM', subjectCode: '25CSE0203', room: 'LH-402', faculty: 'Himanshu Sharma' },
-        { period: 5, time: '01:20 PM - 02:10 PM', subjectCode: '25CSE0204 / 25CSE0202', room: 'LH-402 / MB104', faculty: 'Gourav Kaloniya' },
-        { period: 6, time: '02:10 PM - 03:00 PM', subjectCode: '25CSE0204 / 25CSE0202', room: 'LH-402 / MB104', faculty: 'Gourav Kaloniya' }
-      ],
-      Thursday: [
-        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
-        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CSE0204', room: 'LH-402', faculty: 'Gourav Kaloniya' },
-        { period: 3, time: '10:50 AM - 11:40 AM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' },
-        { period: 4, time: '11:40 AM - 12:30 PM', subjectCode: '25CAI0201', room: 'LH-402', faculty: 'Hemant Kumar / Saravjeet Singh' }
-      ],
-      Friday: [
-        { period: 1, time: '09:00 AM - 09:50 AM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' },
-        { period: 2, time: '09:50 AM - 10:40 AM', subjectCode: '25CSE0202 / 25CSE0204', room: 'MB104 / LH-402', faculty: 'Gourav Kaloniya' }
-      ]
+    ];
+    const sched = { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [] };
+    const subList = Array.isArray(subjects) && subjects.length > 0 ? subjects : [];
+    if (subList.length > 0) {
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day, dIdx) => {
+        defaultPeriods.slice(0, 4).forEach((p, pIdx) => {
+          const sub = subList[(dIdx * 2 + pIdx) % subList.length];
+          sched[day].push({
+            period: p.period,
+            time: p.time,
+            subjectCode: sub.code || '',
+            subjectName: sub.name || sub.code || 'Academic Lecture',
+            room: 'Classroom'
+          });
+        });
+      });
     }
-  } : timetable;
+    return { periods: defaultPeriods, schedule: sched };
+  }, [timetable, subjects]);
 
   // Group lectures by date and calculate day-wise bunks / timetable stats
   const { dayStatsMap, fullDayMissedDates } = useMemo(() => {
@@ -901,12 +884,14 @@ export default function AttendanceRegister({
                                 <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.78rem' }}>
                                   {cell.subjectCode}
                                 </div>
-                                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                                  {cell.room || 'LH-402'}
+                                <div style={{ fontSize: '0.72rem', color: '#93c5fd', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {cell.subjectName || cell.subject || 'Class'}
                                 </div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
-                                  {cell.faculty?.split(',')[0]}
-                                </div>
+                                {cell.room && (
+                                  <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginTop: 2 }}>
+                                    {cell.room}
+                                  </div>
+                                )}
                               </div>
                             ) : (
                               <div style={{ color: 'var(--text-dim)', textAlign: 'center' }}>—</div>

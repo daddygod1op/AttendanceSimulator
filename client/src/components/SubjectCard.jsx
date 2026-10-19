@@ -39,11 +39,10 @@ export default function SubjectCard({ subject, onSelectSubject }) {
         </div>
 
         <div className="subject-faculty">
-          <User size={13} />
-          <span>{subject.faculty || 'Faculty Member'}</span>
-          <span style={{ color: 'var(--text-dim)', margin: '0 0.3rem' }}>•</span>
           <BookOpen size={13} />
-          <span>{subject.component || subject.type || 'Theory'}</span>
+          <span>{subject.component || subject.type || 'Course Module'}</span>
+          <span style={{ color: 'var(--text-dim)', margin: '0 0.3rem' }}>•</span>
+          <span>{subject.code || 'Academic Unit'}</span>
         </div>
 
         <div className="progress-bar-bg">
