@@ -16,6 +16,7 @@ import {
   X,
   ExternalLink
 } from 'lucide-react';
+import { CANONICAL_EVENING_TIMETABLE } from '../utils/timetableData';
 
 export default function AttendanceTrendsAndUpcoming({
   student,
@@ -81,49 +82,26 @@ export default function AttendanceTrendsAndUpcoming({
       .sort((a, b) => a.percentage - b.percentage);
   }, [subjects]);
 
-  // Dynamic schedule built from student's enrolled subjects if timetable is not supplied
+  // Authentic default evening schedule (04:10 PM - 09:20 PM)
   const defaultSchedule = useMemo(() => {
-    const defaultPeriods = [
-      { period: 1, time: '09:00 AM - 09:50 AM' },
-      { period: 2, time: '09:50 AM - 10:40 AM' },
-      { period: 3, time: '10:50 AM - 11:40 AM' },
-      { period: 4, time: '11:40 AM - 12:30 PM' },
-      { period: 5, time: '01:20 PM - 02:10 PM' },
-      { period: 6, time: '02:10 PM - 03:00 PM' }
-    ];
-    const sched = { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [] };
-    const subList = Array.isArray(subjects) && subjects.length > 0 ? subjects : [];
-    if (subList.length > 0) {
-      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day, dIdx) => {
-        defaultPeriods.slice(0, 4).forEach((p, pIdx) => {
-          const sub = subList[(dIdx * 2 + pIdx) % subList.length];
-          sched[day].push({
-            period: p.period,
-            time: p.time,
-            subject: sub.name || sub.code || 'Academic Lecture',
-            subjectName: sub.name || sub.code || 'Academic Lecture',
-            subjectCode: sub.code || '',
-            code: sub.code || '',
-            room: 'Classroom'
-          });
-        });
-      });
-    }
-    return sched;
-  }, [subjects]);
+    return CANONICAL_EVENING_TIMETABLE.schedule;
+  }, []);
 
   // Today's classes from timetable
   const todayClasses = useMemo(() => {
-    const rawSchedule = timetable?.schedule;
+    const isStaleMorning = timetable?.periods?.[0]?.time?.includes('09:00');
+    const activeSchedule = (!isStaleMorning && timetable?.schedule && Object.keys(timetable.schedule).length > 0)
+      ? timetable.schedule
+      : CANONICAL_EVENING_TIMETABLE.schedule;
     const dayKey = (currentDayName === 'Saturday' || currentDayName === 'Sunday') ? 'Monday' : currentDayName;
-    const rawClasses = (rawSchedule && rawSchedule[dayKey] && rawSchedule[dayKey].length > 0)
-      ? rawSchedule[dayKey]
-      : (defaultSchedule[dayKey] || []);
+    const rawClasses = (activeSchedule && activeSchedule[dayKey] && activeSchedule[dayKey].length > 0)
+      ? activeSchedule[dayKey]
+      : (CANONICAL_EVENING_TIMETABLE.schedule[dayKey] || []);
 
     const enriched = rawClasses.map(cls => {
       const code = cls.subjectCode || cls.code || '';
       const name = cls.subjectName || subjectNameMap[code] || cls.subject || cls.name || code;
-      const room = cls.room || 'Classroom';
+      const room = cls.room || 'LH-402';
       return {
         ...cls,
         subject: name,
@@ -583,13 +561,26 @@ export default function AttendanceTrendsAndUpcoming({
 
             {/* Day Classes List */}
             <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {((timetable?.schedule && timetable.schedule[modalActiveDay]?.length > 0)
-                ? timetable.schedule[modalActiveDay]
-                : (defaultSchedule[modalActiveDay] || [])
-              ).map((cls, idx) => {
-                const code = cls.subjectCode || cls.code || '';
-                const name = cls.subjectName || subjectNameMap[code] || cls.subject || cls.name || code;
-                const room = cls.room || 'Classroom';
+              {(() => {
+                const isStaleMorning = timetable?.periods?.[0]?.time?.includes('09:00');
+                const activeSchedule = (!isStaleMorning && timetable?.schedule && Object.keys(timetable.schedule).length > 0)
+                  ? timetable.schedule
+                  : CANONICAL_EVENING_TIMETABLE.schedule;
+                const dayClasses = activeSchedule[modalActiveDay] || [];
+
+                if (dayClasses.length === 0) {
+                  return (
+                    <div style={{ padding: '2.5rem 1rem', textAlign: 'center', color: '#94a3b8' }}>
+                      <Calendar size={32} style={{ margin: '0 auto 8px', opacity: 0.5, color: '#38bdf8' }} />
+                      <p style={{ margin: 0, fontSize: '0.92rem', color: '#cbd5e1' }}>No classes scheduled for {modalActiveDay}</p>
+                    </div>
+                  );
+                }
+
+                return dayClasses.map((cls, idx) => {
+                  const code = cls.subjectCode || cls.code || '';
+                  const name = cls.subjectName || subjectNameMap[code] || cls.subject || cls.name || code;
+                  const room = cls.room || 'LH-402';
 
                 return (
                   <div
@@ -655,7 +646,8 @@ export default function AttendanceTrendsAndUpcoming({
                     </span>
                   </div>
                 );
-              })}
+              });
+            })()}
             </div>
           </div>
         </div>

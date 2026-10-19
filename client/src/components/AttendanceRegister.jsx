@@ -20,6 +20,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import AttendanceCalendar from './AttendanceCalendar';
+import { CANONICAL_EVENING_TIMETABLE } from '../utils/timetableData';
 
 export default function AttendanceRegister({
   register = [],
@@ -53,37 +54,13 @@ export default function AttendanceRegister({
     }
   }, [initialViewMode]);
 
-  // Dynamic weekly timetable from university sync (or built from enrolled subjects)
+  // Dynamic weekly timetable from university sync (or authentic evening fallback)
   const activeTimetable = useMemo(() => {
-    if (timetable && timetable.periods?.length > 0 && timetable.schedule) {
+    if (timetable && timetable.periods?.length > 0 && timetable.schedule && !timetable.periods?.[0]?.time?.includes('09:00')) {
       return timetable;
     }
-    const defaultPeriods = [
-      { period: 1, time: '09:00 AM - 09:50 AM' },
-      { period: 2, time: '09:50 AM - 10:40 AM' },
-      { period: 3, time: '10:50 AM - 11:40 AM' },
-      { period: 4, time: '11:40 AM - 12:30 PM' },
-      { period: 5, time: '01:20 PM - 02:10 PM' },
-      { period: 6, time: '02:10 PM - 03:00 PM' }
-    ];
-    const sched = { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [] };
-    const subList = Array.isArray(subjects) && subjects.length > 0 ? subjects : [];
-    if (subList.length > 0) {
-      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day, dIdx) => {
-        defaultPeriods.slice(0, 4).forEach((p, pIdx) => {
-          const sub = subList[(dIdx * 2 + pIdx) % subList.length];
-          sched[day].push({
-            period: p.period,
-            time: p.time,
-            subjectCode: sub.code || '',
-            subjectName: sub.name || sub.code || 'Academic Lecture',
-            room: 'Classroom'
-          });
-        });
-      });
-    }
-    return { periods: defaultPeriods, schedule: sched };
-  }, [timetable, subjects]);
+    return CANONICAL_EVENING_TIMETABLE;
+  }, [timetable]);
 
   // Group lectures by date and calculate day-wise bunks / timetable stats
   const { dayStatsMap, fullDayMissedDates } = useMemo(() => {

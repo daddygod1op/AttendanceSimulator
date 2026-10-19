@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 
 import { getDeviceSessionId, clearDeviceSession } from './utils/sessionHelper';
+import { CANONICAL_EVENING_TIMETABLE } from './utils/timetableData';
 
 export default function App() {
   const [authStatus, setAuthStatus] = useState(() => {
@@ -66,6 +67,9 @@ export default function App() {
         const parsed = JSON.parse(cached);
         const att = parsed?.attendance;
         if (att && att.overall && att.overall.delivered > 0) {
+          if (!att.timetable || !att.timetable.schedule || att.timetable?.periods?.[0]?.time?.includes('09:00')) {
+            att.timetable = CANONICAL_EVENING_TIMETABLE;
+          }
           return att;
         }
       }
@@ -106,6 +110,9 @@ export default function App() {
 
       if (data.authStatus === 'authenticated' && data.attendance && data.attendance.overall?.delivered > 0) {
         delete data.attendance.batchmates;
+        if (!data.attendance.timetable || !data.attendance.timetable.schedule || data.attendance.timetable?.periods?.[0]?.time?.includes('09:00')) {
+          data.attendance.timetable = CANONICAL_EVENING_TIMETABLE;
+        }
         const liveStudent = data.student || data.attendance.student;
         setAuthStatus('authenticated');
         setAttendance(data.attendance);
@@ -129,11 +136,15 @@ export default function App() {
         if (cached) {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.attendance && parsed.attendance.overall?.delivered > 0) {
+            if (!parsed.attendance.timetable || !parsed.attendance.timetable.schedule || parsed.attendance.timetable?.periods?.[0]?.time?.includes('09:00')) {
+              parsed.attendance.timetable = CANONICAL_EVENING_TIMETABLE;
+            }
             const cachedStudent = parsed.student || parsed.attendance.student;
             setAuthStatus('authenticated');
             setAttendance(parsed.attendance);
             setStudent(cachedStudent);
             setLastSyncTime(parsed.lastSyncTime);
+            saveSessionToStorage(parsed.attendance, cachedStudent, parsed.lastSyncTime);
             // Rehydrate backend session
             fetch('/api/auth/restore-session', {
               method: 'POST',
@@ -180,6 +191,9 @@ export default function App() {
       const cleanData = attendanceData ? { ...attendanceData } : null;
       if (cleanData) {
         delete cleanData.batchmates;
+        if (!cleanData.timetable || !cleanData.timetable.schedule || cleanData.timetable?.periods?.[0]?.time?.includes('09:00')) {
+          cleanData.timetable = CANONICAL_EVENING_TIMETABLE;
+        }
       }
       const cleanStudent = studentData || attendanceData?.student;
       localStorage.setItem(
@@ -205,6 +219,9 @@ export default function App() {
         const json = await res.json();
         if (json.data) {
           delete json.data.batchmates;
+          if (!json.data.timetable || !json.data.timetable.schedule || json.data.timetable?.periods?.[0]?.time?.includes('09:00')) {
+            json.data.timetable = CANONICAL_EVENING_TIMETABLE;
+          }
           setAttendance(json.data);
         }
         const stu = json.student || json.data?.student;

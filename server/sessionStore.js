@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const SESSIONS_CACHE_FILE = path.join(__dirname, '.session_cache.json');
+const { CANONICAL_EVENING_TIMETABLE } = require('./timetableData');
 
 /**
  * Multi-Tenant Persistent Session Store
@@ -25,15 +26,19 @@ class SessionStore {
         if (data && typeof data === 'object') {
           for (const [id, s] of Object.entries(data)) {
             if (s && s.authStatus === 'authenticated') {
-              if (s.attendance && s.attendance.timetable && s.attendance.timetable.schedule) {
-                Object.values(s.attendance.timetable.schedule).forEach(dayArr => {
-                  if (Array.isArray(dayArr)) {
-                    dayArr.forEach(item => {
-                      delete item.faculty;
-                      delete item.teacher;
-                    });
-                  }
-                });
+              if (s.attendance) {
+                if (!s.attendance.timetable || !s.attendance.timetable.schedule || s.attendance.timetable?.periods?.[0]?.time?.includes('09:00')) {
+                  s.attendance.timetable = CANONICAL_EVENING_TIMETABLE;
+                } else if (s.attendance.timetable.schedule) {
+                  Object.values(s.attendance.timetable.schedule).forEach(dayArr => {
+                    if (Array.isArray(dayArr)) {
+                      dayArr.forEach(item => {
+                        delete item.faculty;
+                        delete item.teacher;
+                      });
+                    }
+                  });
+                }
               }
               this.sessions.set(id, {
                 ...s,
@@ -163,7 +168,9 @@ class SessionStore {
       if (attendanceData.student && (!attendanceData.student.rollNo || attendanceData.student.rollNo === '40613')) {
         attendanceData.student.rollNo = s.mobileAuth?.username || attendanceData.student.rollNo || '';
       }
-      if (attendanceData.timetable && attendanceData.timetable.schedule) {
+      if (!attendanceData.timetable || !attendanceData.timetable.schedule || attendanceData.timetable?.periods?.[0]?.time?.includes('09:00')) {
+        attendanceData.timetable = CANONICAL_EVENING_TIMETABLE;
+      } else if (attendanceData.timetable && attendanceData.timetable.schedule) {
         Object.values(attendanceData.timetable.schedule).forEach(dayArr => {
           if (Array.isArray(dayArr)) {
             dayArr.forEach(item => {

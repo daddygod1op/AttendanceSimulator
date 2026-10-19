@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const cheerio = require('cheerio');
+const { CANONICAL_EVENING_TIMETABLE } = require('./timetableData');
 
 const BASE_URL = 'https://cuiet.codebrigade.in';
 const USER_AGENT = 'Dalvik/2.1.0 (Linux; U; Android 10; SM-G960F)';
@@ -1257,46 +1258,7 @@ function parseRegisterData(html, userDetails) {
  * Parses timetable schedule from HTML or constructs default fallback
  */
 function parseTimetableSchedule(html, subjects = []) {
-  const defaultPeriods = [
-    { period: 1, time: '09:00 AM - 09:50 AM' },
-    { period: 2, time: '09:50 AM - 10:40 AM' },
-    { period: 3, time: '10:50 AM - 11:40 AM' },
-    { period: 4, time: '11:40 AM - 12:30 PM' },
-    { period: 5, time: '01:20 PM - 02:10 PM' },
-    { period: 6, time: '02:10 PM - 03:00 PM' }
-  ];
-
-  const schedule = {
-    Monday: [],
-    Tuesday: [],
-    Wednesday: [],
-    Thursday: [],
-    Friday: [],
-    Saturday: []
-  };
-
-  const subList = Array.isArray(subjects) && subjects.length > 0 ? subjects : [];
-  const daysList = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-
-  if (subList.length > 0) {
-    daysList.forEach((day, dIdx) => {
-      defaultPeriods.slice(0, 4).forEach((p, pIdx) => {
-        const sub = subList[(dIdx * 2 + pIdx) % subList.length];
-        schedule[day].push({
-          period: p.period,
-          time: p.time,
-          subject: sub.name || sub.code || 'Academic Lecture',
-          subjectName: sub.name || sub.code || 'Academic Lecture',
-          subjectCode: sub.code || '',
-          code: sub.code || '',
-          room: 'Lecture Hall'
-          // NO TEACHER NAME per user requirement
-        });
-      });
-    });
-  }
-
-  return { periods: defaultPeriods, schedule };
+  return CANONICAL_EVENING_TIMETABLE;
 }
 
 module.exports = {
