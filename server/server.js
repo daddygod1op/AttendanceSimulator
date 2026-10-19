@@ -53,6 +53,18 @@ function getSessionId(req) {
 }
 
 // ============================================================================
+// 0. Lightweight Health & Ping Endpoints (For Render Keep-Alive / Uptime Checks)
+// ============================================================================
+app.get(['/health', '/ping', '/api/ping'], (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    service: 'Chitkara Attendance Dashboard'
+  });
+});
+
+// ============================================================================
 // 1. Session & Auth Status + Debug Endpoints
 // ============================================================================
 app.get('/api/status', (req, res) => {
@@ -684,6 +696,45 @@ if (fs.existsSync(clientDistPath)) {
 }
 
 // ============================================================================
+// Render 24/7 Keep-Alive Self-Pinger
+// Free Render web services spin down after 15 min of inactivity.
+// This pinger sends a lightweight request to /health every 10 minutes to stay active.
+// ============================================================================
+function setupRenderKeepAlive() {
+  const externalUrl = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL;
+  if (!externalUrl) {
+    console.log('[KeepAlive] No external URL detected (RENDER_EXTERNAL_URL/APP_URL). Skipping self-ping in local environment.');
+    return;
+  }
+
+  const pingUrl = externalUrl.endsWith('/') ? `${externalUrl}health` : `${externalUrl}/health`;
+  const PING_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes (safely below Render's 15-minute idle limit)
+
+  console.log(`[KeepAlive] 24/7 keep-alive monitor active: Pinging ${pingUrl} every 10 minutes.`);
+
+  // Initial ping after 30 seconds
+  setTimeout(async () => {
+    try {
+      await fetch(pingUrl, { headers: { 'User-Agent': 'Render-Self-Ping/1.0' } });
+      console.log(`[KeepAlive] Initial self-ping successful.`);
+    } catch (e) {
+      console.warn(`[KeepAlive] Initial self-ping note: ${e.message}`);
+    }
+  }, 30000);
+
+  setInterval(async () => {
+    try {
+      const res = await fetch(pingUrl, {
+        headers: { 'User-Agent': 'Render-Self-Ping/1.0' }
+      });
+      console.log(`[KeepAlive] Self-ping status ${res.status} at ${new Date().toLocaleTimeString()}`);
+    } catch (e) {
+      console.warn(`[KeepAlive] Self-ping notice: ${e.message}`);
+    }
+  }, PING_INTERVAL_MS);
+}
+
+// ============================================================================
 // Start Server
 // ============================================================================
 app.listen(PORT, () => {
@@ -694,5 +745,7 @@ app.listen(PORT, () => {
   console.log(` Encryption: AES-256-GCM Encrypted at Rest with Instant Purge`);
   console.log(` Target Portal: ${scraper.PORTAL_BASE}`);
   console.log(`=================================================================`);
+  setupRenderKeepAlive();
 });
+
 

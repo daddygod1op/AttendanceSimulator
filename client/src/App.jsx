@@ -523,6 +523,20 @@ export default function App() {
                     <p style={{ color: 'var(--text-dim)', padding: '1rem' }}>No individual subjects detected.</p>
                   )}
                 </div>
+
+                {/* Dashboard Footer Badge */}
+                <div style={{ marginTop: '3.5rem', padding: '1.75rem 0 1rem 0', borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, color: 'var(--text-dim)', fontSize: '0.82rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <Lock size={13} style={{ color: '#10b981' }} />
+                    <span>Strict Single-Student Isolated Dashboard • Official CUIET CodeBrigade Chalkpad Sync</span>
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span>Made with</span>
+                    <span style={{ color: '#ef4444' }}>❤️</span>
+                    <span>by</span>
+                    <strong style={{ color: '#38bdf8', fontWeight: 700 }}>Aarush Wadhwa</strong>
+                  </div>
+                </div>
               </div>
             </div>
           )
@@ -684,9 +698,17 @@ export default function App() {
             </div>
 
             {/* Trust & Privacy Badge */}
-            <div style={{ marginTop: '3rem', display: 'flex', alignItems: 'center', gap: 12, color: 'var(--text-dim)', fontSize: '0.82rem' }}>
-              <Lock size={14} style={{ color: '#10b981' }} />
-              <span>Strict Single-Student Isolated Dashboard • Official CUIET CodeBrigade Chalkpad Sync</span>
+            <div style={{ marginTop: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, color: 'var(--text-dim)', fontSize: '0.82rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <Lock size={14} style={{ color: '#10b981' }} />
+                <span>Strict Single-Student Isolated Dashboard • Official CUIET CodeBrigade Chalkpad Sync</span>
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span>Made with</span>
+                <span style={{ color: '#ef4444' }}>❤️</span>
+                <span>by</span>
+                <strong style={{ color: '#38bdf8', fontWeight: 700 }}>Aarush Wadhwa</strong>
+              </div>
             </div>
           </div>
         )}
