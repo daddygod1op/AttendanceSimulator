@@ -124,7 +124,7 @@ export default function CircularsFeed({ circulars = [], student }) {
       name: `${cleanTitle}.pdf`,
       type: 'application/pdf',
       size: 'Official CUIET Attachment',
-      url: `/api/circulars/${id}/document`
+      url: `https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${id}`
     }];
   };
 
@@ -346,8 +346,7 @@ export default function CircularsFeed({ circulars = [], student }) {
             <div
               key={item.id || idx}
               className={`circular-card ${item.isUnread ? 'unread-glow' : ''}`}
-              onClick={() => setActiveDocNotice(item)}
-              style={{ cursor: 'pointer' }}
+              onClick={() => setActiveModalNotice(item)}
             >
               <div className="card-top-meta">
                 <div className="meta-left">
@@ -377,12 +376,37 @@ export default function CircularsFeed({ circulars = [], student }) {
 
               <div className="card-bottom-actions">
                 <span className="read-more-cue">
-                  <Eye size={14} style={{ color: '#38bdf8' }} />
-                  <span>View Official Notice</span>
+                  <span>View Full Notice</span>
                   <ChevronRight size={14} />
                 </span>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <a
+                    href={`https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${item.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="quick-action-btn"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      background: 'rgba(230, 57, 70, 0.15)',
+                      border: '1px solid rgba(230, 57, 70, 0.35)',
+                      color: '#f87171',
+                      borderRadius: '6px',
+                      padding: '4px 10px',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      textDecoration: 'none',
+                      cursor: 'pointer'
+                    }}
+                    title="Open original document directly on cuiet.codebrigade.in"
+                  >
+                    <ExternalLink size={12} />
+                    <span>Open in CUIET</span>
+                  </a>
+
                   <button
                     className="quick-action-btn"
                     onClick={(e) => {
@@ -390,22 +414,22 @@ export default function CircularsFeed({ circulars = [], student }) {
                       setActiveDocNotice(item);
                     }}
                     style={{
-                      background: 'linear-gradient(135deg, rgba(230, 57, 70, 0.25), rgba(193, 18, 31, 0.25))',
-                      border: '1px solid rgba(230, 57, 70, 0.45)',
-                      color: '#f87171',
+                      background: 'rgba(56, 189, 248, 0.15)',
+                      border: '1px solid rgba(56, 189, 248, 0.35)',
+                      color: '#38bdf8',
                       borderRadius: '6px',
-                      padding: '5px 12px',
-                      fontSize: '0.76rem',
+                      padding: '4px 10px',
+                      fontSize: '0.74rem',
                       fontWeight: 700,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 6,
+                      gap: 5,
                       cursor: 'pointer'
                     }}
-                    title="View verified university circular document"
+                    title="View official notice details"
                   >
-                    <FileText size={13} />
-                    <span>View Notice</span>
+                    <Eye size={12} />
+                    <span>Details</span>
                   </button>
 
                   <button
@@ -606,8 +630,10 @@ export default function CircularsFeed({ circulars = [], student }) {
                           </div>
 
                           <div className="circular-attachment-actions" style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
-                            <button
-                              onClick={() => setActiveDocNotice(activeModalNotice)}
+                            <a
+                              href={`https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${activeModalNotice.id}`}
+                              target="_blank"
+                              rel="noreferrer"
                               className="btn btn-primary"
                               style={{
                                 padding: '7px 14px',
@@ -618,57 +644,30 @@ export default function CircularsFeed({ circulars = [], student }) {
                                 background: 'linear-gradient(135deg, #e63946, #c1121f)',
                                 boxShadow: '0 2px 8px rgba(230, 57, 70, 0.35)',
                                 color: '#fff',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontWeight: 700
+                                textDecoration: 'none'
                               }}
-                              title="View official notice document"
+                              title="Open original document directly on cuiet.codebrigade.in"
+                            >
+                              <ExternalLink size={14} />
+                              <span>Open in CUIET Portal</span>
+                            </a>
+                            <button
+                              onClick={() => setActiveDocNotice(activeModalNotice)}
+                              className="btn btn-outline"
+                              style={{
+                                padding: '7px 12px',
+                                fontSize: '0.82rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                color: '#e2e8f0'
+                              }}
+                              title="View notice particulars"
                             >
                               <Eye size={14} />
                               <span>View Notice</span>
                             </button>
-                            <a
-                              href={`/api/circulars/${activeModalNotice.id}/document`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="btn btn-outline"
-                              style={{
-                                padding: '7px 12px',
-                                fontSize: '0.82rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                color: '#e2e8f0',
-                                textDecoration: 'none',
-                                borderRadius: '6px'
-                              }}
-                              title="Open verified document in new tab"
-                            >
-                              <ExternalLink size={14} />
-                              <span>Open in New Tab</span>
-                            </a>
-                            <a
-                              href={`/api/circulars/${activeModalNotice.id}/download`}
-                              download
-                              className="btn btn-outline"
-                              style={{
-                                padding: '7px 12px',
-                                fontSize: '0.82rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                color: '#e2e8f0',
-                                textDecoration: 'none',
-                                borderRadius: '6px'
-                              }}
-                              title="Download verified official notice"
-                            >
-                              <Download size={14} />
-                              <span>Download</span>
-                            </a>
                           </div>
                         </div>
                       ))}
@@ -712,14 +711,14 @@ export default function CircularsFeed({ circulars = [], student }) {
                     )}
                   </button>
                   <a
-                    href={`/api/circulars/${activeModalNotice.id}/document`}
+                    href="https://cuiet.codebrigade.in/notifications/display"
                     target="_blank"
                     rel="noreferrer"
                     className="btn btn-primary"
-                    style={{ padding: '0.5rem 1.1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}
+                    style={{ padding: '0.5rem 1.1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 6 }}
                   >
                     <ExternalLink size={14} />
-                    <span>Open Full Notice</span>
+                    <span>Open in CUIET</span>
                   </a>
                 </div>
               </div>

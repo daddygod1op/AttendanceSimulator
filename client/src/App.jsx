@@ -113,9 +113,9 @@ export default function App() {
         setLastSyncTime(data.lastSyncTime);
         saveSessionToStorage(data.attendance, liveStudent, data.lastSyncTime);
 
-        // Auto-refresh if date-wise register, sessional tests, or official daytime timetable are missing
-        if (!data.attendance.register?.length || !data.attendance.performance?.tests?.length || data.attendance.timetable?.periods?.[0]?.time?.includes('04:10')) {
-          console.log('[App] Auto-refreshing session to pull full date-wise register, internal tests, and official daytime timetable...');
+        // Auto-refresh if date-wise register or sessional tests are missing
+        if (!data.attendance.register?.length || !data.attendance.performance?.tests?.length) {
+          console.log('[App] Auto-refreshing session to pull full date-wise register and internal tests...');
           handleRefresh();
         }
       } else if (data.authStatus === 'authenticated') {
@@ -146,7 +146,7 @@ export default function App() {
                 student: cachedStudent
               })
             }).then(() => {
-              if (!parsed.attendance.register?.length || !parsed.attendance.performance?.tests?.length || parsed.attendance.timetable?.periods?.[0]?.time?.includes('04:10')) {
+              if (!parsed.attendance.register?.length || !parsed.attendance.performance?.tests?.length) {
                 handleRefresh();
               }
             }).catch(() => {});

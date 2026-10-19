@@ -25,7 +25,6 @@ const mobileApi = require('./mobileApi');
 const importService = require('./importService');
 const auditLogger = require('./auditLogger');
 const { encrypt, decrypt } = require('./cryptoService');
-const { renderCircularHtml } = require('./circularDocumentRenderer');
 
 // In-memory active pending OTP sessions keyed by sessionId
 const pendingLogins = new Map();
@@ -452,7 +451,7 @@ app.post('/api/attendance/refresh', async (req, res) => {
     // Case 3: If cached attendance exists with real lecture counts, ensure register, timetable and performance are complete
     if (rawSession && rawSession.attendance && rawSession.attendance.overall?.delivered > 0) {
       const att = rawSession.attendance;
-      if (!att.register?.length || !att.performance?.tests?.length || att.timetable?.periods?.[0]?.time?.includes('04:10')) {
+      if (!att.register?.length || !att.performance?.tests?.length || !att.timetable?.schedule) {
         try {
           const regFile = path.join(__dirname, 'attendance_register_response.html');
           if (fs.existsSync(regFile) && (!att.register || att.register.length === 0)) {
@@ -483,7 +482,7 @@ app.post('/api/attendance/refresh', async (req, res) => {
               tests: perf.tests || []
             };
           }
-          if (!att.timetable || !att.timetable.schedule || att.timetable.periods?.[0]?.time?.includes('04:10')) {
+          if (!att.timetable || !att.timetable.schedule) {
             const defaultPeriods = [
               { period: 1, time: '09:00 AM - 09:50 AM' },
               { period: 2, time: '09:50 AM - 10:40 AM' },

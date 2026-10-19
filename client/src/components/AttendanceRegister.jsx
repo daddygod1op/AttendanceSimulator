@@ -55,7 +55,7 @@ export default function AttendanceRegister({
 
   // Dynamic weekly timetable from university sync (or built from enrolled subjects)
   const activeTimetable = useMemo(() => {
-    if (timetable && timetable.periods?.length > 0 && timetable.schedule && !timetable.periods?.[0]?.time?.includes('04:10')) {
+    if (timetable && timetable.periods?.length > 0 && timetable.schedule) {
       return timetable;
     }
     const defaultPeriods = [

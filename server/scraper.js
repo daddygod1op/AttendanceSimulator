@@ -379,8 +379,8 @@ function extractTimetable($, subjects = []) {
     });
   }
 
-  // If daytime periods were parsed from portal, return them
-  if (periods.length > 0 && !periods[0]?.time?.includes('04:10') && Object.values(schedule).some(arr => arr.length > 0)) {
+  // If periods were parsed from portal, return them
+  if (periods.length > 0 && Object.values(schedule).some(arr => arr.length > 0)) {
     return { periods, schedule };
   }
 

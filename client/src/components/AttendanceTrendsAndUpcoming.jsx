@@ -115,9 +115,8 @@ export default function AttendanceTrendsAndUpcoming({
   // Today's classes from timetable
   const todayClasses = useMemo(() => {
     const rawSchedule = timetable?.schedule;
-    const isNightShift = timetable?.periods?.[0]?.time?.includes('04:10');
     const dayKey = (currentDayName === 'Saturday' || currentDayName === 'Sunday') ? 'Monday' : currentDayName;
-    const rawClasses = (!isNightShift && rawSchedule && rawSchedule[dayKey] && rawSchedule[dayKey].length > 0)
+    const rawClasses = (rawSchedule && rawSchedule[dayKey] && rawSchedule[dayKey].length > 0)
       ? rawSchedule[dayKey]
       : (defaultSchedule[dayKey] || []);
 
@@ -584,7 +583,7 @@ export default function AttendanceTrendsAndUpcoming({
 
             {/* Day Classes List */}
             <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {((timetable?.schedule && !timetable.periods?.[0]?.time?.includes('04:10') && timetable.schedule[modalActiveDay]?.length > 0)
+              {((timetable?.schedule && timetable.schedule[modalActiveDay]?.length > 0)
                 ? timetable.schedule[modalActiveDay]
                 : (defaultSchedule[modalActiveDay] || [])
               ).map((cls, idx) => {
