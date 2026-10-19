@@ -483,7 +483,7 @@ app.post('/api/attendance/refresh', async (req, res) => {
               tests: perf.tests || []
             };
           }
-          if (!att.timetable || !att.timetable.schedule) {
+          if (!att.timetable || !att.timetable.schedule || att.timetable.periods?.[0]?.time?.includes('04:10')) {
             const defaultPeriods = [
               { period: 1, time: '09:00 AM - 09:50 AM' },
               { period: 2, time: '09:50 AM - 10:40 AM' },
@@ -506,7 +506,7 @@ app.post('/api/attendance/refresh', async (req, res) => {
                     subjectName: sub.name || sub.code || 'Academic Lecture',
                     subjectCode: sub.code || '',
                     code: sub.code || '',
-                    room: 'Lecture Hall'
+                    room: 'LH-402'
                   });
                 });
               });
@@ -585,8 +585,20 @@ app.get('/api/circulars', (req, res) => {
 // View authentic circular document / printable notice
 app.get('/api/circulars/:id/document', (req, res) => {
   const { id } = req.params;
-  const state = sessionStore.getState();
-  const circulars = state.attendance?.circulars || [];
+  const sessionId = getSessionId(req);
+  let state = sessionStore.getState(sessionId);
+  let circulars = state.attendance?.circulars || [];
+
+  if (circulars.length === 0) {
+    for (const s of sessionStore.sessions.values()) {
+      if (s.attendance?.circulars?.length > 0) {
+        circulars = s.attendance.circulars;
+        if (!state.student && s.student) state = s;
+        break;
+      }
+    }
+  }
+
   const notice = circulars.find(c => String(c.id) === String(id)) || {
     id,
     title: `Chitkara University Official Circular #${id}`,
@@ -608,8 +620,20 @@ app.get('/api/circulars/:id/document', (req, res) => {
 // Download authentic circular document
 app.get('/api/circulars/:id/download', (req, res) => {
   const { id } = req.params;
-  const state = sessionStore.getState();
-  const circulars = state.attendance?.circulars || [];
+  const sessionId = getSessionId(req);
+  let state = sessionStore.getState(sessionId);
+  let circulars = state.attendance?.circulars || [];
+
+  if (circulars.length === 0) {
+    for (const s of sessionStore.sessions.values()) {
+      if (s.attendance?.circulars?.length > 0) {
+        circulars = s.attendance.circulars;
+        if (!state.student && s.student) state = s;
+        break;
+      }
+    }
+  }
+
   const notice = circulars.find(c => String(c.id) === String(id)) || {
     id,
     title: `Chitkara_University_Circular_${id}`,

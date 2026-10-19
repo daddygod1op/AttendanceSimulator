@@ -398,6 +398,7 @@ export default function App() {
 
               {/* Low-Attendance Alerts, Trends, & Upcoming Classes Schedule */}
               <AttendanceTrendsAndUpcoming
+                student={student}
                 overall={attendance.overall}
                 subjects={attendance.subjects || []}
                 timetable={attendance.timetable || null}

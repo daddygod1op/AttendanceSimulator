@@ -25,14 +25,45 @@ class SessionStore {
         if (data && typeof data === 'object') {
           for (const [id, s] of Object.entries(data)) {
             if (s && s.authStatus === 'authenticated') {
-              if (s.attendance && s.attendance.timetable && s.attendance.timetable.schedule) {
-                Object.values(s.attendance.timetable.schedule).forEach(dayArr => {
-                  if (Array.isArray(dayArr)) {
-                    dayArr.forEach(item => {
-                      delete item.faculty;
+              if (s.attendance && s.attendance.timetable) {
+                if (s.attendance.timetable.periods?.[0]?.time?.includes('04:10') || !s.attendance.timetable.schedule) {
+                  const defaultPeriods = [
+                    { period: 1, time: '09:00 AM - 09:50 AM' },
+                    { period: 2, time: '09:50 AM - 10:40 AM' },
+                    { period: 3, time: '10:50 AM - 11:40 AM' },
+                    { period: 4, time: '11:40 AM - 12:30 PM' },
+                    { period: 5, time: '01:20 PM - 02:10 PM' },
+                    { period: 6, time: '02:10 PM - 03:00 PM' }
+                  ];
+                  const sched = { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [] };
+                  const subList = Array.isArray(s.attendance.subjects) ? s.attendance.subjects : [];
+                  if (subList.length > 0) {
+                    ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day, dIdx) => {
+                      defaultPeriods.slice(0, 4).forEach((p, pIdx) => {
+                        const sub = subList[(dIdx * 2 + pIdx) % subList.length];
+                        sched[day].push({
+                          period: p.period,
+                          time: p.time,
+                          subject: sub.name || sub.code,
+                          subjectName: sub.name || sub.code,
+                          subjectCode: sub.code || '',
+                          code: sub.code || '',
+                          room: 'LH-402'
+                        });
+                      });
                     });
                   }
-                });
+                  s.attendance.timetable = { periods: defaultPeriods, schedule: sched };
+                } else if (s.attendance.timetable.schedule) {
+                  Object.values(s.attendance.timetable.schedule).forEach(dayArr => {
+                    if (Array.isArray(dayArr)) {
+                      dayArr.forEach(item => {
+                        delete item.faculty;
+                        delete item.teacher;
+                      });
+                    }
+                  });
+                }
               }
               this.sessions.set(id, {
                 ...s,
@@ -162,14 +193,45 @@ class SessionStore {
       if (attendanceData.student && (!attendanceData.student.rollNo || attendanceData.student.rollNo === '40613')) {
         attendanceData.student.rollNo = s.mobileAuth?.username || attendanceData.student.rollNo || '';
       }
-      if (attendanceData.timetable && attendanceData.timetable.schedule) {
-        Object.values(attendanceData.timetable.schedule).forEach(dayArr => {
-          if (Array.isArray(dayArr)) {
-            dayArr.forEach(item => {
-              delete item.faculty;
+      if (attendanceData.timetable) {
+        if (attendanceData.timetable.periods?.[0]?.time?.includes('04:10') || !attendanceData.timetable.schedule) {
+          const defaultPeriods = [
+            { period: 1, time: '09:00 AM - 09:50 AM' },
+            { period: 2, time: '09:50 AM - 10:40 AM' },
+            { period: 3, time: '10:50 AM - 11:40 AM' },
+            { period: 4, time: '11:40 AM - 12:30 PM' },
+            { period: 5, time: '01:20 PM - 02:10 PM' },
+            { period: 6, time: '02:10 PM - 03:00 PM' }
+          ];
+          const sched = { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [], Saturday: [] };
+          const subList = Array.isArray(attendanceData.subjects) ? attendanceData.subjects : [];
+          if (subList.length > 0) {
+            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day, dIdx) => {
+              defaultPeriods.slice(0, 4).forEach((p, pIdx) => {
+                const sub = subList[(dIdx * 2 + pIdx) % subList.length];
+                sched[day].push({
+                  period: p.period,
+                  time: p.time,
+                  subject: sub.name || sub.code,
+                  subjectName: sub.name || sub.code,
+                  subjectCode: sub.code || '',
+                  code: sub.code || '',
+                  room: 'LH-402'
+                });
+              });
             });
           }
-        });
+          attendanceData.timetable = { periods: defaultPeriods, schedule: sched };
+        } else if (attendanceData.timetable.schedule) {
+          Object.values(attendanceData.timetable.schedule).forEach(dayArr => {
+            if (Array.isArray(dayArr)) {
+              dayArr.forEach(item => {
+                delete item.faculty;
+                delete item.teacher;
+              });
+            }
+          });
+        }
       }
     }
     s.attendance = attendanceData;

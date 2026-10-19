@@ -346,7 +346,8 @@ export default function CircularsFeed({ circulars = [], student }) {
             <div
               key={item.id || idx}
               className={`circular-card ${item.isUnread ? 'unread-glow' : ''}`}
-              onClick={() => setActiveModalNotice(item)}
+              onClick={() => setActiveDocNotice(item)}
+              style={{ cursor: 'pointer' }}
             >
               <div className="card-top-meta">
                 <div className="meta-left">
@@ -376,37 +377,12 @@ export default function CircularsFeed({ circulars = [], student }) {
 
               <div className="card-bottom-actions">
                 <span className="read-more-cue">
-                  <span>View Full Notice</span>
+                  <Eye size={14} style={{ color: '#38bdf8' }} />
+                  <span>View Official Notice</span>
                   <ChevronRight size={14} />
                 </span>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <a
-                    href={`https://cuiet.codebrigade.in/dashboardFeed/printItem/1/${item.id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="quick-action-btn"
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                      background: 'rgba(230, 57, 70, 0.15)',
-                      border: '1px solid rgba(230, 57, 70, 0.35)',
-                      color: '#f87171',
-                      borderRadius: '6px',
-                      padding: '4px 10px',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      textDecoration: 'none',
-                      cursor: 'pointer'
-                    }}
-                    title="Open verified official notice document"
-                  >
-                    <ExternalLink size={12} />
-                    <span>Open Doc</span>
-                  </a>
-
                   <button
                     className="quick-action-btn"
                     onClick={(e) => {
@@ -414,21 +390,21 @@ export default function CircularsFeed({ circulars = [], student }) {
                       setActiveDocNotice(item);
                     }}
                     style={{
-                      background: 'rgba(56, 189, 248, 0.15)',
-                      border: '1px solid rgba(56, 189, 248, 0.35)',
-                      color: '#38bdf8',
+                      background: 'linear-gradient(135deg, rgba(230, 57, 70, 0.25), rgba(193, 18, 31, 0.25))',
+                      border: '1px solid rgba(230, 57, 70, 0.45)',
+                      color: '#f87171',
                       borderRadius: '6px',
-                      padding: '4px 10px',
-                      fontSize: '0.74rem',
+                      padding: '5px 12px',
+                      fontSize: '0.76rem',
                       fontWeight: 700,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 5,
+                      gap: 6,
                       cursor: 'pointer'
                     }}
-                    title="View notice particulars"
+                    title="View verified university circular document"
                   >
-                    <Eye size={12} />
+                    <FileText size={13} />
                     <span>View Notice</span>
                   </button>
 

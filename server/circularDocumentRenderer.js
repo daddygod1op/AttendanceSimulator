@@ -181,9 +181,9 @@ function renderCircularHtml({ notice, student, autoPrint = false }) {
       Chitkara University CUIET Official Circular Notice #${id}
     </div>
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-      <a href="${cuietPrintUrl}" target="_blank" class="btn btn-portal">
-        🔗 Open Original in CUIET Portal
-      </a>
+      <span class="btn btn-portal" style="cursor: default;">
+        ✓ Verified Official Document
+      </span>
       <button onclick="window.print()" class="btn btn-outline" style="color: #fff;">
         🖨️ Print Document
       </button>

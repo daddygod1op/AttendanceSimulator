@@ -17,15 +17,8 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-const CODE_TO_NAME = {
-  '24CSE0209': 'Database Management System',
-  '25CAI0201': 'Statistics and Data Engineering',
-  '25CSE0202': 'Programming in Java',
-  '25CSE0203': 'Front End Engineering-II',
-  '25CSE0204': 'Object Oriented Programming'
-};
-
 export default function AttendanceTrendsAndUpcoming({
+  student,
   overall,
   subjects = [],
   timetable = null,
@@ -35,6 +28,14 @@ export default function AttendanceTrendsAndUpcoming({
 }) {
   const [showTimetableModal, setShowTimetableModal] = useState(false);
   const [modalActiveDay, setModalActiveDay] = useState('Monday');
+
+  const subjectNameMap = useMemo(() => {
+    const map = {};
+    (subjects || []).forEach(s => {
+      if (s.code) map[s.code] = s.name || s.code;
+    });
+    return map;
+  }, [subjects]);
 
   const currentDayName = useMemo(() => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -114,14 +115,15 @@ export default function AttendanceTrendsAndUpcoming({
   // Today's classes from timetable
   const todayClasses = useMemo(() => {
     const rawSchedule = timetable?.schedule;
+    const isNightShift = timetable?.periods?.[0]?.time?.includes('04:10');
     const dayKey = (currentDayName === 'Saturday' || currentDayName === 'Sunday') ? 'Monday' : currentDayName;
-    const rawClasses = (rawSchedule && rawSchedule[dayKey] && rawSchedule[dayKey].length > 0)
+    const rawClasses = (!isNightShift && rawSchedule && rawSchedule[dayKey] && rawSchedule[dayKey].length > 0)
       ? rawSchedule[dayKey]
       : (defaultSchedule[dayKey] || []);
 
     const enriched = rawClasses.map(cls => {
       const code = cls.subjectCode || cls.code || '';
-      const name = cls.subjectName || CODE_TO_NAME[code] || cls.subject || cls.name || code;
+      const name = cls.subjectName || subjectNameMap[code] || cls.subject || cls.name || code;
       const room = cls.room || 'Classroom';
       return {
         ...cls,
@@ -137,7 +139,7 @@ export default function AttendanceTrendsAndUpcoming({
       isUpcomingWeek: currentDayName === 'Saturday' || currentDayName === 'Sunday',
       classes: enriched
     };
-  }, [timetable, currentDayName, defaultSchedule]);
+  }, [timetable, currentDayName, defaultSchedule, subjectNameMap]);
 
   // Overall attendance trend calculations (Dynamic from real delivered/attended data)
   const totalClasses = overall?.delivered ?? overall?.totalLectures ?? (subjects.reduce((a, s) => a + (s.delivered || 0), 0));
@@ -525,7 +527,7 @@ export default function AttendanceTrendsAndUpcoming({
                     Official Weekly Academic Timetable
                   </h3>
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                    BE Computer Science & Engineering (AI & ML) • Group U25AIML-G13
+                    {student?.branch || student?.className || 'Engineering Academic Schedule'}{student?.group ? ` • Group ${student.group}` : ''}
                   </span>
                 </div>
               </div>
@@ -582,12 +584,12 @@ export default function AttendanceTrendsAndUpcoming({
 
             {/* Day Classes List */}
             <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {((timetable?.schedule && timetable.schedule[modalActiveDay]?.length > 0)
+              {((timetable?.schedule && !timetable.periods?.[0]?.time?.includes('04:10') && timetable.schedule[modalActiveDay]?.length > 0)
                 ? timetable.schedule[modalActiveDay]
                 : (defaultSchedule[modalActiveDay] || [])
               ).map((cls, idx) => {
                 const code = cls.subjectCode || cls.code || '';
-                const name = cls.subjectName || CODE_TO_NAME[code] || cls.subject || cls.name || code;
+                const name = cls.subjectName || subjectNameMap[code] || cls.subject || cls.name || code;
                 const room = cls.room || 'Classroom';
 
                 return (
