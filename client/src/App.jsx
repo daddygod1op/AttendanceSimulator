@@ -88,6 +88,15 @@ export default function App() {
     return null;
   });
 
+  // Refs to track latest values inside interval/visibility callbacks (avoids stale closures)
+  const authStatusRef = React.useRef(authStatus);
+  const isSyncingRef = React.useRef(isSyncing);
+  const lastSyncTimeRef = React.useRef(lastSyncTime);
+
+  React.useEffect(() => { authStatusRef.current = authStatus; }, [authStatus]);
+  React.useEffect(() => { isSyncingRef.current = isSyncing; }, [isSyncing]);
+  React.useEffect(() => { lastSyncTimeRef.current = lastSyncTime; }, [lastSyncTime]);
+
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' | 'register' | 'marks' | 'circulars'
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('');
   const [registerViewMode, setRegisterViewMode] = useState('calendar'); // 'calendar' | 'table'
@@ -96,8 +105,39 @@ export default function App() {
   const [alert, setAlert] = useState(null);
 
   // Initial load: verify session with backend, rehydrate if necessary
+  // Then auto-refresh every 5 minutes to keep data current
   useEffect(() => {
     checkStatus();
+
+    // Auto-refresh attendance from CUIET portal every 5 minutes
+    const AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+    const intervalId = setInterval(() => {
+      // Only auto-refresh if user is authenticated and not already syncing
+      if (authStatusRef.current === 'authenticated' && !isSyncingRef.current) {
+        console.log('[App] Auto-refresh triggered: fetching latest data from CUIET portal...');
+        handleRefresh(true); // silent=true for background refresh
+      }
+    }, AUTO_REFRESH_INTERVAL_MS);
+
+    // Also refresh when the tab becomes visible again (user switches back)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && authStatusRef.current === 'authenticated' && !isSyncingRef.current) {
+        const lastSync = lastSyncTimeRef.current;
+        const now = Date.now();
+        // Only refresh if last sync was more than 2 minutes ago
+        const STALE_THRESHOLD_MS = 2 * 60 * 1000;
+        if (!lastSync || (now - new Date(lastSync).getTime()) > STALE_THRESHOLD_MS) {
+          console.log('[App] Tab became visible & data is stale: auto-refreshing from portal...');
+          handleRefresh(true); // silent background refresh
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const checkStatus = async () => {
@@ -120,11 +160,10 @@ export default function App() {
         setLastSyncTime(data.lastSyncTime);
         saveSessionToStorage(data.attendance, liveStudent, data.lastSyncTime);
 
-        // Auto-refresh if date-wise register or sessional tests are missing
-        if (!data.attendance.register?.length || !data.attendance.performance?.tests?.length) {
-          console.log('[App] Auto-refreshing session to pull full date-wise register and internal tests...');
-          handleRefresh();
-        }
+        // Always trigger a fresh sync from the CUIET portal in the background
+        // This ensures every page load/refresh shows the latest data
+        console.log('[App] Authenticated session found — triggering background sync for latest portal data...');
+        handleRefresh(true); // silent background refresh
       } else if (data.authStatus === 'authenticated') {
         // Authenticated but attendance is empty on server: sync fresh data immediately
         setAuthStatus('authenticated');
@@ -145,7 +184,7 @@ export default function App() {
             setStudent(cachedStudent);
             setLastSyncTime(parsed.lastSyncTime);
             saveSessionToStorage(parsed.attendance, cachedStudent, parsed.lastSyncTime);
-            // Rehydrate backend session
+            // Rehydrate backend session then immediately sync fresh data
             fetch('/api/auth/restore-session', {
               method: 'POST',
               headers: {
@@ -157,9 +196,9 @@ export default function App() {
                 student: cachedStudent
               })
             }).then(() => {
-              if (!parsed.attendance.register?.length || !parsed.attendance.performance?.tests?.length) {
-                handleRefresh();
-              }
+              // Always refresh from portal after restoring session
+              console.log('[App] Session restored — syncing fresh data from portal...');
+              handleRefresh(true);
             }).catch(() => {});
             return;
           }
@@ -178,6 +217,8 @@ export default function App() {
             setAuthStatus('authenticated');
             setAttendance(parsed.attendance);
             setStudent(cachedStudent);
+            // Even on error, try a background refresh
+            handleRefresh(true);
             return;
           }
         } catch (err) {}
@@ -235,10 +276,12 @@ export default function App() {
     }
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = async (silent = false) => {
     if (isSyncing) return;
     setIsSyncing(true);
-    setAlert({ type: 'syncing', text: 'Retrieving latest attendance, notices & marks from official Chitkara portal...' });
+    if (!silent) {
+      setAlert({ type: 'syncing', text: 'Retrieving latest attendance, notices & marks from official Chitkara portal...' });
+    }
 
     try {
       const sessionId = getDeviceSessionId();
@@ -264,14 +307,22 @@ export default function App() {
       setLastSyncTime(syncTime);
       saveSessionToStorage(data.data, refreshedStudent, syncTime);
 
-      setAlert({
-        type: 'success',
-        text: 'All records, notices, marks & calendar register successfully refreshed from official portal!'
-      });
-      setTimeout(() => setAlert(null), 4000);
+      if (!silent) {
+        setAlert({
+          type: 'success',
+          text: 'All records, notices, marks & calendar register successfully refreshed from official portal!'
+        });
+        setTimeout(() => setAlert(null), 4000);
+      } else {
+        console.log('[App] Background auto-refresh completed successfully at', new Date().toLocaleTimeString());
+      }
     } catch (err) {
-      // Do NOT log out on refresh failure — only show status message
-      setAlert({ type: 'error', text: err.message || 'Could not sync latest data. Showing cached attendance.' });
+      if (!silent) {
+        // Do NOT log out on refresh failure — only show status message
+        setAlert({ type: 'error', text: err.message || 'Could not sync latest data. Showing cached attendance.' });
+      } else {
+        console.warn('[App] Background auto-refresh failed:', err.message);
+      }
     } finally {
       setIsSyncing(false);
     }

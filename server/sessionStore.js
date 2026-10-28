@@ -126,10 +126,6 @@ class SessionStore {
     if (this.sessions.has(id)) {
       return this.sessions.get(id);
     }
-    if (this.sessions.size === 1) {
-      const only = Array.from(this.sessions.values())[0];
-      if (only.authStatus === 'authenticated') return only;
-    }
     return this._getOrCreate(id);
   }
 
@@ -282,14 +278,7 @@ class SessionStore {
 
   getState(sessionId = 'default') {
     const id = typeof sessionId === 'string' && sessionId.trim() ? sessionId.trim() : 'default';
-    let s = this.sessions.get(id);
-
-    if (!s && this.sessions.size === 1) {
-      const only = Array.from(this.sessions.values())[0];
-      if (only.authStatus === 'authenticated') {
-        s = only;
-      }
-    }
+    const s = this.sessions.get(id);
 
     if (!s) {
       return {

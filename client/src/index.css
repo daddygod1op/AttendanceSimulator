@@ -7,23 +7,23 @@
   --font-display: 'Outfit', sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
-  /* Color Palette */
-  --bg-main: #0a0d16;
-  --bg-surface: #111625;
-  --bg-surface-elevated: #171e33;
-  --bg-card: rgba(19, 25, 43, 0.75);
-  --bg-card-hover: rgba(26, 35, 60, 0.85);
-  --bg-glass: rgba(255, 255, 255, 0.04);
+  /* Color Palette - Clean, Modern Slate/Cyber Minimal */
+  --bg-main: #07090e;
+  --bg-surface: #0e131f;
+  --bg-surface-elevated: #141c2e;
+  --bg-card: rgba(16, 23, 38, 0.7);
+  --bg-card-hover: rgba(22, 32, 54, 0.85);
+  --bg-glass: rgba(255, 255, 255, 0.03);
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-highlight: rgba(255, 255, 255, 0.16);
+  --border-highlight: rgba(255, 255, 255, 0.18);
 
-  /* Primary Brand: Chitkara Crimson Flame */
-  --primary: #e63946;
-  --primary-hover: #ff4d5a;
-  --primary-glow: rgba(230, 57, 70, 0.35);
-  --primary-gradient: linear-gradient(135deg, #e63946 0%, #ff6b6b 100%);
-  --accent-purple: #8a2be2;
-  --accent-cyan: #00f2fe;
+  /* Primary Brand: Refined Crimson + Indigo Glow */
+  --primary: #f43f5e;
+  --primary-hover: #fb7185;
+  --primary-glow: rgba(244, 63, 94, 0.28);
+  --primary-gradient: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  --accent-purple: #8b5cf6;
+  --accent-cyan: #06b6d4;
 
   /* Attendance Status Colors */
   --present-green: #10b981;
@@ -31,10 +31,10 @@
   --present-border: rgba(16, 185, 129, 0.35);
   --present-glow: rgba(16, 185, 129, 0.25);
 
-  --absent-red: #ef4444;
-  --absent-bg: rgba(239, 68, 68, 0.12);
-  --absent-border: rgba(239, 68, 68, 0.35);
-  --absent-glow: rgba(239, 68, 68, 0.25);
+  --absent-red: #f43f5e;
+  --absent-bg: rgba(244, 63, 94, 0.12);
+  --absent-border: rgba(244, 63, 94, 0.35);
+  --absent-glow: rgba(244, 63, 94, 0.25);
 
   --leave-blue: #38bdf8;
   --leave-bg: rgba(56, 189, 248, 0.12);
@@ -73,11 +73,12 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   background-image: 
-    radial-gradient(circle at 15% 20%, rgba(230, 57, 70, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 85% 70%, rgba(56, 189, 248, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.04) 0%, transparent 60%);
+    radial-gradient(circle at 15% 15%, rgba(244, 63, 94, 0.07) 0%, transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(56, 189, 248, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
   background-attachment: fixed;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ==========================================================================
@@ -94,11 +95,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(11, 15, 25, 0.82);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
+  background: rgba(7, 9, 14, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
-  padding: 0.85rem 1.75rem;
+  padding: 0.75rem 1.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -318,17 +319,17 @@ body {
 
 .overall-attendance-hero {
   position: relative;
-  background: linear-gradient(135deg, rgba(26, 35, 60, 0.75) 0%, rgba(17, 24, 39, 0.85) 100%);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
-  border: 1px solid var(--border-highlight);
+  background: linear-gradient(135deg, rgba(20, 28, 48, 0.6) 0%, rgba(11, 16, 28, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   padding: 2.25rem;
   margin-bottom: 2.5rem;
   cursor: pointer;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .overall-attendance-hero::before {
@@ -337,14 +338,14 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: var(--primary-gradient);
+  height: 2px;
+  background: linear-gradient(90deg, #f43f5e 0%, #8b5cf6 50%, #38bdf8 100%);
 }
 
 .overall-attendance-hero:hover {
-  transform: translateY(-4px);
-  border-color: rgba(230, 57, 70, 0.5);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 25px rgba(230, 57, 70, 0.2);
+  transform: translateY(-3px);
+  border-color: rgba(244, 63, 94, 0.35);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 30px rgba(244, 63, 94, 0.15);
 }
 
 .hero-click-cue {
@@ -554,8 +555,8 @@ body {
 
 .subject-card {
   background: var(--bg-card);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1.5rem;
@@ -563,13 +564,14 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .subject-card:hover {
   background: var(--bg-card-hover);
-  border-color: var(--border-highlight);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
 }
 
 .subject-header {

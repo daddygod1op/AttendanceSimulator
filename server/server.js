@@ -70,6 +70,9 @@ app.get(['/health', '/ping', '/api/ping'], (req, res) => {
 app.get('/api/status', (req, res) => {
   const sessionId = getSessionId(req);
   const state = sessionStore.getState(sessionId);
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
   res.json({
     ...state,
     isSyncing: sessionStore.isSyncing(sessionId),
@@ -403,6 +406,9 @@ app.post('/api/attendance/import', async (req, res) => {
 app.get('/api/attendance', (req, res) => {
   const sessionId = getSessionId(req);
   const state = sessionStore.getState(sessionId);
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
   if (state.authStatus !== 'authenticated' || !state.attendance) {
     return res.status(401).json({
       error: 'Session has expired or you are unauthenticated. Please connect to https://cuiet.codebrigade.in/ first.',
@@ -431,7 +437,7 @@ app.post('/api/attendance/refresh', async (req, res) => {
   try {
     console.log('[Server] Refreshing latest attendance records from portal for session:', sessionId);
 
-    // Case 1: Student authenticated via official Chitkara Mobile API
+    // Case 1: Student authenticated via official Chitkara Mobile API — ALWAYS fetch fresh
     if (rawSession && rawSession.mobileAuth && rawSession.mobileAuth.userDetails) {
       console.log(`[Server] Syncing fresh attendance via official Mobile API for ${rawSession.mobileAuth.username}...`);
       const attendanceData = await mobileApi.fetchFullAttendanceData({
@@ -461,9 +467,11 @@ app.post('/api/attendance/refresh', async (req, res) => {
       });
     }
 
-    // Case 3: If cached attendance exists with real lecture counts, ensure register, timetable and performance are complete
+    // Case 3: No live auth credentials available — return cached data if present
+    // (Cannot fetch fresh data without mobileAuth or cookies)
     if (rawSession && rawSession.attendance && rawSession.attendance.overall?.delivered > 0) {
       const att = rawSession.attendance;
+      // Enrich missing register/timetable/performance from local files
       if (!att.register?.length || !att.performance?.tests?.length || !att.timetable?.schedule) {
         try {
           const regFile = path.join(__dirname, 'attendance_register_response.html');
@@ -505,26 +513,16 @@ app.post('/api/attendance/refresh', async (req, res) => {
       }
       return res.json({
         success: true,
-        message: 'Attendance records synchronized from current session.',
+        message: 'Showing cached attendance (no active portal credentials for live refresh). Please re-login for live data.',
         data: att,
         lastSyncTime: rawSession.lastSyncTime || sessionStore.getState(sessionId).lastSyncTime
       });
     }
 
-    // Case 4: Sync directly via official Chitkara Mobile API
-    const userRoll = rawSession?.student?.rollNo || rawSession?.mobileAuth?.username || '';
-    console.log('[Server] Syncing fresh attendance records via official Mobile API for:', userRoll || 'student');
-    const attendanceData = await mobileApi.fetchFullAttendanceData({
-      userDetails: rawSession?.mobileAuth?.userDetails || { userId: '40613', sessionId: '20', roleId: '4' },
-      deviceUUID: 'device_sync_' + sessionId,
-      username: userRoll
-    });
-    sessionStore.setAttendance(sessionId, attendanceData);
-    return res.json({
-      success: true,
-      message: 'Attendance, timetable, and marks successfully refreshed from official CUIET portal!',
-      data: attendanceData,
-      lastSyncTime: sessionStore.getState(sessionId).lastSyncTime
+    // Case 4: No cached data and no auth — cannot refresh
+    return res.status(401).json({
+      success: false,
+      error: 'No active portal session. Please sign in with your CUIET credentials to fetch attendance.'
     });
   } catch (error) {
     console.error('[Server] Refresh error:', error.message);
